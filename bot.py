@@ -39,7 +39,7 @@ async def on_message(message):
                       inline=False)
         msg.add_field(name="Square", value="Squares a number. \n Usage: !square [number]", inline=False)
         msg.add_field(name="Bitcoin", value="Current value of Bitcoin. \n Usage: !bitcoin", inline=False)
-        msg.set_thumbnail(url="https://themerkle.com/wp-content/uploads/2017/05/kingdice-pr.jpg")
+        msg.set_thumbnail(url="https://github.com/ClamSageCaleb/UNCC-SIX-MANS/blob/master/norm.gif")
         msg.set_footer(text="Developed by Clam and Twan")
         await client.send_message(message.channel, embed=msg)
     await client.process_commands(message)
