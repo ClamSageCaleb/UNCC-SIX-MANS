@@ -36,10 +36,14 @@ async def on_message(message):
 
     if message.content.startswith('!help'):
         msg = discord.Embed(title='__**Server Commands**__', description="", color=0x38761D)
-        msg.add_field(name="Eight Ball", value="Answers a yes/no question. \n Usage: !8ball [question]",
-                      inline=False)
-        msg.add_field(name="Square", value="Squares a number. \n Usage: !square [number]", inline=False)
-        msg.add_field(name="Bitcoin", value="Current value of Bitcoin. \n Usage: !bitcoin", inline=False)
+        msg.add_field(name="!q - not working yet", value="Adds you to the queue",inline=False)
+        msg.add_field(name="!leave - not working yet", value="Removes you from the queue",inline=False)
+        msg.add_field(name="!kick - not working yet", value="Kicks someone from the queue, will require a vote",inline=False)
+        msg.add_field(name="!Random - not working yet", value="Randomly picks teams",inline=False)
+        msg.add_field(name="!Captains - not working yet", value="Randomly selects captains. \nFirst captain picks 1 \nSecond captain picks the next two",inline=False)
+        msg.add_field(name='!8ball', value='Will respond to a yes/no question. Good for preditions', inline=False)
+        msg.add_field(name="!help", value="This command :O",inline=False)
+        #msg.set_thumbnail(url="https://en.wikipedia.org/wiki/Charlotte_49ers#/media/File:Charlotte_49ers_logo.svg")
         msg.set_thumbnail(url="https://github.com/ClamSageCaleb/UNCC-SIX-MANS/blob/master/49ers.png")
         msg.set_footer(text="Developed by Clam and Twan")
         await client.send_message(message.channel, embed=msg)
@@ -60,7 +64,6 @@ async def eight_ball(context):
         'Definitely',
     ]
     await client.say(random.choice(possible_responses) + ", " + context.message.author.mention)
-
 
 @client.command()
 async def square(number):
