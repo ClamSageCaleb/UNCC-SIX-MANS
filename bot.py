@@ -24,6 +24,25 @@ TOKEN = ""
 client = Bot(command_prefix=BOT_PREFIX)
 client.remove_command('help')
 
+class Q:
+    def __init__(self):
+        self.queue = list()
+    def add(self, player):
+        self.queue.append(player)
+    def remove(self, player):
+        self.queue.remove(player)
+    def get(self):
+        return self.queue.pop()
+    def size(self):
+        return len(self.queue)
+    #def print(self):
+    #    return
+
+    
+#initialize queue
+queue = list()
+
+
 # Replaces the basic !help feature, responds with formatted bot commands and usage
 @client.event
 async def on_message(message):
@@ -39,6 +58,7 @@ async def on_message(message):
         msg.add_field(name="!q - not working yet", value="Adds you to the queue",inline=False)
         msg.add_field(name="!leave - not working yet", value="Removes you from the queue",inline=False)
         msg.add_field(name="!kick - not working yet", value="Kicks someone from the queue, will require a vote",inline=False)
+        msg.add_field(name="!list - not working yet", value="Lists the current queue",inline=False)
         msg.add_field(name="!Random - not working yet", value="Randomly picks teams",inline=False)
         msg.add_field(name="!Captains - not working yet", value="Randomly selects captains. \nFirst captain picks 1 \nSecond captain picks the next two",inline=False)
         msg.add_field(name='!8ball', value='Will respond to a yes/no question. Good for preditions', inline=False)
@@ -48,6 +68,30 @@ async def on_message(message):
         msg.set_footer(text="Developed by Clam and Twan")
         await client.send_message(message.channel, embed=msg)
     await client.process_commands(message)
+
+@client.command(name='listq', aliases=['list', 'listqueue', 'show', 'showq', 'showqueue'], pass_context=True)
+async def listq(context):
+    await client.say("Current queue:")
+    for x in queue:
+        await client.say(x.mention)
+
+@client.command(name='q', aliases=['addmepapanorm', 'addmebitch', 'queue', 'join'], pass_context=True)
+async def q(context):
+    player = context.message.author
+    if(len(queue) == 0):
+        queue.append(player)
+        await client.say(context.message.author.mention + " added to the queue!")
+    elif(len(queue) == 6):
+        await client.say("Queue full, wait until teams are picked.")
+    elif(player in queue):
+        await client.say(context.message.author.mention + " already in queue, dummy")
+    else:
+        queue.append(player)
+        await client.say(player.mention + " added to the queue!")
+        #returnedQueue = queue.pop()
+        await client.say("\nCurrent queue:")
+        for x in queue:
+            await client.say(x.mention)
 
 
 @client.command(name='8ball', aliases=['eight_ball', 'eightball', '8-ball'], pass_context=True)
