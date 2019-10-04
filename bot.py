@@ -41,7 +41,7 @@ async def on_message(message):
     if message.content.startswith('!help'):
         msg = discord.Embed(title='__**Server Commands**__', description="", color=0x38761D)
         msg.add_field(name="!q - not working yet", value="Adds you to the queue",inline=False)
-        msg.add_field(name="!leave - not working yet", value="Removes you from the queue",inline=False)
+        msg.add_field(name="!leave", value="Removes you from the queue",inline=False)
         msg.add_field(name="!kick - not working yet", value="Kicks someone from the queue, will require a vote",inline=False)
         msg.add_field(name="!list - not working yet", value="Lists the current queue",inline=False)
         msg.add_field(name="!Random - not working yet", value="Randomly picks teams",inline=False)
@@ -60,14 +60,22 @@ async def listq():
     if(len(queue) == 0):
         await client.say("Queue is f****** empty, you should @ here so everyone gets mad at you")
     else:
+        x = 0
         for x in queue:
-            await client.say(x)
+            y = str(x)
+            y = y.split("#")
+            await client.say(y[0])
 
 @client.command(name='leave', aliases=['yoink', 'gtfo', 'getmethefuckouttahere'], pass_context=True)
 async def leave(context):
     player = context.message.author
-    await client.say("Removing player" + player)
-    queue.remove(player)
+    username = player.display_name
+    if(player in queue):
+        await client.say("Removing player: " +
+            username)
+        queue.remove(player)
+    else:
+        await client.say("You are not in the queue, type !q to queue :)")
 
 @client.command(name='q', aliases=['addmepapanorm', 'addmebitch', 'queue', 'join'], pass_context=True)
 async def q(context):
@@ -84,6 +92,7 @@ async def q(context):
         await client.say(player.mention + " added to the queue!")
         #returnedQueue = queue.pop()
         await client.say("\nCurrent queue:")
+        x = 0
         for x in queue:
             await client.say(x)
 
