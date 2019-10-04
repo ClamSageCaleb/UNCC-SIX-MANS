@@ -48,7 +48,6 @@ async def on_message(message):
         msg.add_field(name="!Captains - not working yet", value="Randomly selects captains. \nFirst captain picks 1 \nSecond captain picks the next two",inline=False)
         msg.add_field(name='!8ball', value='Will respond to a yes/no question. Good for preditions', inline=False)
         msg.add_field(name="!help", value="This command :O",inline=False)
-        #msg.set_thumbnail(url="https://en.wikipedia.org/wiki/Charlotte_49ers#/media/File:Charlotte_49ers_logo.svg")
         msg.set_thumbnail(url="https://github.com/ClamSageCaleb/UNCC-SIX-MANS/blob/master/49ers.png")
         msg.set_footer(text="Developed by Clam and Twan")
         await client.send_message(message.channel, embed=msg)
@@ -60,7 +59,6 @@ async def listq():
     if(len(queue) == 0):
         await client.say("Queue is f****** empty, you should @ here so everyone gets mad at you")
     else:
-        x = 0
         for x in queue:
             y = str(x)
             y = y.split("#")
@@ -71,8 +69,7 @@ async def leave(context):
     player = context.message.author
     username = player.display_name
     if(player in queue):
-        await client.say("Removing player: " +
-            username)
+        await client.say("Removing player: " + username)
         queue.remove(player)
     else:
         await client.say("You are not in the queue, type !q to queue :)")
@@ -92,7 +89,6 @@ async def q(context):
         await client.say(player.mention + " added to the queue!")
         #returnedQueue = queue.pop()
         await client.say("\nCurrent queue:")
-        x = 0
         for x in queue:
             await client.say(x)
 
@@ -112,42 +108,10 @@ async def eight_ball(context):
     ]
     await client.say(random.choice(possible_responses) + ", " + context.message.author.mention)
 
-@client.command()
-async def square(number):
-    """
-    :param number: The number the user is wanting to square
-    :return: Squared Number
-    """
-    squared_value = int(number) * int(number)
-    await client.say(str(number) + " squared is " + str(squared_value))
-
-
 @client.event
 async def on_ready():
     await client.change_presence(game=Game(name="with humans"))
     print("Logged in as " + client.user.name)
-
-
-@client.command()
-async def bitcoin():
-    """
-    :return: Price of bitcoin
-    """
-    url = 'https://api.coindesk.com/v1/bpi/currentprice/BTC.json'
-    async with aiohttp.ClientSession() as session:  # Async HTTP request
-        raw_response = await session.get(url)
-        response = await raw_response.text()
-        response = json.loads(response)
-        await client.say("Bitcoin price is: $" + response['bpi']['USD']['rate'])
-
-@client.command()
-async def ggez(name):
-    msg = '''░░░░░░░░░░░░░░░░░░░░░░░░░
-░░░█▀▀▀░█▀▀▀░░█▀▀░▀▀█░░░░
-░░░█░▀█░█░▀█░░█▀▀░▄▀░░░░░
-░░░▀▀▀▀░▀▀▀▀░░▀▀▀░▀▀▀░░░░
-░░░░░░░░░░░░░░░░░░░░░░░░░'''
-    await client.say(msg + "\n" + name)
 
 async def list_servers():
     await client.wait_until_ready()
