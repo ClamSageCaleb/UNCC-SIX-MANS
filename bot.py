@@ -18,7 +18,7 @@ from discord.ext.commands import Bot
 # Bot prefix and Discord Bot token
 BOT_PREFIX = ("!")
 # Add token here
-TOKEN = ""
+TOKEN = "NjI5NTAyNTg3OTYzNTcyMjI1.XZa2VA.0Vgw4CLUllSpRTPDyBDfqF0HGXo"
 
 # Creates the Bot with name 'client'
 client = Bot(command_prefix=BOT_PREFIX)
@@ -35,7 +35,7 @@ async def on_message(message):
         return
 
     if message.content.startswith('!help'):
-        msg = discord.Embed(title='__**Server Commands**__', description="", color=0x0000ff)
+        msg = discord.Embed(title='__**Server Commands**__', description="", color=0x38761D)
         msg.add_field(name="!q", value="Adds you to the queue",inline=False)
         msg.add_field(name="!leave", value="Removes you from the queue",inline=False)
         msg.add_field(name="!kick", value="Kicks someone from the queue, will require a vote",inline=False)
@@ -43,7 +43,8 @@ async def on_message(message):
         msg.add_field(name="", value="",inline=False)
         msg.add_field(name="", value="",inline=False)
         msg.add_field(name="", value="",inline=False)
-        msg.set_thumbnail(url="https://en.wikipedia.org/wiki/Charlotte_49ers#/media/File:Charlotte_49ers_logo.svg")
+        #msg.set_thumbnail(url="https://en.wikipedia.org/wiki/Charlotte_49ers#/media/File:Charlotte_49ers_logo.svg")
+        msg.set_thumbnail(url="https://github.com/ClamSageCaleb/UNCC-SIX-MANS/blob/master/49ers.png")
         msg.set_footer(text="Developed by Clam and Twan")
         await client.send_message(message.channel, embed=msg)
     await client.process_commands(message)
