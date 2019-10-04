@@ -35,7 +35,7 @@ async def on_message(message):
         return
 
     if message.content.startswith('!help'):
-        msg = discord.Embed(title='__**Server Commands**__', description="", color=38761D)
+        msg = discord.Embed(title='__**Server Commands**__', description="", color=0x38761D)
         msg.add_field(name="Eight Ball", value="Answers a yes/no question. \n Usage: !8ball [question]",
                       inline=False)
         msg.add_field(name="Square", value="Squares a number. \n Usage: !square [number]", inline=False)
