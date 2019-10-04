@@ -55,10 +55,19 @@ async def on_message(message):
     await client.process_commands(message)
 
 @client.command(name='listq', aliases=['list', 'listqueue', 'show', 'showq', 'showqueue'], pass_context=True)
-async def listq(context):
+async def listq():
     await client.say("Current queue:")
-    for x in queue:
-        await client.say(x.mention)
+    if(len(queue) == 0):
+        await client.say("Queue is f****** empty, you should @ here so everyone gets mad at you")
+    else:
+        for x in queue:
+            await client.say(x)
+
+@client.command(name='leave', aliases=['yoink', 'gtfo', 'getmethefuckouttahere'], pass_context=True)
+async def leave(context):
+    player = context.message.author
+    await client.say("Removing player" + player)
+    queue.remove(player)
 
 @client.command(name='q', aliases=['addmepapanorm', 'addmebitch', 'queue', 'join'], pass_context=True)
 async def q(context):
@@ -76,7 +85,7 @@ async def q(context):
         #returnedQueue = queue.pop()
         await client.say("\nCurrent queue:")
         for x in queue:
-            await client.say(x.mention)
+            await client.say(x)
 
 
 @client.command(name='8ball', aliases=['eight_ball', 'eightball', '8-ball'], pass_context=True)
