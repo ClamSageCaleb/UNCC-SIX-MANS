@@ -18,7 +18,7 @@ from discord.ext.commands import Bot
 # Bot prefix and Discord Bot token
 BOT_PREFIX = ("!")
 # Add token here
-TOKEN = "NjI5NTAyNTg3OTYzNTcyMjI1.XZa2VA.0Vgw4CLUllSpRTPDyBDfqF0HGXo"
+TOKEN = ""
 
 # Creates the Bot with name 'client'
 client = Bot(command_prefix=BOT_PREFIX)
