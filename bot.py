@@ -24,21 +24,6 @@ TOKEN = ""
 client = Bot(command_prefix=BOT_PREFIX)
 client.remove_command('help')
 
-class Q:
-    def __init__(self):
-        self.queue = list()
-    def add(self, player):
-        self.queue.append(player)
-    def remove(self, player):
-        self.queue.remove(player)
-    def get(self):
-        return self.queue.pop()
-    def size(self):
-        return len(self.queue)
-    #def print(self):
-    #    return
-
-    
 #initialize queue
 queue = list()
 
