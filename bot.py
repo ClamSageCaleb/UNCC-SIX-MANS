@@ -40,10 +40,10 @@ async def on_message(message):
 
     if message.content.startswith('!help'):
         msg = discord.Embed(title='__**Server Commands**__', description="", color=0x38761D)
-        msg.add_field(name="!q - not working yet", value="Adds you to the queue",inline=False)
+        msg.add_field(name="!q - should work, testing phase", value="Adds you to the queue",inline=False)
         msg.add_field(name="!leave", value="Removes you from the queue",inline=False)
         msg.add_field(name="!kick - not working yet", value="Kicks someone from the queue, will require a vote",inline=False)
-        msg.add_field(name="!list - not working yet", value="Lists the current queue",inline=False)
+        msg.add_field(name="!list", value="Lists the current queue",inline=False)
         msg.add_field(name="!Random - not working yet", value="Randomly picks teams",inline=False)
         msg.add_field(name="!Captains - not working yet", value="Randomly selects captains. \nFirst captain picks 1 \nSecond captain picks the next two",inline=False)
         msg.add_field(name='!8ball', value='Will respond to a yes/no question. Good for preditions', inline=False)
@@ -53,12 +53,26 @@ async def on_message(message):
         await client.send_message(message.channel, embed=msg)
     await client.process_commands(message)
 
+@client.command(name='kick', aliases=['remove', 'yeet'], pass_context=True)
+async def kick(context):
+    #numOfMentions = len(context.message.mentions)
+    player = context.message.mentions[0]
+    if(len(queue) ==0):
+        await client.say("User not in the queue because the queue is empty. Why isnt cre8 in the queue?")
+    elif(player in queue):
+        queue.remove(player)
+        await client.say("Removed " + player.display_name + " from the queue")
+    else:
+        await client.say("User not in queue. To see who is in current queue, type: !list")
+
+    
 @client.command(name='listq', aliases=['list', 'listqueue', 'show', 'showq', 'showqueue'], pass_context=True)
 async def listq():
-    await client.say("Current queue:")
+    
     if(len(queue) == 0):
         await client.say("Queue is f****** empty, you should @ here so everyone gets mad at you")
     else:
+        await client.say("Current queue:")
         for x in queue:
             y = str(x)
             y = y.split("#")
@@ -67,6 +81,7 @@ async def listq():
 @client.command(name='leave', aliases=['yoink', 'gtfo', 'getmethefuckouttahere'], pass_context=True)
 async def leave(context):
     player = context.message.author
+    print(type(player))
     username = player.display_name
     if(player in queue):
         await client.say("Removing player: " + username)
@@ -80,6 +95,10 @@ async def q(context):
     if(len(queue) == 0):
         queue.append(player)
         await client.say(context.message.author.mention + " added to the queue!")
+        y = str(queue[0])
+        y = y.split("#")
+        await client.say("\nCurrent queue:")
+        await client.say(y[0])
     elif(len(queue) == 6):
         await client.say("Queue full, wait until teams are picked.")
     elif(player in queue):
@@ -90,7 +109,9 @@ async def q(context):
         #returnedQueue = queue.pop()
         await client.say("\nCurrent queue:")
         for x in queue:
-            await client.say(x)
+            y = str(x)
+            y = y.split("#")
+            await client.say(y[0])
 
 
 @client.command(name='8ball', aliases=['eight_ball', 'eightball', '8-ball'], pass_context=True)
