@@ -45,7 +45,7 @@ async def on_message(message):
         msg.add_field(name="!leave", value="Removes you from the queue",inline=False)
         msg.add_field(name="!kick", value="Kicks someone from the queue, will require a vote",inline=False)
         msg.add_field(name="!list", value="Lists the current queue",inline=False)
-        msg.add_field(name="!Random - not working yet", value="Randomly picks teams",inline=False)
+        msg.add_field(name="!Random", value="Randomly picks teams",inline=False)
         msg.add_field(name="!Captains - not working yet", value="Randomly selects captains. \nFirst captain picks 1 \nSecond captain picks the next two",inline=False)
         msg.add_field(name='!8ball', value='Will respond to a yes/no question. Good for preditions', inline=False)
         msg.add_field(name="!help", value="This command :O",inline=False)
@@ -79,12 +79,14 @@ async def listq():
             y = y.split("#")
             playerList.append(y[0])
         await client.say("Current queue:\n" + ", ".join(playerList))
+
 @client.command(name='captains', aliases=['cap', 'iwanttopickteams'], pass_context=True)
 async def captains(context):
     await client.say("fuck captains")
+
 @client.command(name='fuck', aliases=['f', 'frick'], pass_context=True)
 async def fuck(context):
-    await client.say("you")
+    await client.say("u")
 
 @client.command(name='rnd', aliases=['random', 'idontwanttopickteams', 'fuckcaptains'], pass_context=True)
 async def rnd(context):
@@ -138,7 +140,6 @@ async def q(context):
     else:
         queue.append(player)
         await client.say(player.mention + " added to the queue!")
-        #returnedQueue = queue.pop()
         playerList = []
         for x in queue:
             y = str(x)
@@ -176,6 +177,7 @@ async def qq(context):
             y = y.split("#")
             playerList.append(y[0])
         await client.say("Current queue:\n" + ", ".join(playerList))
+
 @client.command(name='8ball', aliases=['eight_ball', 'eightball', '8-ball'], pass_context=True)
 async def eight_ball(context):
     """
@@ -188,12 +190,13 @@ async def eight_ball(context):
         'Too hard to tell',
         'It is quite possible',
         'Definitely',
+        'Ask papa Duis',
     ]
     await client.say(random.choice(possible_responses) + ", " + context.message.author.mention)
 
 @client.event
 async def on_ready():
-    await client.change_presence(game=Game(name="with humans"))
+    await client.change_presence(game=Game(name="6mans"))
     print("Logged in as " + client.user.name)
 
 async def list_servers():
