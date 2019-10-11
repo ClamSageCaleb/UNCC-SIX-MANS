@@ -22,7 +22,7 @@ from discord.ext.commands import Bot
 # Bot prefix and Discord Bot token
 BOT_PREFIX = ("!")
 # Add token here
-TOKEN = "NjI5NTAyNTg3OTYzNTcyMjI1.XZgseA.P2B-UgqhebIFwxdVyDJ30XvBEak"
+TOKEN = ""
 
 # Creates the Bot with name 'client'
 client = Bot(command_prefix=BOT_PREFIX)
@@ -191,7 +191,7 @@ async def pick(context):
                 blueTeam.append(player)
                 orangeTeam.append(queue[0])
                 await client.say(player.mention + " added to 🔷 TEAM 2 🔷. \nLast player,  added to to 🔶 TEAM 1 🔶\nTEAMS ARE SET:\n" +
-                    "🔶 TEAM 1 🔶: {}".format(", ".join([player.mention for player in orangeTeam]))+"\n🔷 TEAM 2 🔷: {}".format(", ".join([player2.mention for player2 in blueTeam])))
+                    "🔶 TEAM 1 🔶: {}".format(", ".join([player1.mention for player1 in orangeTeam]))+"\n🔷 TEAM 2 🔷: {}".format(", ".join([player2.mention for player2 in blueTeam])))
                 queue.clear()
                 orangeTeam.clear()
                 blueTeam.clear()
@@ -206,7 +206,7 @@ async def pick(context):
             botMode = 0
             orangeTeam.append(queue[0])
             await client.say(player1.mention + " & " + player2.mention+ " added to 🔷 TEAM 2 🔷\nLast player added to to 🔶 TEAM 1 🔶\n\n\nTEAMS ARE SET:\n" +
-                "🔶 TEAM 1 🔶: {}".format(", ".join([player.mention for player in orangeTeam]))+"\n🔷 TEAM 2 🔷: {}".format(", ".join([player2.mention for player2 in blueTeam])) )
+                "🔶 TEAM 1 🔶: {}".format(", ".join([player.mention for player in orangeTeam]))+"\n🔷 TEAM 2 🔷: {}".format(", ".join([player3.mention for player3 in blueTeam])) )
             queue.clear()
             blueTeam.clear()
             orangeTeam.clear()
