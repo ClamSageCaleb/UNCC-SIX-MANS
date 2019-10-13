@@ -39,6 +39,12 @@ whoO = 1
 pikaO = 1
 orangeTeam = list()
 blueTeam = list()
+
+
+
+
+
+
 #orangeCap = discord.member.Member(),
 #blueCap = discord.member.Member()
 # Replaces the basic !help feature, responds with formatted bot commands and usage
@@ -134,11 +140,6 @@ async def captains(context):
         blueCap = random.choice(queue)
         blueTeam.append(blueCap)
         queue.remove(blueCap)
-        if len(queue) != 4:
-            print("WTF")
-            if blueCap in queue:
-                queue.remove(blueCap)
-                print("removed blue again...")
         playerList = []
         for x in queue:
                 y = str(x)
@@ -147,7 +148,11 @@ async def captains(context):
         await client.say("Captains mode picked. Picking captains...\nCaptains:\n🔶 TEAM 1 Captain 🔶: " + orangeCap.mention + "\n🔷 TEAM 2 Captain 🔷: " + 
             blueCap.mention + "\n\n🔶 " + orangeCap.mention + 
             " 🔶 picks first. Type **!pick** and mention a player from the queue below.\nAvailable picks:\n" + ", ".join(playerList))
+        playerList = []
         
+@client.command(name='test', pass_context=True)
+async def test(context):
+
 
 @client.command(name='pick', aliases=['add', 'choose', '<:pick:628999871554387969>'], pass_context=True)
 async def pick(context):
@@ -170,6 +175,7 @@ async def pick(context):
                     y = y.split("#")
                     playerList.append(y[0])
             await client.say(player.mention +" was added to 🔶 TEAM 1 🔶\n\n🔷 TEAM 2 Captain 🔷 will now pick TWO players\n🔷 " + blueCap.mention + " 🔷 please pick two players.\n\nAvailable picks:\n" + ", ".join(playerList))
+            playerList = []
             botMode = 2
     elif( botMode == 2 and context.message.author == blueCap):
         if len(context.message.mentions) == 0:
