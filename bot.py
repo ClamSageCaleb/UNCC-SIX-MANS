@@ -203,13 +203,15 @@ async def pick(context):
             player2 = context.message.mentions[1]
             queue.remove(player2)
             blueTeam.append(player2)
-            botMode = 0
             orangeTeam.append(queue[0])
             await client.say(player1.mention + " & " + player2.mention+ " added to 🔷 TEAM 2 🔷\nLast player added to to 🔶 TEAM 1 🔶\n\n\nTEAMS ARE SET:\n" +
                 "🔶 TEAM 1 🔶: {}".format(", ".join([player.mention for player in orangeTeam]))+"\n🔷 TEAM 2 🔷: {}".format(", ".join([player3.mention for player3 in blueTeam])) )
             queue.clear()
             blueTeam.clear()
             orangeTeam.clear()
+            botMode = 0
+            
+            
     else:
         if  botMode == 1:
             await client.say("You are not 🔶 TEAM 1 Captain 🔶\n🔶 TEAM 1 Captain 🔶 is: " + orangeCap.mention)
@@ -302,9 +304,6 @@ async def q(context):
         return
     if(len(queue) == 0):
         queue.append(player)
-        #commented below for testing, no need to ping everytime we test...
-        #replaced with line under
-        #await client.say("@here, " + context.message.author.mention + " wants to queue!")
         await client.say("@here\n" +context.message.author.mention + " wants to queue!\nType **!q** to join")
         y = str(queue[0])
         y = y.split("#")
@@ -383,7 +382,13 @@ async def duis(context):
 @client.command(name='normq', pass_context=True)
 async def normq(context):
     await client.say("!q")
-    await client.say("\nNorm has been added to the queue! Please type !q to join!")
+    playerList = []
+    for x in queue:
+        y = str(x)
+        y = y.split("#")
+        playerList.append(y[0])
+
+    await client.say("\nNorm has been added to the queue! \n\nQueue size: "+str(len(queue) + 1)+"/6\nCurrent queue:\nNorm V3, " + ", ".join(playerList))
 
 @client.command(name='teams',aliases=['uncc'], pass_context=True)
 async def teams(context):
