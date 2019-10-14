@@ -150,8 +150,6 @@ async def captains(context):
             " 🔶 picks first. Type **!pick** and mention a player from the queue below.\nAvailable picks:\n" + ", ".join(playerList))
         playerList = []
         
-@client.command(name='test', pass_context=True)
-async def test(context):
 
 
 @client.command(name='pick', aliases=['add', 'choose', '<:pick:628999871554387969>'], pass_context=True)
@@ -196,7 +194,7 @@ async def pick(context):
                 queue.remove(player)
                 blueTeam.append(player)
                 orangeTeam.append(queue[0])
-                await client.say(player.mention + " added to 🔷 TEAM 2 🔷. \nLast player,  added to to 🔶 TEAM 1 🔶\nTEAMS ARE SET:\n" +
+                await client.say(player.mention + " added to 🔷 TEAM 2 🔷. \nLast player,  added to 🔶 TEAM 1 🔶\nTEAMS ARE SET:\n" +
                     "🔶 TEAM 1 🔶: {}".format(", ".join([player1.mention for player1 in orangeTeam]))+"\n🔷 TEAM 2 🔷: {}".format(", ".join([player2.mention for player2 in blueTeam])))
                 queue.clear()
                 orangeTeam.clear()
@@ -210,7 +208,8 @@ async def pick(context):
             queue.remove(player2)
             blueTeam.append(player2)
             orangeTeam.append(queue[0])
-            await client.say(player1.mention + " & " + player2.mention+ " added to 🔷 TEAM 2 🔷\nLast player added to to 🔶 TEAM 1 🔶\n\n\nTEAMS ARE SET:\n" +
+            print(blueTeam)
+            await client.say(player1.mention + " & " + player2.mention+ " added to 🔷 TEAM 2 🔷\nLast player added to 🔶 TEAM 1 🔶\n\n\nTEAMS ARE SET:\n" +
                 "🔶 TEAM 1 🔶: {}".format(", ".join([player.mention for player in orangeTeam]))+"\n🔷 TEAM 2 🔷: {}".format(", ".join([player3.mention for player3 in blueTeam])) )
             queue.clear()
             blueTeam.clear()
@@ -375,12 +374,15 @@ async def qq(context):
 @client.command(name='pika', aliases=['<:pika:538182616965447706>'],pass_context=True)
 async def pika(context):
     global pikaO
-    output = '<:pika:538182616965447706>' * pikaO * pikaO
+    output = '<:pika:538182616965447706>' * pikaO
     await client.say(output)
     pikaO = pikaO + 1
 
-
-
+@client.command(name='zappa', aliases=['zapp', 'zac', '<:zappa:632813684678197268>', '<:zapp:632813709579911179>'],pass_context=True)
+async def zappa(context):
+    await client.say("<:zappa:632813684678197268> <:zapp:632813709579911179> brainyzac more like brainyWACK amirite...that is until you get absolutely destroyed by him"+
+        "in 6mans and all the self resprct you had for yourself flies out the window. Not even sykes can beat him in a 1v1, so what makes you think you can?"+
+        " Do you have 2 emotes in this server? I didnt think so idiot, so <:zappa:632813684678197268> and <:zapp:632813709579911179> outta here cuz you're the whack one here <:zappa:632813684678197268> <:zapp:632813709579911179>")
 @client.command(name='duis', pass_context=True)
 async def duis(context):
     await client.say("Papa Duis, mor like God Duis. Don't even think about queueing up against him because he will ruin you. You think you're good?\n\nyou think you're good at RL??!?!?!?!?!?!?!?!?!?!?\nfuck no\nyou aren't good.\nyou are shit\nur fkn washed\n You don't even come close to Duis. He will absolutely ruin you without even looking. His monitor is off 90 percent of the time, eyes closed too. Never doubt the Duis, bitch ")
