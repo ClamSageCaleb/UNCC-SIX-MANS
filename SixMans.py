@@ -46,7 +46,7 @@ class SixMans:
     '''
 
     def removeFromQueue(self, player):
-        if (botMode != 0):
+        if (self.botMode != 0):
             return "Too late! No changes while picking teams."
 
         if (player in self.queue):
@@ -62,7 +62,7 @@ class SixMans:
     '''
 
     def addToTeam(self, team_color, player):
-        if (player in queue):
+        if (player in self.queue):
             status = self.removeFromQueue(player)
             if (status != -1):
                 if (team_color == 'blue'):
@@ -86,7 +86,7 @@ class SixMans:
             y = str(x)
             y = y.split("#")
             playerList.append(y[0])
-        return "\n\nCurrent queue: " + str(len(queue)) + "/6\n" + ", ".join(playerList)
+        return "\n\nCurrent queue: " + str(len(self.queue)) + "/6\n" + ", ".join(playerList)
 
     '''
      getQueue - Returns the players in the queue
@@ -112,7 +112,7 @@ class SixMans:
         if (len(self.queue) != 6):
             return "Queue is not full"
 
-        for p in random.sample(queue, 3):
+        for p in random.sample(self.queue, 3):
             self.addToTeam('blue', p)
             self.removeFromQueue(p)
 
@@ -122,9 +122,11 @@ class SixMans:
         self.queue.clear()
 
         msg1 = "🔶 TEAM 1 🔶: {}".format(
-            ", ".join([player.mention for player in orangeTeam]))
+            ", ".join([player.mention for player in self.orangeTeam]))
         msg2 = "\n🔷 TEAM 2 🔷: {}".format(
-            ", ".join([player2.mention for player2 in blueTeam]))
+            ", ".join([player2.mention for player2 in self.blueTeam]))
+
+        self.clearAll()
 
         return msg1 + msg2
 
@@ -137,7 +139,7 @@ class SixMans:
     def pickCaptains(self):
 
         if (self.botMode != 0):
-            return "Captains already set\nCaptains:\n🔶 TEAM 1 🔶: " + self.orangeCap.mention + "\n🔷 TEAM 2 🔷: " + self.blueCap.mention
+            return "Captains already set\nCaptains:\n🔶 TEAM 1 🔶: " + self.orangeCaptain.mention + "\n🔷 TEAM 2 🔷: " + self.blueCaptain.mention
 
         if (len(self.queue) != 6):
             return "Queue is not full. STOP"
@@ -151,7 +153,7 @@ class SixMans:
         self.addToTeam('orange', self.orangeCaptain)
         self.removeFromQueue(self.orangeCaptain)
 
-        return "Captains mode picked. Picking captains...\nCaptains:\n🔶 TEAM 1 Captain 🔶: " + self.orangeCap.mention + "\n🔷 TEAM 2 Captain 🔷: " + self.blueCap.mention + "\n\n🔶 " + self.orangeCap.mention + " 🔶 picks first. Type **!pick** and mention a player from the queue below.\nAvailable picks:\n" + ", ".join(self.queue)
+        return "Captains mode picked. Picking captains...\nCaptains:\n🔶 TEAM 1 Captain 🔶: " + self.orangeCaptain.mention + "\n🔷 TEAM 2 Captain 🔷: " + self.orangeCaptain.mention + "\n\n🔶 " + self.orangeCaptain.mention + " 🔶 picks first. Type **!pick** and mention a player from the queue below.\nAvailable picks:\n" + ", ".join(self.queue)
 
     '''
      getCaptains - Returns the current captains
@@ -183,7 +185,7 @@ class SixMans:
 
             playerList = self.getQueue()
             self.botMode = 2
-            return players[0].mention + " was added to 🔶 TEAM 1 🔶\n\n🔷 TEAM 2 Captain 🔷 will now pick TWO players\n🔷 " + self.blueCap.mention + " 🔷 please pick two players.\n\nAvailable picks:\n" + ", ".join(playerList)
+            return players[0].mention + " was added to 🔶 TEAM 1 🔶\n\n🔷 TEAM 2 Captain 🔷 will now pick TWO players\n🔷 " + self.blueCaptain.mention + " 🔷 please pick two players.\n\nAvailable picks:\n" + ", ".join(playerList)
 
         if (self.botMode == 2 and captain == 'blue'):
             if (len(players) == 0):
@@ -196,10 +198,10 @@ class SixMans:
             self.addToTeam('orange', self.queue[0])
             self.clearAll()
 
-            return players[0].mention + " & " + players[1].mention + " added to 🔷 TEAM 2 🔷\nLast player added to to 🔶 TEAM 1 🔶\n\n\nTEAMS ARE SET:\n" + "🔶 TEAM 1 🔶: {}".format(", ".join([p.mention for p in orangeTeam]))+"\n🔷 TEAM 2 🔷: {}".format(", ".join([p.mention for p in blueTeam]))
+            return players[0].mention + " & " + players[1].mention + " added to 🔷 TEAM 2 🔷\nLast player added to to 🔶 TEAM 1 🔶\n\n\nTEAMS ARE SET:\n" + "🔶 TEAM 1 🔶: {}".format(", ".join([p.mention for p in self.orangeTeam]))+"\n🔷 TEAM 2 🔷: {}".format(", ".join([p.mention for p in self.blueTeam]))
 
         if (captain == ''):
-            return "You are not 🔶 TEAM 1 Captain 🔶\n🔶 TEAM 1 Captain 🔶 is: " + self.orangeCap.mention if botMode == 1 else "You are not 🔷 TEAM 2 Captain 🔷 \n🔷 TEAM 2 Captain 🔷 is: " + self.blueCap.mention
+            return "You are not 🔶 TEAM 1 Captain 🔶\n🔶 TEAM 1 Captain 🔶 is: " + self.orangeCaptain.mention if self.botMode == 1 else "You are not 🔷 TEAM 2 Captain 🔷 \n🔷 TEAM 2 Captain 🔷 is: " + self.blueCaptain.mention
 
     '''
      clearAll - Clears all variables - should be done after a queue is properly setup
@@ -213,4 +215,4 @@ class SixMans:
         self.orangeTeam.clear()
         self.blueCaptain = ""
         self.orangeCaptain = ""
-        botMode = 0
+        self.botMode = 0

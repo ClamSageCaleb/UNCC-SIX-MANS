@@ -23,7 +23,7 @@ import SixMans
 # Bot prefix and Discord Bot token
 BOT_PREFIX = ("!")
 # Add token here
-TOKEN = ""
+TOKEN = "NjI5NTAyNTg3OTYzNTcyMjI1.XaKnXA._ZOeC2H73qdHfUA9utNt-Iiqf3E"
 
 # Creates the Bot with name 'client'
 client = Bot(command_prefix=BOT_PREFIX)
@@ -33,7 +33,7 @@ client.remove_command('help')
 botMode = 0
 whoO = 1
 pikaO = 1
-norm = SixMans()
+norm = SixMans.SixMans()
 
 # Replaces the basic !help feature, responds with formatted bot commands and usage
 @client.event
@@ -66,7 +66,7 @@ async def kick(context):
     global norm
 
     player = context.message.mentions[0]
-    return_msg = norm.SixMans.removeFromQueue(player)
+    return_msg = norm.removeFromQueue(player=player)
 
     await client.say(return_msg)
 
@@ -75,7 +75,7 @@ async def kick(context):
 async def listq():
     global norm
 
-    return_msg = norm.SixMans.listQueue()
+    return_msg = norm.listQueue()
     
     await client.say(return_msg)
 
@@ -88,17 +88,15 @@ async def fuck(context):
 async def rnd(context):
     global norm
 
-    return_msg = norm.SixMans.randomPickTeams()
+    return_msg = norm.randomPickTeams()
 
     await client.say(return_msg)
-
-    norm.SixMans.clearAll()
 
 @client.command(name='captains', aliases=['cap', 'iwanttopickteams', 'Captains','captain','Captain','Cap'], pass_context=True)
 async def captains(context):
     global norm
     
-    return_msg = norm.SixMans.pickCaptains()
+    return_msg = norm.pickCaptains()
 
     await client.say(return_msg)
         
@@ -107,7 +105,7 @@ async def captains(context):
 async def pick(context):
     global norm
     
-    blueCap, orangeCap = norm.SixMans.getCaptains()
+    blueCap, orangeCap = norm.getCaptains()
 
     team_cap = ''
 
@@ -120,7 +118,7 @@ async def pick(context):
     for p in context.message.mentions:
         players.append(p)
 
-    return_msg = norm.SixMans.pickTeams(team_cap, players)
+    return_msg = norm.pickTeams(team_cap, players)
             
     await client.say(return_msg)
         
@@ -160,7 +158,7 @@ async def clear(context):
 
     for x in context.message.author.roles:
         if(x.name == "Bot Admin"):
-            norm.SixMans.clearAll()
+            norm.clearAll()
             pikaO = 1
             whoO = 1
 
@@ -179,9 +177,10 @@ async def leave(context):
     global norm
    
     player = context.message.author
+
     username = player.display_name
 
-    return_msg = norm.SixMans.removeFromQueue(player)
+    return_msg = norm.removeFromQueue(player=player)
 
     await client.say(return_msg)
 
@@ -190,7 +189,7 @@ async def q(context):
     
     player = context.message.author
 
-    return_msg = norm.SixMans.addToQueue(player, quiet=False)
+    return_msg = norm.addToQueue(player=player, quiet=False)
 
     await client.say(return_msg)
 
@@ -200,7 +199,9 @@ async def qq(context):
 
     player = context.message.author
 
-    return_msg = norm.SixMans.addToQueue(player, quiet=True)
+    return_msg = norm.addToQueue(player=player, quiet=True)
+
+    await client.say(return_msg)
 
 
 @client.command(name='pika', aliases=['<:pika:538182616965447706>'],pass_context=True)
@@ -224,7 +225,7 @@ async def normq(context):
     global norm
 
     await client.say("!q")
-    playerList = norm.SixMans.getQueue()
+    playerList = norm.getQueue()
 
     await client.say("\nNorm has been added to the queue! \n\nQueue size: "+str(len(playerList) + 1)+"/6\nCurrent queue:\nNorm V3, " + ", ".join(playerList))
 
