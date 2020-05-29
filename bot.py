@@ -18,6 +18,7 @@ import random
 import discord
 from discord import Game
 from discord.ext.commands import Bot
+from datetime import datetime
 
 # Bot prefix and Discord Bot token
 BOT_PREFIX = ("!")
@@ -34,9 +35,10 @@ queue = list()
 #initialize captain mode: 0 for normal, 1 if picking orange team, 2 for picking blue team
 global botMode
 botMode = 0
-global orangeCap, blueCap, orangeTeam, blueTeam, pikaO, whoO
+global orangeCap, blueCap, orangeTeam, blueTeam, pikaO, whoO, timeReset
 whoO = 1
 pikaO = 1
+timeReset = 0
 orangeTeam = list()
 blueTeam = list()
 
@@ -69,7 +71,7 @@ async def on_message(message):
         msg.add_field(name='!norm,!asknorm, or !8ball', value='Will respond to a yes/no question. Good for preditions', inline=False)
         msg.add_field(name="!help", value="This command :O",inline=False)
         msg.set_thumbnail(url="https://github.com/ClamSageCaleb/UNCC-SIX-MANS/blob/master/49ers.png")
-        msg.set_footer(text="Developed by Clam and Twan")
+        msg.set_footer(text="Developed by Twan and Clam")
         await client.send_message(message.channel, embed=msg)
     await client.process_commands(message)
 
@@ -140,6 +142,9 @@ async def captains(context):
         blueCap = random.choice(queue)
         blueTeam.append(blueCap)
         queue.remove(blueCap)
+        #stupid redundancy test for captains bug
+        if blueCap in queue:
+            queue.remove(blueCap)
         playerList = []
         for x in queue:
                 y = str(x)
@@ -179,27 +184,10 @@ async def pick(context):
         if len(context.message.mentions) == 0:
             await client.say("No one was mentioned, please pick a player.")
         elif len(context.message.mentions) == 1:
-            if len(blueTeam) == 1:
-                player = context.message.mentions[0]
-                queue.remove(player)
-                blueTeam.append(player)
-                playerList = []
-                for x in queue:
-                        y = str(x)
-                        y = y.split("#")
-                        playerList.append(y[0])
-                await client.say(player.mention + " added to 🔷 TEAM 2 🔷 \n🔷 " + blueCap.mention + " 🔷 please pick one more player.\n\nAvailable picks:\n" + ", ".join(playerList))
-            elif len(blueTeam) == 2:
-                player = context.message.mentions[0]
-                queue.remove(player)
-                blueTeam.append(player)
-                orangeTeam.append(queue[0])
-                await client.say(player.mention + " added to 🔷 TEAM 2 🔷. \nLast player,  added to 🔶 TEAM 1 🔶\nTEAMS ARE SET:\n" +
-                    "🔶 TEAM 1 🔶: {}".format(", ".join([player1.mention for player1 in orangeTeam]))+"\n🔷 TEAM 2 🔷: {}".format(", ".join([player2.mention for player2 in blueTeam])))
-                queue.clear()
-                orangeTeam.clear()
-                blueTeam.clear()
-                botMode = 0
+            await client.say("Use format: '!pick @player1 @player2'")
+            #this was where you could just pick one player at a time, but it seemed to break
+            #so I just removed it for now
+            
         elif len(context.message.mentions) == 2:
             player1 = context.message.mentions[0]
             queue.remove(player1)
@@ -255,7 +243,7 @@ async def smh(context):
 @client.command(name='clear', aliases=['clr', 'reset'], pass_context=True)
 async def clear(context):
     #print(context.message.author.roles[0])
-    global orangeTeam, blueTeam, orangeCap, blueCap, pikaO, whoO, queue
+    global orangeTeam, blueTeam, orangeCap, blueCap, pikaO, whoO, queue, timeReset
     for x in context.message.author.roles:
         if(x.name == "Bot Admin"):
             queue.clear()
@@ -264,6 +252,7 @@ async def clear(context):
             blueTeam.clear()
             pikaO = 1
             whoO = 1
+            timeReset = 0
 
             await client.say("Queue cleared <:UNCCfeelsgood:538182514091491338>")
             return
@@ -299,7 +288,7 @@ async def leave(context):
 
 @client.command(name='q', aliases=['addmepapanorm', 'Q', 'addmebitch', 'queue', 'join'], pass_context=True)
 async def q(context):
-    global queue
+    global queue, timeReset
     if  botMode!=0:
         await client.say("Please wait until current lobby has been set")
         return
@@ -308,6 +297,7 @@ async def q(context):
         await client.say(context.message.author.mention + " already in queue, dummy")
         return
     if(len(queue) == 0):
+        timeReset = 0
         queue.append(player)
         await client.say("@here\n" +context.message.author.mention + " wants to queue!\nType **!q** to join")
         y = str(queue[0])
@@ -317,6 +307,7 @@ async def q(context):
     elif(len(queue) >= 6):
         await client.say("Queue full, wait until teams are picked.")
     elif(len(queue) == 5):
+        timeReset = 0
         queue.append(player)
         playerList = []
         for x in queue:
@@ -325,6 +316,7 @@ async def q(context):
             playerList.append(y[0])
         await client.say(player.mention + " added to the queue!" + "\n\nQueue size: "+str(len(queue))+"/6\nCurrent queue:\n" + ", ".join(playerList)+"\nQueue is now full! \nType !random for random teams.\nType !captains to get picked last.")
     else:
+        timeReset = 0
         queue.append(player)
         playerList = []
         for x in queue:
@@ -335,7 +327,8 @@ async def q(context):
 
 @client.command(name='qq', aliases=['quietq', 'QQ', 'quietqueue', 'shh', 'dontping'], pass_context=True)
 async def qq(context):
-    global queue
+    global queue, timeReset
+    
     global botMode
     if  botMode!=0:
         await client.say("Please wait until current lobby has been set")
@@ -345,6 +338,7 @@ async def qq(context):
         await client.say(context.message.author.mention + " already in queue, dummy")
         return
     if(len(queue) == 0):
+        timeReset = 0
         queue.append(player)
         await client.say("-Silent queue-\n"+context.message.author.mention + " wants to queue!\nType **!q** to join!")
         y = str(queue[0])
@@ -354,6 +348,7 @@ async def qq(context):
     elif(len(queue) >= 6):
         await client.say("Queue full, wait until teams are picked.")
     elif(len(queue) == 5):
+        timeReset = 0
         queue.append(player)
         playerList = []
         for x in queue:
@@ -362,6 +357,7 @@ async def qq(context):
             playerList.append(y[0])
         await client.say(player.mention + " added to the queue!" + "\n\nQueue size: "+str(len(queue))+"/6\nCurrent queue:\n" + ", ".join(playerList)+"\nQueue is now full! \nType !random for random teams.\nType !captains to get picked last.")
     else:
+        timeReset = 0
         queue.append(player)
         playerList = []
         for x in queue:
@@ -455,9 +451,42 @@ async def on_ready():
     await client.change_presence(game=Game(name="6mans"))
     print("Logged in as " + client.user.name)
 
+
+
 async def list_servers():
+    global timeReset, queue, orangeTeam, blueTeam, orangeCap, blueCap, pikaO, whoO
+    channel = discord.Object(id='538166641226416162')
     await client.wait_until_ready()
     while not client.is_closed:
+
+        
+        if (timeReset >= 6 and len(queue) != 0):
+            await client.send_message(channel, "Inactive for 1 hr. Queue reset")
+            queue.clear()
+            botMode = 0
+            orangeTeam.clear()
+            blueTeam.clear()
+            pikaO = 1
+            whoO = 1
+        elif(timeReset!=0):
+            timeSpent = timeReset * 10
+            timeSpentStr = str(timeSpent)
+            timeLeft = 60 - timeSpent
+            timeLeftStr = str(timeLeft)
+
+            if(timeLeft==30):
+                await client.send_message(channel, "Inactive for " + timeSpentStr + " min. Queue will clear in " + timeLeftStr + " min.")
+
+            if(timeLeft==10):
+                await client.send_message(channel, "Inactive for " + timeSpentStr + " min. Queue will clear in " + timeLeftStr + " min.")
+            
+            ##await client.send_message(channel, "Inactive for " + timeSpentStr + " min. Queue will clear in " + timeLeftStr + " min.")
+        if (len(queue)!=0):
+            timeReset+=1
+        now = datetime.now()
+
+        current_time = now.strftime("%H:%M:%S")
+        print("Current Time =", current_time)
         print("Current servers:")
         for server in client.servers:
             print(server.name)
