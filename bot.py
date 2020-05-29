@@ -20,6 +20,7 @@ from discord import Game
 from discord.ext.commands import Bot
 from dotenv import load_dotenv
 import SixMans
+from datetime import datetime
 
 # Bot prefix and Discord Bot token
 BOT_PREFIX = ("!")
@@ -68,7 +69,7 @@ async def on_message(message):
         msg.add_field(name="!help", value="This command :O", inline=False)
         msg.set_thumbnail(
             url="https://raw.githubusercontent.com/ClamSageCaleb/UNCC-SIX-MANS/master/49ers.png")
-        msg.set_footer(text="Developed by Clam and Twan")
+        msg.set_footer(text="Developed by Twan and Clam")
         await client.send_message(message.channel, embed=msg)
     await client.process_commands(message)
 
@@ -179,6 +180,7 @@ async def clear(context):
             norm.clearAll()
             pikaO = 1
             whoO = 1
+            timeReset = 0
 
             await client.say("Queue cleared <:UNCCfeelsgood:538182514091491338>")
             return
@@ -313,8 +315,38 @@ async def on_ready():
 
 
 async def list_servers():
+    global timeReset, queue, orangeTeam, blueTeam, orangeCap, blueCap, pikaO, whoO
+    channel = discord.Object(id='538166641226416162')
     await client.wait_until_ready()
     while not client.is_closed:
+
+        if (timeReset >= 6 and len(queue) != 0):
+            await client.send_message(channel, "Inactive for 1 hr. Queue reset")
+            queue.clear()
+            botMode = 0
+            orangeTeam.clear()
+            blueTeam.clear()
+            pikaO = 1
+            whoO = 1
+        elif(timeReset != 0):
+            timeSpent = timeReset * 10
+            timeSpentStr = str(timeSpent)
+            timeLeft = 60 - timeSpent
+            timeLeftStr = str(timeLeft)
+
+            if(timeLeft == 30):
+                await client.send_message(channel, "Inactive for " + timeSpentStr + " min. Queue will clear in " + timeLeftStr + " min.")
+
+            if(timeLeft == 10):
+                await client.send_message(channel, "Inactive for " + timeSpentStr + " min. Queue will clear in " + timeLeftStr + " min.")
+
+            # await client.send_message(channel, "Inactive for " + timeSpentStr + " min. Queue will clear in " + timeLeftStr + " min.")
+        if (len(queue) != 0):
+            timeReset += 1
+        now = datetime.now()
+
+        current_time = now.strftime("%H:%M:%S")
+        print("Current Time =", current_time)
         print("Current servers:")
         for server in client.servers:
             print(server.name)
