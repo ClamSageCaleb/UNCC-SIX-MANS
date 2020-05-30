@@ -9,8 +9,6 @@ __status__ = "Production"
 
 
 import asyncio
-# import aiohttp
-import json
 import os
 import sys
 import subprocess
@@ -18,25 +16,22 @@ import random
 import discord
 from discord import Game
 from discord.ext.commands import Bot
-from dotenv import load_dotenv
-import SixMans
 from datetime import datetime
+from dotenv import load_dotenv
+import JSONMethod as Jason
 
 # Bot prefix and Discord Bot token
 BOT_PREFIX = ("!")
-# Add token here
-load_dotenv()
-TOKEN = os.getenv("TOKEN")
 
 # Creates the Bot with name 'client'
 client = Bot(command_prefix=BOT_PREFIX)
 client.remove_command('help')
 
-# initialize captain mode: 0 for normal, 1 if picking orange team, 2 for picking blue team
-botMode = 0
-whoO = 1
 pikaO = 1
-norm = SixMans.SixMans()
+
+'''
+    Discord Events
+'''
 
 # Replaces the basic !help feature, responds with formatted bot commands and usage
 @client.event
@@ -74,82 +69,366 @@ async def on_message(message):
     await client.process_commands(message)
 
 
+@client.event
+async def on_ready():
+    await client.change_presence(game=Game(name="6mans"))
+    print("Logged in as " + client.user.name)
+
+
+async def list_servers():
+
+    channel = discord.Object(id='538166641226416162')
+    await client.wait_until_ready()
+    while not client.is_closed:
+
+        if (Jason.getQueueTime() >= 6 and Jason.getQueueLength() != 0):
+            await client.send_message(channel, "Inactive for 1 hr. Queue reset")
+            Jason.clearQueue()
+
+        elif (Jason.getQueueTime() != 0):
+            timeSpent = Jason.getQueueTime() * 10
+            timeLeft = 60 - timeSpent
+
+            if(timeLeft == 30):
+                await client.send_message(channel,
+                                          "Inactive for " +
+                                          str(timeSpent) + " min. Queue will clear in " +
+                                          str(timeLeft) + " min."
+                                          )
+
+            if(timeLeft == 10):
+                await client.send_message(channel,
+                                          "Inactive for " +
+                                          str(timeSpent) + " min. Queue will clear in " +
+                                          str(timeLeft) + " min."
+                                          )
+
+        if (Jason.getQueueLength() != 0):
+            Jason.incrementTimer()
+
+        now = datetime.now()
+
+        current_time = now.strftime("%H:%M:%S")
+        print("Current Time =", current_time)
+        print("Current servers:")
+        for server in client.servers:
+            print(server.name)
+        await asyncio.sleep(600)
+
+'''
+    Discord Commands - Queue Commands
+'''
+
+
+@client.command(name='q', aliases=['addmepapanorm', 'Q', 'addmebitch', 'queue', 'join'], pass_context=True)
+async def q(context):
+    queue_length = Jason.getQueueLength()
+
+    if (Jason.queueAlreadyPopped()):
+        await client.say("Please wait until current lobby has been set")
+        return
+
+    player = context.message.author
+
+    if(Jason.isPlayerInQueue(player)):
+        await client.say(context.message.author.mention + " already in queue, dummy")
+        return
+
+    if(queue_length == 0):
+        Jason.addToQueue(player)
+
+        await client.say(
+            "@here\n" +
+            context.message.author.mention + " wants to queue!\n" +
+            "Type **!q** to join"
+        )
+
+    elif(queue_length >= 6):
+        await client.say("Queue full, wait until teams are picked.")
+
+    elif(queue_length == 5):
+        Jason.addToQueue(player)
+        playerList = Jason.getQueueList()
+
+        await client.say(
+            player.mention + " added to the queue!" + "\n\n" +
+            "Queue size: " + str(Jason.getQueueLength()) + "/6 \n" +
+            "Current queue:\n" + ", ".join(playerList)+"\n" +
+            "Queue is now full! \n" +
+            "Type !random for random teams.\n" +
+            "Type !captains to get picked last."
+        )
+
+    else:
+        Jason.addToQueue(player)
+        playerList = Jason.getQueueList()
+
+        await client.say(
+            player.mention + " added to the queue!\n\n" +
+            "Queue size: " + str(Jason.getQueueLength()) + "/6\n" +
+            "Current queue:\n" + ", ".join(playerList)
+        )
+
+
+@client.command(name='qq', aliases=['quietq', 'QQ', 'quietqueue', 'shh', 'dontping'], pass_context=True)
+async def qq(context):
+    queue_length = Jason.getQueueLength()
+
+    if (Jason.queueAlreadyPopped()):
+        await client.say("Please wait until current lobby has been set")
+        return
+
+    player = context.message.author
+
+    if(Jason.isPlayerInQueue(player)):
+        await client.say(context.message.author.mention + " already in queue, dummy")
+        return
+
+    if(queue_length == 0):
+        Jason.addToQueue(player)
+
+        await client.say(
+            "-Silent Queue-\n" +
+            context.message.author.mention + " wants to queue!\n" +
+            "Type **!q** to join"
+        )
+
+    elif(queue_length >= 6):
+        await client.say("Queue full, wait until teams are picked.")
+
+    elif(queue_length == 5):
+        Jason.addToQueue(player)
+        playerList = Jason.getQueueList()
+
+        await client.say(
+            player.mention + " added to the queue!" + "\n\n" +
+            "Queue size: " + str(Jason.getQueueLength()) + "/6 \n" +
+            "Current queue:\n" + ", ".join(playerList)+"\n" +
+            "Queue is now full! \n" +
+            "Type !random for random teams.\n" +
+            "Type !captains to get picked last."
+        )
+
+    else:
+        Jason.addToQueue(player)
+        playerList = Jason.getQueueList()
+
+        await client.say(
+            player.mention + " added to the queue!\n\n" +
+            "Queue size: " + str(Jason.getQueueLength()) + "/6\n" +
+            "Current queue:\n" + ", ".join(playerList)
+        )
+
+
+@client.command(name='leave', aliases=['yoink', 'gtfo', 'getmethefuckouttahere'], pass_context=True)
+async def leave(context):
+
+    if (Jason.queueAlreadyPopped()):
+        await client.say("TOO LATE! You should've left before captains were picked.")
+        return
+
+    player = context.message.author
+    username = player.display_name
+
+    if(Jason.isPlayerInQueue(player)):
+
+        Jason.removeFromQueue(player)
+        playerList = Jason.getQueueList()
+
+        if(Jason.getQueueLength() != 0):
+            await client.say(
+                "Removing player: " + username + "\n\n" +
+                "Queue size: " + str(Jason.getQueueLength()) + "/6\n" +
+                "Remaining players: " + ", ".join(playerList)
+            )
+        else:
+            await client.say(
+                "Removing player: " + username + "\n\n" +
+                "Queue is now empty."
+            )
+    else:
+        await client.say("You are not in the queue, type !q to queue :)")
+
+
 @client.command(name='kick', aliases=['remove', 'yeet'], pass_context=True)
 async def kick(context):
-    global norm
+    if (Jason.queueAlreadyPopped()):
+        await client.say("Can't kick players while picking teams.")
+        return
 
     player = context.message.mentions[0]
-    return_msg = norm.removeFromQueue(player=player)
 
-    await client.say(return_msg)
+    if(Jason.getQueueLength() == 0):
+        await client.say("User not in the queue because the queue is empty. Is cre8 not in the queue?")
+
+    elif (Jason.isPlayerInQueue(player)):
+        Jason.removeFromQueue(player)
+        await client.say("Removed " + player.display_name + " from the queue")
+
+    else:
+        await client.say("User not in queue. To see who is in current queue, type: !list")
 
 
 @client.command(name='listq', aliases=['list', 'listqueue', 'show', 'showq', 'showqueue', 'inq', 'sq', 'lq', 'status', 'showmethefknqueue', '<:who:599055076639899648>'], pass_context=True)
 async def listq():
-    global norm
+    if(Jason.getQueueLength() == 0):
+        await client.say("Queue is empty, you should @ here so everyone gets mad at you")
 
-    return_msg = norm.listQueue()
-
-    await client.say(return_msg)
-
-
-@client.command(name='fuck', aliases=['f', 'frick'], pass_context=True)
-async def fuck(context):
-    await client.say("u")
+    else:
+        playerList = Jason.getQueueList()
+        await client.say("Current queue: " + str(Jason.getQueueLength()) + "/6 \n" + ", ".join(playerList))
 
 
 @client.command(name='rnd', aliases=['random', 'idontwanttopickteams', 'fuckcaptains'], pass_context=True)
 async def rnd(context):
-    global norm
 
-    return_msg = norm.randomPickTeams()
+    if(Jason.getQueueLength() != 6):
+        await client.say("Queue is not full")
 
-    await client.say(return_msg)
+    else:
+        blueTeam, orangeTeam = Jason.randomPop()
+
+        await client.say("🔶 TEAM 1 🔶: {}".format(", ".join([player.mention for player in orangeTeam])))
+        await client.say("🔷 TEAM 2 🔷: {}".format(", ".join([player.mention for player in blueTeam])))
 
 
 @client.command(name='captains', aliases=['cap', 'iwanttopickteams', 'Captains', 'captain', 'Captain', 'Cap'], pass_context=True)
 async def captains(context):
-    global norm
 
-    return_msg = norm.pickCaptains()
+    blueCap, orangeCap = Jason.captainsPop()
 
-    await client.say(return_msg)
+    if (Jason.queueAlreadyPopped()):
+        await client.say(
+            "Captains already set\n" +
+            "Captains:\n" +
+            "🔶 TEAM 1 🔶: " + orangeCap.mention + "\n" +
+            "🔷 TEAM 2 🔷: " + blueCap.mention
+        )
+        return
+    elif (Jason.getQueueLength() != 6):
+        await client.say("Queue is not full. STOP")
+
+    else:
+        playerList = Jason.getQueueList()
+
+        await client.say(
+            "Captains mode picked. Picking captains...\n" +
+            "Captains:\n" +
+            "🔶 TEAM 1 Captain 🔶: " + orangeCap.mention + "\n" +
+            "🔷 TEAM 2 Captain 🔷: " + blueCap.mention + "\n\n" +
+            "🔶 " + orangeCap.mention + " 🔶 picks first. Type **!pick** and mention a player from the queue below.\n" +
+            "Available picks:\n" + ", ".join(playerList)
+        )
 
 
 @client.command(name='pick', aliases=['add', 'choose', '<:pick:628999871554387969>'], pass_context=True)
 async def pick(context):
-    global norm
+    curr_queue: dict = Jason.readQueue()
 
-    blueCap, orangeCap = norm.getCaptains()
+    if (not Jason.queueAlreadyPopped()):
+        await client.say("Captains not set. If queue is full, please type !captains")
 
-    team_cap = ''
+    elif(len(curr_queue["orangeTeam"]) == 1 and context.message.author == curr_queue["orangeCap"]):
 
-    if (context.message.author == blueCap):
-        team_cap = 'blue'
-    elif (context.message.author == orangeCap):
-        team_cap = 'orange'
+        # orange captain picks one player
+        if len(context.message.mentions) == 0:
+            await client.say("No one was mentioned, please pick an available player.")
+            return
+        elif len(context.message.mentions) != 1:
+            await client.say("More than one player mentioned, please pick just one player.")
+            return
+        else:
+            player_picked = context.message.mentions[0]
+            if (player_picked in curr_queue["queue"]):
+                curr_queue["queue"].remove(player_picked)
+                curr_queue["orangeTeam"].append(player_picked)
 
-    players = list()
-    for p in context.message.mentions:
-        players.append(p)
+                playerList = Jason.getQueueList()
 
-    return_msg = norm.pickTeams(team_cap, players)
+                await client.say(
+                    player_picked.mention + " was added to 🔶 TEAM 1 🔶\n\n" +
+                    "🔷 TEAM 2 Captain 🔷 will now pick TWO players\n" +
+                    "🔷 " + curr_queue["blueCap"].mention + " 🔷 please pick two players.\n\n" +
+                    "Available picks:\n" +
+                    ", ".join(playerList)
+                )
+            else:
+                await client.say("Player not in queue, dummy. Try again.")
+                return
 
-    await client.say(return_msg)
+    elif(len(curr_queue["orangeTeam"]) == 2 and context.message.author == curr_queue["blueCap"]):
+
+        if len(context.message.mentions) == 0:
+            await client.say("No one was mentioned, please pick a player.")
+
+        elif len(context.message.mentions) == 1:
+            await client.say("Use format: '!pick @player1 @player2'")
+            # this was where you could just pick one player at a time, but it seemed to break
+            # so I just removed it for now
+
+        elif len(context.message.mentions) == 2:
+            player_picked = context.message.mentions[0]
+            player_picked_2 = context.message.mentions[1]
+
+            if (player_picked in curr_queue["queue"] and player_picked_2 in curr_queue["queue"]):
+                curr_queue["queue"].remove(player_picked)
+                curr_queue["queue"].remove(player_picked_2)
+                curr_queue["blueTeam"].append(player_picked)
+                curr_queue["blueTeam"].append(player_picked_2)
+            else:
+                await client.say("Either one or both of the players you mentioned is not in the queue. Try again")
+                return
+
+            await client.say(
+                player_picked.mention + " & " + player_picked_2.mention + " added to 🔷 TEAM 2 🔷\n" +
+                "Last player added to 🔶 TEAM 1 🔶\n\n\n" +
+                "TEAMS ARE SET:\n" +
+                "🔶 TEAM 1 🔶: {}".format(", ".join([player.mention for player in curr_queue["orangeTeam"]])) + "\n" +
+                "🔷 TEAM 2 🔷: {}".format(
+                    ", ".join([player.mention for player in curr_queue["blueTeam"]]))
+            )
+
+    else:
+        if (len(curr_queue["orangeTeam"]) == 1):
+            await client.say(
+                "You are not 🔶 TEAM 1 Captain 🔶\n" +
+                "🔶 TEAM 1 Captain 🔶 is: " + curr_queue["orangeCap"].mention
+            )
+        else:
+            await client.say(
+                "You are not 🔷 TEAM 2 Captain 🔷 \n" +
+                "🔷 TEAM 2 Captain 🔷 is: " + curr_queue["blueCap"].mention
+            )
+
+
+@client.command(name='clear', aliases=['clr', 'reset'], pass_context=True)
+async def clear(context):
+    for x in context.message.author.roles:
+        if(x.name == "Bot Admin"):
+            Jason.clearQueue()
+
+            await client.say("Queue cleared <:UNCCfeelsgood:538182514091491338>")
+            return
+
+    await client.say("You do not have permission to clear the queue.")
 
 
 @client.command(name='restart', aliases=['restartbot'], pass_context=True)
 async def restart(context):
-    global pikaO
     for x in context.message.author.roles:
         if(x.name == "Bot Admin"):
             await client.say("Bot restarting...hopefully this fixes everything <:UNCCfeelsgood:538182514091491338>")
-
+            os.remove("queue.json")
             subprocess.call([r'runBot.bat'])
             sys.exit(0)
             return
 
     await client.say("You do not have permission to restart me.")
+
+
+'''
+    Discord Commands - Easter Eggs
+'''
 
 
 @client.command(name='twan', aliases=['<:twantheswan:540327706076905472>'], pass_context=True)
@@ -171,60 +450,9 @@ async def smh(context):
     await client.say(output)
 
 
-@client.command(name='clear', aliases=['clr', 'reset'], pass_context=True)
-async def clear(context):
-    global norm
-
-    for x in context.message.author.roles:
-        if(x.name == "Bot Admin"):
-            norm.clearAll()
-            pikaO = 1
-            whoO = 1
-            timeReset = 0
-
-            await client.say("Queue cleared <:UNCCfeelsgood:538182514091491338>")
-            return
-
-    await client.say("You do not have permission to clear the queue.")
-
-
 @client.command(name='turhols', aliases=['<:IncognitoTurhol:540327644089155639>'], pass_context=True)
 async def turhols(context):
     await client.say("<:IncognitoTurhol:540327644089155639> turhols in the chat please <:IncognitoTurhol:540327644089155639>")
-
-
-@client.command(name='leave', aliases=['yoink', 'gtfo', 'getmethefuckouttahere'], pass_context=True)
-async def leave(context):
-    global norm
-
-    player = context.message.author
-
-    username = player.display_name
-
-    return_msg = norm.removeFromQueue(player=player)
-
-    await client.say(return_msg)
-
-
-@client.command(name='q', aliases=['addmepapanorm', 'Q', 'addmebitch', 'queue', 'join'], pass_context=True)
-async def q(context):
-
-    player = context.message.author
-
-    return_msg = norm.addToQueue(player=player, quiet=False)
-
-    await client.say(return_msg)
-
-
-@client.command(name='qq', aliases=['quietq', 'QQ', 'quietqueue', 'shh', 'dontping'], pass_context=True)
-async def qq(context):
-    global norm
-
-    player = context.message.author
-
-    return_msg = norm.addToQueue(player=player, quiet=True)
-
-    await client.say(return_msg)
 
 
 @client.command(name='pika', aliases=['<:pika:538182616965447706>'], pass_context=True)
@@ -249,12 +477,14 @@ async def duis(context):
 
 @client.command(name='normq', pass_context=True)
 async def normq(context):
-    global norm
-
     await client.say("!q")
-    playerList = norm.getQueue()
+    playerList = Jason.getQueueList()
 
-    await client.say("\nNorm has been added to the queue! \n\nQueue size: "+str(len(playerList) + 1)+"/6\nCurrent queue:\nNorm V3, " + ", ".join(playerList))
+    await client.say(
+        "\nNorm has been added to the queue! \n\n" +
+        "Queue size: " + str(Jason.getQueueLength() + 1) + "/6 \n" +
+        "Current queue:\nNorm V3, " + ", ".join(playerList)
+    )
 
 
 @client.command(name='teams', aliases=['uncc'], pass_context=True)
@@ -308,50 +538,24 @@ async def eight_ball(context):
     await client.say(random.choice(possible_responses) + ", " + context.message.author.mention)
 
 
-@client.event
-async def on_ready():
-    await client.change_presence(game=Game(name="6mans"))
-    print("Logged in as " + client.user.name)
+@client.command(name='fuck', aliases=['f', 'frick'], pass_context=True)
+async def fuck(context):
+    await client.say("u")
+
+'''
+    Main function
+'''
 
 
-async def list_servers():
-    global timeReset, queue, orangeTeam, blueTeam, orangeCap, blueCap, pikaO, whoO
-    channel = discord.Object(id='538166641226416162')
-    await client.wait_until_ready()
-    while not client.is_closed:
+def main():
+    Jason.checkQueueFile()
 
-        if (timeReset >= 6 and len(queue) != 0):
-            await client.send_message(channel, "Inactive for 1 hr. Queue reset")
-            queue.clear()
-            botMode = 0
-            orangeTeam.clear()
-            blueTeam.clear()
-            pikaO = 1
-            whoO = 1
-        elif(timeReset != 0):
-            timeSpent = timeReset * 10
-            timeSpentStr = str(timeSpent)
-            timeLeft = 60 - timeSpent
-            timeLeftStr = str(timeLeft)
+    client.loop.create_task(list_servers())
 
-            if(timeLeft == 30):
-                await client.send_message(channel, "Inactive for " + timeSpentStr + " min. Queue will clear in " + timeLeftStr + " min.")
-
-            if(timeLeft == 10):
-                await client.send_message(channel, "Inactive for " + timeSpentStr + " min. Queue will clear in " + timeLeftStr + " min.")
-
-            # await client.send_message(channel, "Inactive for " + timeSpentStr + " min. Queue will clear in " + timeLeftStr + " min.")
-        if (len(queue) != 0):
-            timeReset += 1
-        now = datetime.now()
-
-        current_time = now.strftime("%H:%M:%S")
-        print("Current Time =", current_time)
-        print("Current servers:")
-        for server in client.servers:
-            print(server.name)
-        await asyncio.sleep(600)
+    # Add token here
+    load_dotenv()
+    client.run(os.getenv("TOKEN"))
 
 
-client.loop.create_task(list_servers())
-client.run(TOKEN)
+if __name__ == "__main__":
+    main()

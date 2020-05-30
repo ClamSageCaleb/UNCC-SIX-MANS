@@ -4,7 +4,7 @@ import json
 import random
 
 default = {
-    "started": "",
+    "timeReset": "",
     "queue": [],
     "orangeCap": "",
     "blueCap": "",
@@ -34,17 +34,21 @@ def writeQueue(new_queue):
 '''
 
 
-def queueAlreadyPopped(curr_queue: dict):
+def queueAlreadyPopped():
+    curr_queue = readQueue()
+
     if (not curr_queue["orangeCap"] == "" or not curr_queue["blueCap"] == ""):
         print("Captains already chosen. Captains please pick your team.")
-        return True
-    if (not len(curr_queue["queue"]) == 6):
-        print("Queue not full")
         return True
     return False
 
 
-def listTeams():
+def getQueueLength():
+    curr_queue = readQueue()
+    return len(curr_queue["queue"])
+
+
+def listTeams():  # Not used in bot
     curr_queue: dict = readQueue()
 
     output = "Blue Team: "
@@ -58,6 +62,32 @@ def listTeams():
     print(output)
 
 
+def isPlayerInQueue(player):
+    curr_queue: dict = readQueue()
+    return player in curr_queue["queue"]
+
+
+def getQueueTime():
+    curr_queue: dict = readQueue()
+    return curr_queue["timeReset"]
+
+
+def incrementTimer():
+    curr_queue: dict = readQueue()
+    curr_queue["timeReset"] += 1
+    writeQueue(curr_queue)
+
+
+def clearQueue():
+    writeQueue(default)
+
+
+def checkQueueFile():
+    if not path.exists("queue.json"):
+        with open("queue.json", "w") as queue:
+            json.dump(default, queue)
+
+
 '''
     Commands
 '''
@@ -65,29 +95,29 @@ def listTeams():
 
 def addToQueue(player):
     curr_queue: dict = readQueue()
-
-    if (player in curr_queue["queue"]):
-        print("{0} already in queue".format(player))
-    else:
-        if (len(curr_queue["queue"]) == 0):
-            curr_queue["started"] = datetime.now()
-        curr_queue["queue"].append(player)
-        writeQueue(curr_queue)
-        print("{0} added to queue".format(player))
+    curr_queue["started"] = datetime.now()
+    curr_queue["queue"].append(player)
+    writeQueue(curr_queue)
 
 
 def removeFromQueue(player):
     curr_queue: dict = readQueue()
-
-    if (player in curr_queue["queue"]):
-        curr_queue["queue"].remove(player)
-        writeQueue(curr_queue)
-        print("{0} removed from queue".format(player))
-    else:
-        print("{0} not in queue".format(player))
+    curr_queue["queue"].remove(player)
+    writeQueue(curr_queue)
 
 
-def listQueue():
+def getQueueList():
+    curr_queue: dict = readQueue()
+
+    playerList = []
+
+    for player in curr_queue["queue"]:
+        playerList.append(str(player).split("#")[0])
+
+    return playerList
+
+
+def listQueue():  # Not used in bot
     curr_queue: dict = readQueue()
 
     output = ""
@@ -101,9 +131,6 @@ def listQueue():
 def randomPop():
     curr_queue: dict = readQueue()
 
-    if (queueAlreadyPopped(curr_queue)):
-        return
-
     curr_queue["orangeTeam"] = random.sample(curr_queue["queue"], 3)
 
     for player in curr_queue["orangeTeam"]:
@@ -113,64 +140,42 @@ def randomPop():
 
     writeQueue(default)
 
-    listTeams()
+    return curr_queue["blueTeam"], curr_queue["orangeTeam"]
 
 
 def captainsPop():
     curr_queue: dict = readQueue()
 
-    if (queueAlreadyPopped(curr_queue)):
-        return
+    if (not queueAlreadyPopped()):
+        curr_queue["orangeCap"] = random.sample(curr_queue["queue"], 1)[0]
+        curr_queue["queue"].remove(curr_queue["orangeCap"])
+        curr_queue["orangeTeam"].append(curr_queue["orangeCap"])
 
-    curr_queue["orangeCap"] = random.sample(curr_queue["queue"], 1)[0]
-    curr_queue["queue"].remove(curr_queue["orangeCap"])
-    curr_queue["orangeTeam"].append(curr_queue["orangeCap"])
+        curr_queue["blueCap"] = random.sample(curr_queue["queue"], 1)[0]
+        curr_queue["queue"].remove(curr_queue["blueCap"])
+        curr_queue["blueTeam"].append(curr_queue["blueCap"])
 
-    curr_queue["blueCap"] = random.sample(curr_queue["queue"], 1)[0]
-    curr_queue["queue"].remove(curr_queue["blueCap"])
-    curr_queue["blueTeam"].append(curr_queue["blueCap"])
+        writeQueue(curr_queue)
 
-    print("Orange captain: {0}\nBlue captain: {1}".format(
-        curr_queue["orangeCap"], curr_queue["blueCap"]))
-
-    writeQueue(curr_queue)
-
-    print("{0} please pick one person.".format(curr_queue["orangeCap"]))
-    print("Players available: ", end="")
-    listQueue()
+    return curr_queue["blueCap"], curr_queue["orangeCap"]
 
 
-def pick(player_picking, player_picked, player_picked_2=""):
+def pick(player_picking, player_picked, player_picked_2=""):  # Not used in bot
     curr_queue: dict = readQueue()
 
-    if (curr_queue["orangeCap"] == "" or curr_queue["blueCap"] == "" or len(curr_queue["queue"]) == 0):
-        print("Captains not assigned")
-        return
-
     if (len(curr_queue["orangeTeam"]) == 1 and player_picking == curr_queue["orangeCap"]):
-        if (player_picked in curr_queue["queue"]):
-            curr_queue["queue"].remove(player_picked)
-            curr_queue["orangeTeam"].append(player_picked)
-            print("{0} please pick two people.".format(curr_queue["blueCap"]))
-        else:
-            print("Player not in queue")
-            return
+        curr_queue["queue"].remove(player_picked)
+        curr_queue["orangeTeam"].append(player_picked)
 
     if (len(curr_queue["orangeTeam"]) == 2 and player_picking == curr_queue["blueCap"]):
-        if (player_picked in curr_queue["queue"] and player_picked_2 in curr_queue["queue"]):
-            curr_queue["queue"].remove(player_picked)
-            curr_queue["queue"].remove(player_picked_2)
-            curr_queue["blueTeam"].append(player_picked)
-            curr_queue["blueTeam"].append(player_picked_2)
+        curr_queue["queue"].remove(player_picked)
+        curr_queue["queue"].remove(player_picked_2)
+        curr_queue["blueTeam"].append(player_picked)
+        curr_queue["blueTeam"].append(player_picked_2)
 
-            curr_queue["orangeTeam"].append(curr_queue["queue"].pop(0))
-        else:
-            print("Player not in queue")
-            return
+        curr_queue["orangeTeam"].append(curr_queue["queue"].pop(0))
 
     writeQueue(curr_queue)
-
-    listTeams()
 
     if (len(curr_queue["queue"]) == 0):
         writeQueue(default)
@@ -179,10 +184,12 @@ def pick(player_picking, player_picked, player_picked_2=""):
         listQueue()
 
 
+'''
+    Main function for testing
+'''
+
+
 def main():
-    if not path.exists("queue.json"):
-        with open("queue.json", "w") as queue:
-            json.dump(default, queue)
 
     while (1):
         user_input = input("Awaiting command...\n")
