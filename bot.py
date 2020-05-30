@@ -64,7 +64,7 @@ async def on_message(message):
         msg.add_field(name="!help", value="This command :O", inline=False)
         msg.set_thumbnail(
             url="https://raw.githubusercontent.com/ClamSageCaleb/UNCC-SIX-MANS/master/49ers.png")
-        msg.set_footer(text="Developed by Twan and Clam")
+        msg.set_footer(text="Developed by Twan, Clam, and Tux")
         await message.channel.send(embed=msg)
     await client.process_commands(message)
 
