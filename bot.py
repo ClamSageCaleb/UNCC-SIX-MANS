@@ -340,7 +340,8 @@ async def pick(ctx):
             await ctx.send("More than one player mentioned, please pick just one player.")
             return
         else:
-            player_picked = ctx.message.mentions[0]
+            # converting to string as object is type Member
+            player_picked = str(ctx.message.mentions[0])
             if (player_picked in curr_queue["queue"]):
                 curr_queue["queue"].remove(player_picked)
                 curr_queue["orangeTeam"].append(player_picked)
@@ -369,8 +370,8 @@ async def pick(ctx):
             # so I just removed it for now
 
         elif len(ctx.message.mentions) == 2:
-            player_picked = ctx.message.mentions[0]
-            player_picked_2 = ctx.message.mentions[1]
+            player_picked = str(ctx.message.mentions[0])
+            player_picked_2 = str(ctx.message.mentions[1])
 
             if (player_picked in curr_queue["queue"] and player_picked_2 in curr_queue["queue"]):
                 curr_queue["queue"].remove(player_picked)
