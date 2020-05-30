@@ -9,7 +9,7 @@ default = {
     "orangeCap": "",
     "blueCap": "",
     "orangeTeam": [],
-    "blueTeam": [],
+    "blueTeam": []
 }
 
 '''
@@ -35,12 +35,8 @@ def writeQueue(new_queue):
 
 
 def queueAlreadyPopped():
-    curr_queue = readQueue()
-
-    if (not curr_queue["orangeCap"] == "" or not curr_queue["blueCap"] == ""):
-        print("Captains already chosen. Captains please pick your team.")
-        return True
-    return False
+    curr_queue: dict = readQueue()
+    return (not curr_queue["orangeCap"] == "" or not curr_queue["blueCap"] == "")
 
 
 def getQueueLength():
@@ -48,23 +44,9 @@ def getQueueLength():
     return len(curr_queue["queue"])
 
 
-def listTeams():  # Not used in bot
-    curr_queue: dict = readQueue()
-
-    output = "Blue Team: "
-    for player in curr_queue["blueTeam"]:
-        output += str(player) + " "
-
-    output += "\nOrange Team: "
-    for player in curr_queue["orangeTeam"]:
-        output += str(player) + " "
-
-    print(output)
-
-
 def isPlayerInQueue(player):
     curr_queue: dict = readQueue()
-    return player in curr_queue["queue"]
+    return str(player) in curr_queue["queue"]
 
 
 def getQueueTime():
@@ -95,14 +77,14 @@ def checkQueueFile():
 
 def addToQueue(player):
     curr_queue: dict = readQueue()
-    curr_queue["started"] = datetime.now()
-    curr_queue["queue"].append(player)
+    curr_queue["timeReset"] = 0
+    curr_queue["queue"].append(str(player))
     writeQueue(curr_queue)
 
 
 def removeFromQueue(player):
     curr_queue: dict = readQueue()
-    curr_queue["queue"].remove(player)
+    curr_queue["queue"].remove(str(player))
     writeQueue(curr_queue)
 
 
@@ -115,17 +97,6 @@ def getQueueList():
         playerList.append(str(player).split("#")[0])
 
     return playerList
-
-
-def listQueue():  # Not used in bot
-    curr_queue: dict = readQueue()
-
-    output = ""
-
-    for player in curr_queue["queue"]:
-        output += str(player) + " "
-
-    print(output)
 
 
 def randomPop():
@@ -160,7 +131,7 @@ def captainsPop():
     return curr_queue["blueCap"], curr_queue["orangeCap"]
 
 
-def pick(player_picking, player_picked, player_picked_2=""):  # Not used in bot
+def pick(player_picking: str, player_picked: str, player_picked_2: str = ""):  # Not used in bot
     curr_queue: dict = readQueue()
 
     if (len(curr_queue["orangeTeam"]) == 1 and player_picking == curr_queue["orangeCap"]):
@@ -176,12 +147,6 @@ def pick(player_picking, player_picked, player_picked_2=""):  # Not used in bot
         curr_queue["orangeTeam"].append(curr_queue["queue"].pop(0))
 
     writeQueue(curr_queue)
-
-    if (len(curr_queue["queue"]) == 0):
-        writeQueue(default)
-    else:
-        print("Players still available: ", end="")
-        listQueue()
 
 
 '''
@@ -201,8 +166,6 @@ def main():
         elif ("!leave" in user_input):
             command, player = user_input.split()
             removeFromQueue(player)
-        elif ("!list" in user_input):
-            listQueue()
         elif ("!captains" in user_input):
             captainsPop()
         elif ("!random" in user_input):

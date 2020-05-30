@@ -65,13 +65,13 @@ async def on_message(message):
         msg.set_thumbnail(
             url="https://raw.githubusercontent.com/ClamSageCaleb/UNCC-SIX-MANS/master/49ers.png")
         msg.set_footer(text="Developed by Twan and Clam")
-        await client.send_message(message.channel, embed=msg)
+        await message.channel.send(embed=msg)
     await client.process_commands(message)
 
 
 @client.event
 async def on_ready():
-    await client.change_presence(game=Game(name="6mans"))
+    # await client.change_presence(Game(name="6mans"))
     print("Logged in as " + client.user.name)
 
 
@@ -121,36 +121,36 @@ async def list_servers():
 
 
 @client.command(name='q', aliases=['addmepapanorm', 'Q', 'addmebitch', 'queue', 'join'], pass_context=True)
-async def q(context):
+async def q(ctx):
     queue_length = Jason.getQueueLength()
 
     if (Jason.queueAlreadyPopped()):
-        await client.say("Please wait until current lobby has been set")
+        await ctx.send("Please wait until current lobby has been set")
         return
 
-    player = context.message.author
+    player = ctx.message.author
 
     if(Jason.isPlayerInQueue(player)):
-        await client.say(context.message.author.mention + " already in queue, dummy")
+        await ctx.send(ctx.message.author.mention + " already in queue, dummy")
         return
 
     if(queue_length == 0):
         Jason.addToQueue(player)
 
-        await client.say(
+        await ctx.send(
             "@here\n" +
-            context.message.author.mention + " wants to queue!\n" +
+            ctx.message.author.mention + " wants to queue!\n" +
             "Type **!q** to join"
         )
 
     elif(queue_length >= 6):
-        await client.say("Queue full, wait until teams are picked.")
+        await ctx.send("Queue full, wait until teams are picked.")
 
     elif(queue_length == 5):
         Jason.addToQueue(player)
         playerList = Jason.getQueueList()
 
-        await client.say(
+        await ctx.send(
             player.mention + " added to the queue!" + "\n\n" +
             "Queue size: " + str(Jason.getQueueLength()) + "/6 \n" +
             "Current queue:\n" + ", ".join(playerList)+"\n" +
@@ -163,7 +163,7 @@ async def q(context):
         Jason.addToQueue(player)
         playerList = Jason.getQueueList()
 
-        await client.say(
+        await ctx.send(
             player.mention + " added to the queue!\n\n" +
             "Queue size: " + str(Jason.getQueueLength()) + "/6\n" +
             "Current queue:\n" + ", ".join(playerList)
@@ -171,36 +171,36 @@ async def q(context):
 
 
 @client.command(name='qq', aliases=['quietq', 'QQ', 'quietqueue', 'shh', 'dontping'], pass_context=True)
-async def qq(context):
+async def qq(ctx):
     queue_length = Jason.getQueueLength()
 
     if (Jason.queueAlreadyPopped()):
-        await client.say("Please wait until current lobby has been set")
+        await ctx.send("Please wait until current lobby has been set")
         return
 
-    player = context.message.author
+    player = ctx.message.author
 
     if(Jason.isPlayerInQueue(player)):
-        await client.say(context.message.author.mention + " already in queue, dummy")
+        await ctx.send(ctx.message.author.mention + " already in queue, dummy")
         return
 
     if(queue_length == 0):
         Jason.addToQueue(player)
 
-        await client.say(
+        await ctx.send(
             "-Silent Queue-\n" +
-            context.message.author.mention + " wants to queue!\n" +
+            ctx.message.author.mention + " wants to queue!\n" +
             "Type **!q** to join"
         )
 
     elif(queue_length >= 6):
-        await client.say("Queue full, wait until teams are picked.")
+        await ctx.send("Queue full, wait until teams are picked.")
 
     elif(queue_length == 5):
         Jason.addToQueue(player)
         playerList = Jason.getQueueList()
 
-        await client.say(
+        await ctx.send(
             player.mention + " added to the queue!" + "\n\n" +
             "Queue size: " + str(Jason.getQueueLength()) + "/6 \n" +
             "Current queue:\n" + ", ".join(playerList)+"\n" +
@@ -213,7 +213,7 @@ async def qq(context):
         Jason.addToQueue(player)
         playerList = Jason.getQueueList()
 
-        await client.say(
+        await ctx.send(
             player.mention + " added to the queue!\n\n" +
             "Queue size: " + str(Jason.getQueueLength()) + "/6\n" +
             "Current queue:\n" + ", ".join(playerList)
@@ -221,13 +221,13 @@ async def qq(context):
 
 
 @client.command(name='leave', aliases=['yoink', 'gtfo', 'getmethefuckouttahere'], pass_context=True)
-async def leave(context):
+async def leave(ctx):
 
     if (Jason.queueAlreadyPopped()):
-        await client.say("TOO LATE! You should've left before captains were picked.")
+        await ctx.send("TOO LATE! You should've left before captains were picked.")
         return
 
-    player = context.message.author
+    player = ctx.message.author
     username = player.display_name
 
     if(Jason.isPlayerInQueue(player)):
@@ -236,82 +236,84 @@ async def leave(context):
         playerList = Jason.getQueueList()
 
         if(Jason.getQueueLength() != 0):
-            await client.say(
+            await ctx.send(
                 "Removing player: " + username + "\n\n" +
                 "Queue size: " + str(Jason.getQueueLength()) + "/6\n" +
                 "Remaining players: " + ", ".join(playerList)
             )
         else:
-            await client.say(
+            await ctx.send(
                 "Removing player: " + username + "\n\n" +
                 "Queue is now empty."
             )
     else:
-        await client.say("You are not in the queue, type !q to queue :)")
+        await ctx.send("You are not in the queue, type !q to queue :)")
 
 
 @client.command(name='kick', aliases=['remove', 'yeet'], pass_context=True)
-async def kick(context):
+async def kick(ctx):
     if (Jason.queueAlreadyPopped()):
-        await client.say("Can't kick players while picking teams.")
+        await ctx.send("Can't kick players while picking teams.")
         return
 
-    player = context.message.mentions[0]
+    player = ctx.message.mentions[0]
 
     if(Jason.getQueueLength() == 0):
-        await client.say("User not in the queue because the queue is empty. Is cre8 not in the queue?")
+        await ctx.send("User not in the queue because the queue is empty. Is cre8 not in the queue?")
 
     elif (Jason.isPlayerInQueue(player)):
         Jason.removeFromQueue(player)
-        await client.say("Removed " + player.display_name + " from the queue")
+        await ctx.send("Removed " + player.display_name + " from the queue")
 
     else:
-        await client.say("User not in queue. To see who is in current queue, type: !list")
+        await ctx.send("User not in queue. To see who is in current queue, type: !list")
 
 
 @client.command(name='listq', aliases=['list', 'listqueue', 'show', 'showq', 'showqueue', 'inq', 'sq', 'lq', 'status', 'showmethefknqueue', '<:who:599055076639899648>'], pass_context=True)
-async def listq():
+async def listq(ctx):
     if(Jason.getQueueLength() == 0):
-        await client.say("Queue is empty, you should @ here so everyone gets mad at you")
+        await ctx.send("Queue is empty, you should @ here so everyone gets mad at you")
 
     else:
         playerList = Jason.getQueueList()
-        await client.say("Current queue: " + str(Jason.getQueueLength()) + "/6 \n" + ", ".join(playerList))
+        await ctx.send("Current queue: " + str(Jason.getQueueLength()) + "/6 \n" + ", ".join(playerList))
 
 
 @client.command(name='rnd', aliases=['random', 'idontwanttopickteams', 'fuckcaptains'], pass_context=True)
-async def rnd(context):
+async def rnd(ctx):
 
     if(Jason.getQueueLength() != 6):
-        await client.say("Queue is not full")
+        await ctx.send("Queue is not full")
 
     else:
         blueTeam, orangeTeam = Jason.randomPop()
 
-        await client.say("🔶 TEAM 1 🔶: {}".format(", ".join([player.mention for player in orangeTeam])))
-        await client.say("🔷 TEAM 2 🔷: {}".format(", ".join([player.mention for player in blueTeam])))
+        await ctx.send("🔶 TEAM 1 🔶: {}".format(", ".join([player.mention for player in orangeTeam])))
+        await ctx.send("🔷 TEAM 2 🔷: {}".format(", ".join([player.mention for player in blueTeam])))
 
 
 @client.command(name='captains', aliases=['cap', 'iwanttopickteams', 'Captains', 'captain', 'Captain', 'Cap'], pass_context=True)
-async def captains(context):
+async def captains(ctx):
+
+    if (Jason.getQueueLength() != 6):
+        await ctx.send("Queue is not full. STOP")
+        return
 
     blueCap, orangeCap = Jason.captainsPop()
 
     if (Jason.queueAlreadyPopped()):
-        await client.say(
+        await ctx.send(
             "Captains already set\n" +
             "Captains:\n" +
             "🔶 TEAM 1 🔶: " + orangeCap.mention + "\n" +
             "🔷 TEAM 2 🔷: " + blueCap.mention
         )
         return
-    elif (Jason.getQueueLength() != 6):
-        await client.say("Queue is not full. STOP")
 
     else:
         playerList = Jason.getQueueList()
 
-        await client.say(
+        await ctx.send(
             "Captains mode picked. Picking captains...\n" +
             "Captains:\n" +
             "🔶 TEAM 1 Captain 🔶: " + orangeCap.mention + "\n" +
@@ -322,30 +324,30 @@ async def captains(context):
 
 
 @client.command(name='pick', aliases=['add', 'choose', '<:pick:628999871554387969>'], pass_context=True)
-async def pick(context):
+async def pick(ctx):
     curr_queue: dict = Jason.readQueue()
 
     if (not Jason.queueAlreadyPopped()):
-        await client.say("Captains not set. If queue is full, please type !captains")
+        await ctx.send("Captains not set. If queue is full, please type !captains")
 
-    elif(len(curr_queue["orangeTeam"]) == 1 and context.message.author == curr_queue["orangeCap"]):
+    elif(len(curr_queue["orangeTeam"]) == 1 and ctx.message.author == curr_queue["orangeCap"]):
 
         # orange captain picks one player
-        if len(context.message.mentions) == 0:
-            await client.say("No one was mentioned, please pick an available player.")
+        if len(ctx.message.mentions) == 0:
+            await ctx.send("No one was mentioned, please pick an available player.")
             return
-        elif len(context.message.mentions) != 1:
-            await client.say("More than one player mentioned, please pick just one player.")
+        elif len(ctx.message.mentions) != 1:
+            await ctx.send("More than one player mentioned, please pick just one player.")
             return
         else:
-            player_picked = context.message.mentions[0]
+            player_picked = ctx.message.mentions[0]
             if (player_picked in curr_queue["queue"]):
                 curr_queue["queue"].remove(player_picked)
                 curr_queue["orangeTeam"].append(player_picked)
 
                 playerList = Jason.getQueueList()
 
-                await client.say(
+                await ctx.send(
                     player_picked.mention + " was added to 🔶 TEAM 1 🔶\n\n" +
                     "🔷 TEAM 2 Captain 🔷 will now pick TWO players\n" +
                     "🔷 " + curr_queue["blueCap"].mention + " 🔷 please pick two players.\n\n" +
@@ -353,22 +355,22 @@ async def pick(context):
                     ", ".join(playerList)
                 )
             else:
-                await client.say("Player not in queue, dummy. Try again.")
+                await ctx.send("Player not in queue, dummy. Try again.")
                 return
 
-    elif(len(curr_queue["orangeTeam"]) == 2 and context.message.author == curr_queue["blueCap"]):
+    elif(len(curr_queue["orangeTeam"]) == 2 and ctx.message.author == curr_queue["blueCap"]):
 
-        if len(context.message.mentions) == 0:
-            await client.say("No one was mentioned, please pick a player.")
+        if len(ctx.message.mentions) == 0:
+            await ctx.send("No one was mentioned, please pick a player.")
 
-        elif len(context.message.mentions) == 1:
-            await client.say("Use format: '!pick @player1 @player2'")
+        elif len(ctx.message.mentions) == 1:
+            await ctx.send("Use format: '!pick @player1 @player2'")
             # this was where you could just pick one player at a time, but it seemed to break
             # so I just removed it for now
 
-        elif len(context.message.mentions) == 2:
-            player_picked = context.message.mentions[0]
-            player_picked_2 = context.message.mentions[1]
+        elif len(ctx.message.mentions) == 2:
+            player_picked = ctx.message.mentions[0]
+            player_picked_2 = ctx.message.mentions[1]
 
             if (player_picked in curr_queue["queue"] and player_picked_2 in curr_queue["queue"]):
                 curr_queue["queue"].remove(player_picked)
@@ -376,10 +378,10 @@ async def pick(context):
                 curr_queue["blueTeam"].append(player_picked)
                 curr_queue["blueTeam"].append(player_picked_2)
             else:
-                await client.say("Either one or both of the players you mentioned is not in the queue. Try again")
+                await ctx.send("Either one or both of the players you mentioned is not in the queue. Try again")
                 return
 
-            await client.say(
+            await ctx.send(
                 player_picked.mention + " & " + player_picked_2.mention + " added to 🔷 TEAM 2 🔷\n" +
                 "Last player added to 🔶 TEAM 1 🔶\n\n\n" +
                 "TEAMS ARE SET:\n" +
@@ -390,40 +392,40 @@ async def pick(context):
 
     else:
         if (len(curr_queue["orangeTeam"]) == 1):
-            await client.say(
+            await ctx.send(
                 "You are not 🔶 TEAM 1 Captain 🔶\n" +
                 "🔶 TEAM 1 Captain 🔶 is: " + curr_queue["orangeCap"].mention
             )
         else:
-            await client.say(
+            await ctx.send(
                 "You are not 🔷 TEAM 2 Captain 🔷 \n" +
                 "🔷 TEAM 2 Captain 🔷 is: " + curr_queue["blueCap"].mention
             )
 
 
 @client.command(name='clear', aliases=['clr', 'reset'], pass_context=True)
-async def clear(context):
-    for x in context.message.author.roles:
+async def clear(ctx):
+    for x in ctx.message.author.roles:
         if(x.name == "Bot Admin"):
             Jason.clearQueue()
 
-            await client.say("Queue cleared <:UNCCfeelsgood:538182514091491338>")
+            await ctx.send("Queue cleared <:UNCCfeelsgood:538182514091491338>")
             return
 
-    await client.say("You do not have permission to clear the queue.")
+    await ctx.send("You do not have permission to clear the queue.")
 
 
 @client.command(name='restart', aliases=['restartbot'], pass_context=True)
-async def restart(context):
-    for x in context.message.author.roles:
+async def restart(ctx):
+    for x in ctx.message.author.roles:
         if(x.name == "Bot Admin"):
-            await client.say("Bot restarting...hopefully this fixes everything <:UNCCfeelsgood:538182514091491338>")
+            await ctx.send("Bot restarting...hopefully this fixes everything <:UNCCfeelsgood:538182514091491338>")
             os.remove("queue.json")
             subprocess.call([r'runBot.bat'])
             sys.exit(0)
             return
 
-    await client.say("You do not have permission to restart me.")
+    await ctx.send("You do not have permission to restart me.")
 
 
 '''
@@ -432,55 +434,55 @@ async def restart(context):
 
 
 @client.command(name='twan', aliases=['<:twantheswan:540327706076905472>'], pass_context=True)
-async def twan(context):
-    await client.say("<:twantheswan:540327706076905472> twantheswan is probably the greatest Rocket League (tm) player to have ever walked the face of this planet. When he tries, no one ever beats him. If you beat him in a game, he was letting you win just to make you feel better. ur fkn trash at rl unless u r twantheswan. sub to him on twitch <:twantheswan:540327706076905472>")
+async def twan(ctx):
+    await ctx.send("<:twantheswan:540327706076905472> twantheswan is probably the greatest Rocket League (tm) player to have ever walked the face of this planet. When he tries, no one ever beats him. If you beat him in a game, he was letting you win just to make you feel better. ur fkn trash at rl unless u r twantheswan. sub to him on twitch <:twantheswan:540327706076905472>")
 
 
 @client.command(name='sad', aliases=[':('], pass_context=True)
-async def sad(context):
-    await client.say("This is so sad :frowning: in the chat pls")
+async def sad(ctx):
+    await ctx.send("This is so sad :frowning: in the chat pls")
 
 
 @client.command(name='smh', aliases=['myhead'], pass_context=True)
-async def smh(context):
+async def smh(ctx):
     randNum = [1, 4, 5, 7, 9, 13, 22, 10, 1, 20, 4, 3, 5, 60,
                7, 8, 90, 2, 1, 2, 3, 1, 5, 4, 3, 2, 3, 1, 2, 3, 4, 5]
     output = "smh"
     output = output + (random.choice(randNum) * " my head")
-    await client.say(output)
+    await ctx.send(output)
 
 
 @client.command(name='turhols', aliases=['<:IncognitoTurhol:540327644089155639>'], pass_context=True)
-async def turhols(context):
-    await client.say("<:IncognitoTurhol:540327644089155639> turhols in the chat please <:IncognitoTurhol:540327644089155639>")
+async def turhols(ctx):
+    await ctx.send("<:IncognitoTurhol:540327644089155639> turhols in the chat please <:IncognitoTurhol:540327644089155639>")
 
 
 @client.command(name='pika', aliases=['<:pika:538182616965447706>'], pass_context=True)
-async def pika(context):
+async def pika(ctx):
     global pikaO
     output = '<:pika:538182616965447706>' * pikaO
-    await client.say(output)
+    await ctx.send(output)
     pikaO = pikaO + 1
 
 
 @client.command(name='zappa', aliases=['zapp', 'zac', '<:zappa:632813684678197268>', '<:zapp:632813709579911179>'], pass_context=True)
-async def zappa(context):
-    await client.say("<:zappa:632813684678197268> <:zapp:632813709579911179> brainyzac more like brainyWACK amirite...that is until you get absolutely destroyed by him" +
-                     "in 6mans and all the self resprct you had for yourself flies out the window. Not even sykes can beat him in a 1v1, so what makes you think you can?" +
-                     " Do you have 2 emotes in this server? I didnt think so idiot, so <:zappa:632813684678197268> and <:zapp:632813709579911179> outta here cuz you're the whack one here <:zappa:632813684678197268> <:zapp:632813709579911179>")
+async def zappa(ctx):
+    await ctx.send("<:zappa:632813684678197268> <:zapp:632813709579911179> brainyzac more like brainyWACK amirite...that is until you get absolutely destroyed by him" +
+                   "in 6mans and all the self resprct you had for yourself flies out the window. Not even sykes can beat him in a 1v1, so what makes you think you can?" +
+                   " Do you have 2 emotes in this server? I didnt think so idiot, so <:zappa:632813684678197268> and <:zapp:632813709579911179> outta here cuz you're the whack one here <:zappa:632813684678197268> <:zapp:632813709579911179>")
 
 
 @client.command(name='duis', pass_context=True)
-async def duis(context):
-    await client.say("Papa Duis, mor like God Duis. Don't even think about queueing up against him because he will ruin you. You think you're good?\n\nyou think you're good at RL??!?!?!?!?!?!?!?!?!?!?\nfuck no\nyou aren't good.\nyou are shit\nur fkn washed\n You don't even come close to Duis. He will absolutely ruin you without even looking. His monitor is off 90 percent of the time, eyes closed too. Never doubt the Duis, bitch ")
+async def duis(ctx):
+    await ctx.send("Papa Duis, mor like God Duis. Don't even think about queueing up against him because he will ruin you. You think you're good?\n\nyou think you're good at RL??!?!?!?!?!?!?!?!?!?!?\nfuck no\nyou aren't good.\nyou are shit\nur fkn washed\n You don't even come close to Duis. He will absolutely ruin you without even looking. His monitor is off 90 percent of the time, eyes closed too. Never doubt the Duis, bitch ")
 
 
 @client.command(name='normq', pass_context=True)
-async def normq(context):
-    await client.say("!q")
+async def normq(ctx):
+    await ctx.send("!q")
     playerList = Jason.getQueueList()
 
-    await client.say(
+    await ctx.send(
         "\nNorm has been added to the queue! \n\n" +
         "Queue size: " + str(Jason.getQueueLength() + 1) + "/6 \n" +
         "Current queue:\nNorm V3, " + ", ".join(playerList)
@@ -488,20 +490,20 @@ async def normq(context):
 
 
 @client.command(name='teams', aliases=['uncc'], pass_context=True)
-async def teams(context):
-    await client.say("it goes like this:\nA team: doesn't practice but somehow is good" +
-                     "\nB team: everyone hates how their teamates play but don't talk it out to resolve issues" +
-                     "\nC team: who?" +
-                     "\nD team: best team" +
-                     "\nE team: surprisingly solid" +
-                     "\nF team: how many fkn teams do we have" +
-                     "\nGG team: originally g team")
+async def teams(ctx):
+    await ctx.send("it goes like this:\nA team: doesn't practice but somehow is good" +
+                   "\nB team: everyone hates how their teamates play but don't talk it out to resolve issues" +
+                   "\nC team: who?" +
+                   "\nD team: best team" +
+                   "\nE team: surprisingly solid" +
+                   "\nF team: how many fkn teams do we have" +
+                   "\nGG team: originally g team")
 
 
 @client.command(name='8ball', aliases=['norm', 'asknorm', 'eight_ball', 'eightball', '8-ball'], pass_context=True)
-async def eight_ball(context):
+async def eight_ball(ctx):
     """
-    :param context: The question the user is wanting to ask
+    :param ctx: The question the user is wanting to ask
     :return: Answer to the question
     """
     possible_responses = [
@@ -535,12 +537,12 @@ async def eight_ball(context):
         'no',
         'Absolutely not',
     ]
-    await client.say(random.choice(possible_responses) + ", " + context.message.author.mention)
+    await ctx.send(random.choice(possible_responses) + ", " + ctx.message.author.mention)
 
 
 @client.command(name='fuck', aliases=['f', 'frick'], pass_context=True)
-async def fuck(context):
-    await client.say("u")
+async def fuck(ctx):
+    await ctx.send("u")
 
 '''
     Main function
