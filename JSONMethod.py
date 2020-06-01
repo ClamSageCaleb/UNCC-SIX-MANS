@@ -4,7 +4,7 @@ import json
 import random
 
 default = {
-    "timeReset": "",
+    "timeReset": 0,
     "queue": [],
     "orangeCap": "",
     "blueCap": "",

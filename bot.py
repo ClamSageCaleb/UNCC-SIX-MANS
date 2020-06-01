@@ -289,10 +289,11 @@ async def rnd(ctx):
     else:
         blueTeam, orangeTeam = Jason.randomPop()
 
-        await ctx.send("**Teams are set!**\n\n" + 
-            "🔶 TEAM 1 🔶\n\t{}".format("\n\t".join([Jason.mentionPlayer(player) for player in orangeTeam]))
+        await ctx.send(
+            "**Teams are set!**\n\n" +
+            "🔶 TEAM 1 🔶 \n\t{}".format("\n\t".join([Jason.mentionPlayer(player) for player in orangeTeam])) + "\n\n" +
+            "🔷 TEAM 2 🔷 \n\t{}".format("\n\t".join([Jason.mentionPlayer(player) for player in blueTeam]))
         )
-        await ctx.send("🔷 TEAM 2 🔷\n\t{}".format("\n\t".join([Jason.mentionPlayer(player) for player in blueTeam])))
 
 
 @client.command(name='captains', aliases=['cap', 'iwanttopickteams', 'Captains', 'captain', 'Captain', 'Cap'], pass_context=True)
@@ -379,10 +380,10 @@ async def pick(ctx):
                 blueTeam, orangeTeam = Jason.getTeamList()
                 await ctx.send(
                     ctx.message.mentions[0].mention + " & " + ctx.message.mentions[1].mention + " added to 🔷 TEAM 2 🔷\n" +
-                    "Last player added to 🔶 TEAM 1 🔶\n\n\n" +
+                    "Last player added to 🔶 TEAM 1 🔶\n\n" +
                     "**Teams are set!**\n\n" +
-                    "🔶 TEAM 1 🔶: \n\t{}".format("\n\t".join([Jason.mentionPlayer(player) for player in orangeTeam])) + "\n\n" +
-                    "🔷 TEAM 2 🔷: \n\t{}".format("\n\t".join([Jason.mentionPlayer(player) for player in blueTeam]))
+                    "🔶 TEAM 1 🔶 \n\t{}".format("\n\t".join([Jason.mentionPlayer(player) for player in orangeTeam])) + "\n\n" +
+                    "🔷 TEAM 2 🔷 \n\t{}".format("\n\t".join([Jason.mentionPlayer(player) for player in blueTeam]))
                 )
                 Jason.clearQueue()
             else:
