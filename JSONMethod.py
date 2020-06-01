@@ -35,67 +35,40 @@ def readQueue():
     curr_queue = json.load(fileToRead)
     fileToRead.close()
 
-    ballChasers = []
-    for chaser in curr_queue["queue"]:
-        ballChasers.append(BallChaser(chaser["name"], chaser["id"]))
+    for key in curr_queue:
 
-    orangeTeam = []
-    for chaser in curr_queue["orangeTeam"]:
-        orangeTeam.append(BallChaser(chaser["name"], chaser["id"]))
+        if (type(curr_queue[key]) == list):
+            tempChasers = []
+            for player in curr_queue[key]:
+                tempChasers.append(BallChaser(player["name"], player["id"]))
 
-    blueTeam = []
-    for chaser in curr_queue["blueTeam"]:
-        blueTeam.append(BallChaser(chaser["name"], chaser["id"]))
+        elif (type(curr_queue[key]) == dict):
+            tempChasers = BallChaser(curr_queue[key]["name"], curr_queue[key]["id"])
 
-    if (type(curr_queue["orangeCap"]) != str):
-        orangeCap = BallChaser(
-            curr_queue["orangeCap"]["name"], curr_queue["orangeCap"]["id"])
-    else:
-        orangeCap = None
+        else:
+            tempChasers = curr_queue[key]
 
-    if (type(curr_queue["blueCap"]) != str):
-        blueCap = BallChaser(curr_queue["blueCap"]
-                             ["name"], curr_queue["blueCap"]["id"])
-    else:
-        blueCap = None
-
-    curr_queue["queue"] = ballChasers
-    curr_queue["orangeTeam"] = orangeTeam
-    curr_queue["blueTeam"] = blueTeam
-    curr_queue["orangeCap"] = orangeCap
-    curr_queue["blueCap"] = blueCap
+        curr_queue[key] = tempChasers
 
     return curr_queue
 
 
 def writeQueue(new_queue):
-    ballChasers = []
-    for player in new_queue["queue"]:
-        ballChasers.append(player.toJSON())
 
-    orangeTeam = []
-    for player in new_queue["orangeTeam"]:
-        orangeTeam.append(player.toJSON())
+    for key in new_queue:
 
-    blueTeam = []
-    for player in new_queue["blueTeam"]:
-        blueTeam.append(player.toJSON())
+        if (type(new_queue[key]) == list):
+            tempChasers = []
+            for player in new_queue[key]:
+                tempChasers.append(player.toJSON())
 
-    if (new_queue["orangeCap"] == None or new_queue["orangeCap"] == ""):
-        orangeCap = ""
-    else:
-        orangeCap = new_queue["orangeCap"].toJSON()
+        elif (type(new_queue[key]) == BallChaser):
+            tempChasers = new_queue[key].toJSON()
 
-    if (new_queue["blueCap"] == None or new_queue["blueCap"] == ""):
-        blueCap = ""
-    else:
-        blueCap = new_queue["blueCap"].toJSON()
+        else:
+            tempChasers = new_queue[key]
 
-    new_queue["queue"] = ballChasers
-    new_queue["orangeTeam"] = orangeTeam
-    new_queue["blueTeam"] = blueTeam
-    new_queue["orangeCap"] = orangeCap
-    new_queue["blueCap"] = blueCap
+        new_queue[key] = tempChasers
 
     with open("queue.json", "w") as queue:
         json.dump(new_queue, queue)
@@ -106,8 +79,10 @@ def writeQueue(new_queue):
 '''
 
 
-def indexOfPlayer(player):
-    curr_queue: dict = readQueue()
+def indexOfPlayer(player, curr_queue = None):
+    if (curr_queue == None):
+        curr_queue = readQueue()
+
     for i, ballchaser in enumerate(curr_queue["queue"]):
         if (ballchaser.id == player.id):
             return i
@@ -115,8 +90,8 @@ def indexOfPlayer(player):
 
 
 def queueAlreadyPopped():
-    curr_queue: dict = readQueue()
-    return (not curr_queue["orangeCap"] == None or not curr_queue["blueCap"] == None)
+    curr_queue = readQueue()
+    return (not curr_queue["orangeCap"] == "" or not curr_queue["blueCap"] == "")
 
 
 def getQueueLength():
@@ -125,16 +100,15 @@ def getQueueLength():
 
 
 def isPlayerInQueue(player):
-    curr_queue: dict = readQueue()
     return indexOfPlayer(player) != -1
 
 
 def getQueueTime():
-    curr_queue: dict = readQueue()
+    curr_queue = readQueue()
     return curr_queue["timeReset"]
 
 
-def incrementTimer():
+def incrementTimer(curr_queue):
     curr_queue: dict = readQueue()
     curr_queue["timeReset"] += 1
     writeQueue(curr_queue)
@@ -152,6 +126,24 @@ def checkQueueFile():
 
 def mentionPlayer(player):
     return "<@{0}>".format(player.id)
+
+
+def validateOrangePick(player):
+    curr_queue: dict = readQueue()
+
+    return (len(curr_queue["orangeTeam"]) == 1 and player.id == curr_queue["orangeCap"].id)
+
+
+def validateBluePick(player):
+    curr_queue: dict = readQueue()
+
+    return (len(curr_queue["orangeTeam"]) == 2 and player.id == curr_queue["blueCap"].id)
+
+
+def getTeamList():
+    curr_queue: dict = readQueue()
+
+    return curr_queue["blueTeam"], curr_queue["orangeTeam"]
 
 
 '''
@@ -224,22 +216,35 @@ def captainsPop():
     return blueCap, orangeCap
 
 
-def pick(player_picking: str, player_picked: str, player_picked_2: str = ""):  # Not used in bot
+def pick(player_picked, player_picked_2=""):
     curr_queue: dict = readQueue()
 
-    if (len(curr_queue["orangeTeam"]) == 1 and player_picking == curr_queue["orangeCap"]):
-        curr_queue["queue"].remove(player_picked)
-        curr_queue["orangeTeam"].append(player_picked)
+    player_picked = BallChaser(str(player_picked), player_picked.id)
 
-    if (len(curr_queue["orangeTeam"]) == 2 and player_picking == curr_queue["blueCap"]):
-        curr_queue["queue"].remove(player_picked)
-        curr_queue["queue"].remove(player_picked_2)
-        curr_queue["blueTeam"].append(player_picked)
-        curr_queue["blueTeam"].append(player_picked_2)
+    if (player_picked_2 == ""):
+        if (isPlayerInQueue(player_picked)):
+            curr_queue["queue"].pop(indexOfPlayer(player_picked))
+            curr_queue["orangeTeam"].append(player_picked)
+        else:
+            return "Player not in queue, dummy. Try again."
 
-        curr_queue["orangeTeam"].append(curr_queue["queue"].pop(0))
+    else:
+        player_picked_2 = BallChaser(str(player_picked_2), player_picked_2.id)
+
+        if (isPlayerInQueue(player_picked) and isPlayerInQueue(player_picked_2)):
+            curr_queue["queue"].pop(indexOfPlayer(player_picked))
+
+            curr_queue["queue"].pop(indexOfPlayer(player_picked_2, curr_queue))
+
+            curr_queue["blueTeam"].append(player_picked)
+            curr_queue["blueTeam"].append(player_picked_2)
+
+            curr_queue["orangeTeam"].append(curr_queue["queue"].pop(0))
+        else:
+            return "Either one or both of the players you mentioned is not in the queue. Try again"
 
     writeQueue(curr_queue)
+    return ""
 
 
 '''
