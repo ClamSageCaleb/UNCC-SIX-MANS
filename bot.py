@@ -44,26 +44,17 @@ async def on_message(message):
         return
 
     if message.content.startswith('!help'):
-        msg = discord.Embed(title='__**Server Commands**__',
-                            description="", color=0x38761D)
+        msg = discord.Embed(title='__**Server Commands**__', description="", color=0x38761D)
         msg.add_field(name="!q", value="Adds you to the queue", inline=False)
-        msg.add_field(
-            name="!qq", value="Same as !q but with no ping :)", inline=False)
-        msg.add_field(
-            name="!leave", value="Removes you from the queue", inline=False)
-        msg.add_field(
-            name="!kick", value="Kicks someone from the queue, will require a vote", inline=False)
-        msg.add_field(
-            name="!list", value="Lists the current queue", inline=False)
-        msg.add_field(name="!random",
-                      value="Randomly picks teams", inline=False)
-        msg.add_field(
-            name="!captains", value="Randomly selects captains. \nFirst captain picks 1 \nSecond captain picks the next two", inline=False)
-        msg.add_field(name='!norm,!asknorm, or !8ball',
-                      value='Will respond to a yes/no question. Good for preditions', inline=False)
+        msg.add_field(name="!qq", value="Same as !q but with no ping :)", inline=False)
+        msg.add_field(name="!leave", value="Removes you from the queue", inline=False)
+        msg.add_field(name="!kick", value="Kicks someone from the queue, will require a vote", inline=False)
+        msg.add_field(name="!list", value="Lists the current queue", inline=False)
+        msg.add_field(name="!random", value="Randomly picks teams", inline=False)
+        msg.add_field(name="!captains", value="Randomly selects captains. \nFirst captain picks 1 \nSecond captain picks the next two", inline=False)
+        msg.add_field(name='!norm, !asknorm, or !8ball', value='Will respond to a yes/no question. Good for predictions', inline=False)
         msg.add_field(name="!help", value="This command :O", inline=False)
-        msg.set_thumbnail(
-            url="https://raw.githubusercontent.com/ClamSageCaleb/UNCC-SIX-MANS/master/49ers.png")
+        msg.set_thumbnail(url="https://raw.githubusercontent.com/ClamSageCaleb/UNCC-SIX-MANS/master/49ers.png")
         msg.set_footer(text="Developed by Twan, Clam, and Tux")
         await message.channel.send(embed=msg)
     await client.process_commands(message)
@@ -71,37 +62,27 @@ async def on_message(message):
 
 @client.event
 async def on_ready():
-    # await client.change_presence(Game(name="6mans"))
+    await client.change_presence(activity=Game(name="6 mans"))
     print("Logged in as " + client.user.name)
 
 
 async def list_servers():
 
-    channel = discord.Object(id='538166641226416162')
     await client.wait_until_ready()
-    while not client.is_closed:
+    channel = client.get_channel(538166641226416162) # queue channel = 538166641226416162 | test channel = 629502331259584559
+
+    while True:
 
         if (Jason.getQueueTime() >= 6 and Jason.getQueueLength() != 0):
-            await client.send_message(channel, "Inactive for 1 hr. Queue reset")
+            await channel.send("Inactive for 1 hr. Queue reset")
             Jason.clearQueue()
 
         elif (Jason.getQueueTime() != 0):
             timeSpent = Jason.getQueueTime() * 10
             timeLeft = 60 - timeSpent
 
-            if(timeLeft == 30):
-                await client.send_message(channel,
-                                          "Inactive for " +
-                                          str(timeSpent) + " min. Queue will clear in " +
-                                          str(timeLeft) + " min."
-                                          )
-
-            if(timeLeft == 10):
-                await client.send_message(channel,
-                                          "Inactive for " +
-                                          str(timeSpent) + " min. Queue will clear in " +
-                                          str(timeLeft) + " min."
-                                          )
+            if(timeLeft == 30 or timeLeft == 10):
+                await channel.send("Inactive for " + str(timeSpent) + " min. Queue will clear in " + str(timeLeft) + " min.")
 
         if (Jason.getQueueLength() != 0):
             Jason.incrementTimer()
@@ -110,9 +91,6 @@ async def list_servers():
 
         current_time = now.strftime("%H:%M:%S")
         print("Current Time =", current_time)
-        print("Current servers:")
-        for server in client.servers:
-            print(server.name)
         await asyncio.sleep(600)
 
 '''

@@ -108,7 +108,7 @@ def getQueueTime():
     return curr_queue["timeReset"]
 
 
-def incrementTimer(curr_queue):
+def incrementTimer():
     curr_queue: dict = readQueue()
     curr_queue["timeReset"] += 1
     writeQueue(curr_queue)
