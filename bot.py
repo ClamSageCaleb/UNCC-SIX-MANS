@@ -40,8 +40,10 @@ async def on_message(message):
     :param message: Sent in by the user. Executed by !help
     :return: Formatted command list
     """
-    if message.author == client.user:
-        return
+
+    allowedChannels = [538166641226416162, 629502331259584559]
+
+    if ((message.author == client.user) or not (message.channel.id in allowedChannels)): return
 
     if message.content.startswith('!help'):
         msg = discord.Embed(title='__**Server Commands**__', description="", color=0x38761D)
