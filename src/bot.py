@@ -14,7 +14,6 @@ import sys
 import subprocess
 import random
 import discord
-from discord import Game
 from discord.ext.commands import Bot
 from datetime import datetime
 from dotenv import load_dotenv
@@ -41,7 +40,7 @@ async def on_message(message):
     :return: Formatted command list
     """
 
-    allowedChannels = [538166641226416162, 629502331259584559]
+    allowedChannels = [538166641226416162, 629502331259584559, 716358749912039429]
 
     if ((message.author == client.user) or not (message.channel.id in allowedChannels)): return
 
@@ -64,7 +63,7 @@ async def on_message(message):
 
 @client.event
 async def on_ready():
-    await client.change_presence(activity=Game(name="6 mans"))
+    await client.change_presence(activity=discord.Game(name="6 mans"))
     print("Logged in as " + client.user.name)
 
 
@@ -76,8 +75,8 @@ async def list_servers():
     while True:
 
         if (Jason.getQueueTime() >= 6 and Jason.getQueueLength() != 0):
-            await channel.send("Inactive for 1 hr. Queue reset")
             Jason.clearQueue()
+            await channel.send("Inactive for 1 hr. Queue reset")
 
         elif (Jason.getQueueTime() != 0):
             timeSpent = Jason.getQueueTime() * 10
@@ -92,7 +91,7 @@ async def list_servers():
         now = datetime.now()
 
         current_time = now.strftime("%H:%M:%S")
-        print("Current Time =", current_time)
+        # print("Current Time =", current_time)
         await asyncio.sleep(600)
 
 '''
@@ -101,7 +100,7 @@ async def list_servers():
 
 
 @client.command(name='q', aliases=['addmepapanorm', 'Q', 'addmebitch', 'queue', 'join'], pass_context=True)
-async def q(ctx):
+async def q(ctx, quiet = False):
     queue_length = Jason.getQueueLength()
 
     if (Jason.queueAlreadyPopped()):
@@ -117,11 +116,18 @@ async def q(ctx):
     if(queue_length == 0):
         Jason.addToQueue(player)
 
-        await ctx.send(
-            "@here\n\n" +
-            player.mention + " wants to queue!\n\n" +
-            "Type **!q** to join"
-        )
+        if (quiet):
+            await ctx.send(
+                "-Silent Queue-\n\n" +
+                player.mention + " wants to queue!\n\n" +
+                "Type **!q** to join"
+            )
+        else:
+            await ctx.send(
+                "@here\n\n" +
+                player.mention + " wants to queue!\n\n" +
+                "Type **!q** to join"
+            )
 
     elif(queue_length >= 6):
         await ctx.send(":x: Queue full, wait until teams are picked.")
@@ -132,7 +138,7 @@ async def q(ctx):
 
         await ctx.send(
             player.mention + " added to the queue!" + "\n\n" +
-            "Queue size: " + str(Jason.getQueueLength()) + "/6 \n" +
+            "Queue size: " + str(queue_length + 1) + "/6 \n" +
             "Current queue:\n" + playerList+"\n\n" +
             "**Queue is now full!** \n\n" +
             "Type !random for random teams.\n" +
@@ -145,59 +151,14 @@ async def q(ctx):
 
         await ctx.send(
             player.mention + " added to the queue!\n\n" +
-            "Queue size: " + str(Jason.getQueueLength()) + "/6\n\n" +
+            "Queue size: " + str(queue_length + 1) + "/6\n\n" +
             "Current queue:\n" + playerList
         )
 
 
 @client.command(name='qq', aliases=['quietq', 'QQ', 'quietqueue', 'shh', 'dontping'], pass_context=True)
 async def qq(ctx):
-    queue_length = Jason.getQueueLength()
-
-    if (Jason.queueAlreadyPopped()):
-        await ctx.send(":x: Please wait until current lobby has been set")
-        return
-
-    player = ctx.message.author
-
-    if(Jason.isPlayerInQueue(player)):
-        await ctx.send(":x: " + player.mention + " already in queue, dummy")
-        return
-
-    if(queue_length == 0):
-        Jason.addToQueue(player)
-
-        await ctx.send(
-            "-Silent Queue-\n\n" +
-            player.mention + " wants to queue!\n\n" +
-            "Type **!q** to join"
-        )
-
-    elif(queue_length >= 6):
-        await ctx.send(":x: Queue full, wait until teams are picked.")
-
-    elif(queue_length == 5):
-        Jason.addToQueue(player)
-        playerList = Jason.getQueueList()
-
-        await ctx.send(
-            player.mention + " added to the queue!" + "\n\n" +
-            "Queue size: " + str(Jason.getQueueLength()) + "/6 \n" +
-            "Current queue:\n" + playerList+"\n\n" +
-            "**Queue is now full!** \n\n" +
-            "Type !random for random teams.\n" +
-            "Type !captains to get picked last."
-        )
-
-    else:
-        Jason.addToQueue(player)
-        playerList = Jason.getQueueList()
-
-        await ctx.send(
-            player.mention + " added to the queue!\n\n" +
-            "Queue size: " + str(Jason.getQueueLength()) + "/6\n\n" +
-            "Current queue:\n" + playerList
-        )
+    await q(ctx, quiet=True)
 
 
 @client.command(name='leave', aliases=['yoink', 'gtfo', 'getmethefuckouttahere'], pass_context=True)
@@ -271,8 +232,8 @@ async def rnd(ctx):
 
         await ctx.send(
             "**Teams are set!**\n\n" +
-            "🔶 TEAM 1 🔶 \n\t{}".format("\n\t".join([Jason.mentionPlayer(player) for player in orangeTeam])) + "\n\n" +
-            "🔷 TEAM 2 🔷 \n\t{}".format("\n\t".join([Jason.mentionPlayer(player) for player in blueTeam]))
+            "🔶 TEAM 1 🔶 \n\t{}".format("\n\t".join([player.mention for player in orangeTeam])) + "\n\n" +
+            "🔷 TEAM 2 🔷 \n\t{}".format("\n\t".join([player.mention for player in blueTeam]))
         )
 
 
@@ -282,11 +243,12 @@ async def captains(ctx):
     if (Jason.queueAlreadyPopped()):
         blueCap, orangeCap = Jason.captainsPop()
         playerList = Jason.getQueueList()
+
         await ctx.send(
             "Captains already set\n\n" +
             "Captains:\n" +
-            "🔶 TEAM 1 🔶: " + Jason.mentionPlayer(orangeCap) + "\n" +
-            "🔷 TEAM 2 🔷: " + Jason.mentionPlayer(blueCap) + "\n\n" +
+            "🔶 TEAM 1 🔶: " + orangeCap.mention + "\n" +
+            "🔷 TEAM 2 🔷: " + blueCap.mention + "\n\n" +
             "Available picks:\n" + playerList
         )
         return
@@ -301,9 +263,9 @@ async def captains(ctx):
 
         await ctx.send(
             "Captains:\n" +
-            "🔶 TEAM 1 Captain 🔶: " + Jason.mentionPlayer(orangeCap) + "\n" +
-            "🔷 TEAM 2 Captain 🔷: " + Jason.mentionPlayer(blueCap) + "\n\n" +
-            "🔶 " + Jason.mentionPlayer(orangeCap) + " 🔶 picks first.\n" + 
+            "🔶 TEAM 1 Captain 🔶: " + orangeCap.mention + "\n" +
+            "🔷 TEAM 2 Captain 🔷: " + blueCap.mention + "\n\n" +
+            "🔶 " + orangeCap.mention + " 🔶 picks first.\n" + 
             "Type **!pick** and mention a player from the queue below.\n\n" +
             "Available picks:\n" + playerList
         )
@@ -333,7 +295,7 @@ async def pick(ctx):
                 playerList = Jason.getQueueList()
                 await ctx.send(
                     ctx.message.mentions[0].mention + " was added to 🔶 TEAM 1 🔶\n\n" +
-                    "🔷 " + Jason.mentionPlayer(blueCap) + " 🔷 please pick TWO players.\n" +
+                    "🔷 " + blueCap.mention + " 🔷 please pick TWO players.\n" +
                     "Ex: `!pick @Twan @Tux`\n\n" +
                     "Available picks:\n" + playerList
                 )
@@ -346,12 +308,12 @@ async def pick(ctx):
         if len(ctx.message.mentions) == 0:
             await ctx.send(":x: No one was mentioned, please pick a player.")
 
-        elif len(ctx.message.mentions) == 1:
+        elif len(ctx.message.mentions) != 2:
             await ctx.send(":x: Use format: `!pick @player1 @player2`")
             # this was where you could just pick one player at a time, but it seemed to break
             # so I just removed it for now
 
-        elif len(ctx.message.mentions) == 2:
+        else:
 
             errorMsg = Jason.pick(ctx.message.mentions[0], ctx.message.mentions[1])
 
@@ -362,8 +324,8 @@ async def pick(ctx):
                     ctx.message.mentions[0].mention + " & " + ctx.message.mentions[1].mention + " added to 🔷 TEAM 2 🔷\n" +
                     "Last player added to 🔶 TEAM 1 🔶\n\n" +
                     "**Teams are set!**\n\n" +
-                    "🔶 TEAM 1 🔶 \n\t{}".format("\n\t".join([Jason.mentionPlayer(player) for player in orangeTeam])) + "\n\n" +
-                    "🔷 TEAM 2 🔷 \n\t{}".format("\n\t".join([Jason.mentionPlayer(player) for player in blueTeam]))
+                    "🔶 TEAM 1 🔶 \n\t{}".format("\n\t".join([player.mention for player in orangeTeam])) + "\n\n" +
+                    "🔷 TEAM 2 🔷 \n\t{}".format("\n\t".join([player.mention for player in blueTeam]))
                 )
                 Jason.clearQueue()
             else:
@@ -376,12 +338,12 @@ async def pick(ctx):
         if (len(orangeTeam) == 1):
             await ctx.send(
                 "You are not 🔶 TEAM 1 Captain 🔶\n\n" +
-                "🔶 TEAM 1 Captain 🔶 is: " + Jason.mentionPlayer(orangeCap)
+                "🔶 TEAM 1 Captain 🔶 is: " + orangeCap.mention
             )
         else:
             await ctx.send(
                 "You are not 🔷 TEAM 2 Captain 🔷 \n\n" +
-                "🔷 TEAM 2 Captain 🔷 is: " + Jason.mentionPlayer(blueCap)
+                "🔷 TEAM 2 Captain 🔷 is: " + blueCap.mention
             )
 
 
@@ -402,9 +364,9 @@ async def restart(ctx):
     for x in ctx.message.author.roles:
         if(x.name == "Bot Admin"):
             await ctx.send("Bot restarting...hopefully this fixes everything <:UNCCfeelsgood:538182514091491338>")
-            os.remove("queue.json")
-            subprocess.call([r'runBot.bat'])
-            sys.exit(0)
+            os.remove("./data/queue.json")
+            print("Restarting...")
+            os.execl(sys.executable, "python", "./src/bot.py")
             return
 
     await ctx.send("You do not have permission to restart me.")
