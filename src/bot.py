@@ -352,13 +352,19 @@ async def pick(ctx):
 @client.command(name="report", pass_contex=True)
 async def reportMatch(ctx, *arg):
 
-    if (ctx.message.channel.id != 622786720328581133):
+    botAdmin = False
+    for x in ctx.message.author.roles:
+        if(x.name == "Bot Admin"):
+            botAdmin = True
+
+    if (ctx.message.channel.id != 622786720328581133 and not botAdmin):
         await ctx.send(":x: You can only report matches in the <#622786720328581133> channel.")
         return
 
     player_reporting = str(ctx.message.author)
-    if (arg == "blue" or arg == "orange" and len(arg) == 1):
-        msg = Leaderboard.reportMatch(player_reporting, arg)
+
+    if (len(arg) == 1 and arg[0] == "blue" or arg[0] == "orange"):
+        msg = Leaderboard.reportMatch(player_reporting, arg[0])
         await ctx.send(msg)
     else:
         await ctx.send(
