@@ -118,7 +118,7 @@ async def q(ctx, quiet = False):
 
         if (quiet):
             await ctx.send(
-                "-Silent Queue-\n\n" +
+                "- Silent Queue :shushing_face:-\n\n" +
                 player.mention + " wants to queue!\n\n" +
                 "Type **!q** to join"
             )
@@ -178,13 +178,13 @@ async def leave(ctx):
 
         if(Jason.getQueueLength() != 0):
             await ctx.send(
-                "Removing player: " + username + "\n\n" +
+                username + " has left the queue.\n\n" +
                 "Queue size: " + str(Jason.getQueueLength()) + "/6\n\n" +
                 "Remaining players: " + playerList
             )
         else:
             await ctx.send(
-                "Removing player: " + username + "\n\n" +
+                username + " has left the queue.\n\n" +
                 "Queue is now empty."
             )
     else:
@@ -366,10 +366,24 @@ async def restart(ctx):
             await ctx.send("Bot restarting...hopefully this fixes everything <:UNCCfeelsgood:538182514091491338>")
             os.remove("./data/queue.json")
             print("Restarting...")
-            os.execl(sys.executable, "python", "./src/bot.py")
+            subprocess.call(["python", ".\\src\\bot.py"])
+            sys.exit()
             return
 
     await ctx.send("You do not have permission to restart me.")
+
+
+@client.command(name='quit', aliases=['normshutthefuckup'], pass_context=True)
+async def restart(ctx):
+    for x in ctx.message.author.roles:
+        if(x.name == "Bot Admin"):
+            await ctx.send("It's getting dark...")
+            os.remove("./data/queue.json")
+            print("Quitting...")
+            sys.exit()
+            return
+
+    await ctx.send("You can't kill me! You do not possess the power.")
 
 
 '''
@@ -423,19 +437,21 @@ async def duis(ctx):
 
 @client.command(name='normq', pass_context=True)
 async def normq(ctx):
-    await ctx.send("!q")
     playerList = Jason.getQueueList()
 
+    await ctx.send("!addmebitch")
+
     await ctx.send(
-        "\nNorm has been added to the queue! \n\n" +
-        "Queue size: " + str(Jason.getQueueLength() + 1) + "/6 \n" +
-        "Current queue:\nNorm V3, " + playerList
+        "\n<@716358391328407612> has been added to the queue! \n\n" +
+        "Queue size: " + str(Jason.getQueueLength() + 1) + "/6 \n\n" +
+        "Current queue:\nNorm" + (" " if len(playerList) == 0 else ", ") + playerList
     )
 
 
 @client.command(name='teams', aliases=['uncc'], pass_context=True)
 async def teams(ctx):
-    await ctx.send("it goes like this:\nA team: doesn't practice but somehow is good" +
+    await ctx.send("it goes like this:\n" +
+                    "A team: doesn't practice but somehow is good" +
                    "\nB team: everyone hates how their teamates play but don't talk it out to resolve issues" +
                    "\nC team: who?" +
                    "\nD team: best team" +

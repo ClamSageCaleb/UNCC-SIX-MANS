@@ -217,7 +217,11 @@ def pick(player_picked, player_picked_2 = None):
 
     if (isPlayerInQueue(player_picked)):
         curr_queue["queue"].pop(indexOfPlayer(player_picked))
-        curr_queue["orangeTeam"].append(player_picked)
+
+        if (player_picked_2):
+            curr_queue["blueTeam"].append(player_picked)
+        else:
+            curr_queue["orangeTeam"].append(player_picked)
     else:
         return "Player not in queue, dummy. Try again."
 
