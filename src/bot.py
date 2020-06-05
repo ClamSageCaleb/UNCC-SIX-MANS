@@ -18,6 +18,7 @@ from discord.ext.commands import Bot
 from datetime import datetime
 from dotenv import load_dotenv
 import JSONMethod as Jason
+import Leaderboard
 
 # Bot prefix and Discord Bot token
 BOT_PREFIX = ("!")
@@ -229,6 +230,7 @@ async def rnd(ctx):
 
     else:
         blueTeam, orangeTeam = Jason.randomPop()
+        Leaderboard.startMatch(blueTeam, orangeTeam)
 
         await ctx.send(
             "**Teams are set!**\n\n" +
@@ -327,6 +329,7 @@ async def pick(ctx):
                     "🔶 TEAM 1 🔶 \n\t{}".format("\n\t".join([player.mention for player in orangeTeam])) + "\n\n" +
                     "🔷 TEAM 2 🔷 \n\t{}".format("\n\t".join([player.mention for player in blueTeam]))
                 )
+                Leaderboard.startMatch(blueTeam, orangeTeam)
                 Jason.clearQueue()
             else:
                 await ctx.send("Either one or both of the players you mentioned is not in the queue. Try again")
@@ -346,6 +349,28 @@ async def pick(ctx):
                 "🔷 TEAM 2 Captain 🔷 is: " + blueCap.mention
             )
 
+@client.command(name="report", pass_contex=True)
+async def reportMatch(ctx, *arg):
+
+    if (ctx.message.channel.id != 622786720328581133):
+        await ctx.send(":x: You can only report matches in the <#622786720328581133> channel.")
+        return
+
+    player_reporting = str(ctx.message.author)
+    if (arg == "blue" or arg == "orange" and len(arg) == 1):
+        msg = Leaderboard.reportMatch(player_reporting, arg)
+        await ctx.send(msg)
+    else:
+        await ctx.send(
+            ":x: Report only accepts 'blue' or 'orange' as the winner of the match.\n\n" + 
+            "Use the format: `!report blue`"
+        )
+
+
+@client.command(name="leaderboard", aliases=["standings", "rankings", "stonks"], pass_contex=True)
+async def showLeaderboard(ctx, *arg):
+    player = str(ctx.message.author) if len(arg) == 1 else None
+    await ctx.send(ctx.message.author.mention + "\n\n" + Leaderboard.showLeaderboard(player))
 
 @client.command(name='clear', aliases=['clr', 'reset'], pass_context=True)
 async def clear(ctx):

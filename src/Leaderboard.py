@@ -3,50 +3,60 @@ import pandas as pd
 from os import path
 import os
 
-default = {
-    "matches": []
-}
+default = []
 
-defaultLeaderboard = {
-    "data": []
-}
-
-df_columns = ["Name", "Wins", "Losses", "Matches Played"]
-
+activeMatchPath = "./data/activeMatches.json"
+leaderboardPath = "./data/leaderboard.json"
 
 def readActiveMatches() -> list:
-    fileToRead = open("activeMatches.json", "r")
+    checkActiveMatchesFile()
+    fileToRead = open(activeMatchPath, "r")
     matches = json.load(fileToRead)
     fileToRead.close()
-    return matches["matches"]
+    return matches
 
 
 def writeActiveMatches(new_match_list):
-    with open("activeMatches.json", "w") as activeMatches:
-        new_match_json = {
-            "matches": new_match_list
-        }
-        json.dump(new_match_json, activeMatches)
+    with open(activeMatchPath, "w") as activeMatches:
+        json.dump(new_match_list, activeMatches)
 
 
-def readLeaderboard() -> pd.DataFrame:
-    return pd.DataFrame(pd.read_csv("leaderboard.csv"))
+def readLeaderboard():
+    checkLeaderboardFile()
+    fileToRead = open(leaderboardPath, "r")
+    ldrbrd = json.load(fileToRead)
+    fileToRead.close()
+    return ldrbrd
 
 
-def saveLeaderboard(new_leaderboard: pd.DataFrame):
-    os.remove("leaderboard.csv")
-    print(new_leaderboard)
-    new_leaderboard.to_csv("leaderboard.csv", index=False, header=True)
+def saveLeaderboard(new_leaderboard):
+    sorted_ldrbrd = sorted(new_leaderboard, key=lambda x: x["Win Perc"], reverse=True)
+    with open(leaderboardPath, "w") as ldrbrd:
+        json.dump(sorted_ldrbrd, ldrbrd)
 
 
 def startMatch(blueTeam, orangeTeam):
     curr_matches = readActiveMatches()
+    blue = []; orange = []
+
+    for i in range(len(blueTeam)):
+        blue.append(blueTeam[i].name)
+        orange.append(orangeTeam[i].name)
+
     curr_matches.append({
-        "blueTeam": blueTeam,
-        "orangeTeam": orangeTeam
+        "blueTeam": blue,
+        "orangeTeam": orange
     })
     writeActiveMatches(curr_matches)
 
+def getPlayerIndex(player):
+    curr_ldrbrd = readLeaderboard()
+
+    for i, row in enumerate(curr_ldrbrd):
+        if (row["Name"] == player):
+            return i
+    
+    return -1
 
 def reportMatch(player, whoWon):
     curr_matches = readActiveMatches()
@@ -56,40 +66,46 @@ def reportMatch(player, whoWon):
             leaderboard = readLeaderboard()
 
             for teamMember in match["blueTeam"]:
-                player_row = leaderboard.loc[leaderboard["Name"] == player]
-                if (player_row.empty):
+
+                if (whoWon == "blue"): win = 1; loss = 0
+                else: win = 0; loss = 1
+
+                player_index = getPlayerIndex(teamMember)
+                if (player_index == -1):
                     new_player = {
-                        "Name": player,
-                        "Wins": 1 if whoWon == "blue" else 0,
-                        "Losses": 1 if whoWon == "orange" else 0,
-                        "Matches Played": 1
+                        "Name": teamMember,
+                        "Wins": win,
+                        "Losses": loss,
+                        "Matches Played": 1,
+                        "Win Perc": float(win),
                     }
-                    print(pd.DataFrame(new_player, index=[0]))
-                    leaderboard.append(
-                        pd.DataFrame(new_player, index=[0]), ignore_index=True
-                    )
-                    print(leaderboard)
+                    leaderboard.append(new_player)
                 else:
-                    player_row.at["Wins"] += 1 if whoWon == "blue" else 0,
-                    player_row.at["Losses"] += 1 if whoWon == "orange" else 0,
-                    player_row.at["Matches Played"] += 1
+                    leaderboard[player_index]["Wins"] += win
+                    leaderboard[player_index]["Losses"] += loss
+                    leaderboard[player_index]["Matches Played"] += 1
+                    leaderboard[player_index]["Win Perc"] = float("{:.2f}".format(int(leaderboard[player_index]["Wins"]) / int(leaderboard[player_index]["Matches Played"])))
 
             for teamMember in match["orangeTeam"]:
-                player_row = leaderboard.loc[leaderboard["Name"] == player]
-                if (player_row.empty):
+
+                if (whoWon == "orange"): win = 1; loss = 0
+                else: win = 0; loss = 1
+
+                player_index = getPlayerIndex(teamMember)
+                if (player_index == -1):
                     new_player = {
-                        "Name": player,
-                        "Wins": 1 if whoWon == "orange" else 0,
-                        "Losses": 1 if whoWon == "blue" else 0,
-                        "Matches Played": 1
+                        "Name": teamMember,
+                        "Wins": win,
+                        "Losses": loss,
+                        "Matches Played": 1,
+                        "Win Perc": float(win),
                     }
-                    leaderboard.append(
-                        pd.DataFrame(new_player, index=[0])
-                    )
+                    leaderboard.append(new_player)
                 else:
-                    player_row.at["Wins"] += 1 if whoWon == "orange" else 0,
-                    player_row.at["Losses"] += 1 if whoWon == "blue" else 0,
-                    player_row.at["Matches Played"] += 1
+                    leaderboard[player_index]["Wins"] += win
+                    leaderboard[player_index]["Losses"] += loss
+                    leaderboard[player_index]["Matches Played"] += 1
+                    leaderboard[player_index]["Win Perc"] = float("{:.2f}".format(int(leaderboard[player_index]["Wins"]) / int(leaderboard[player_index]["Matches Played"])))
 
             saveLeaderboard(leaderboard)
             curr_matches.remove(match)
@@ -99,16 +115,42 @@ def reportMatch(player, whoWon):
 
     return "Match not found"
 
+def makePretty(player_index, player):
+    msg = "Rank: {0}\n".format(player_index + 1)
+    for key in player:
+        if (type(player[key]) == float):
+            msg += "\t{0}: {1}%\n".format(key, int(player[key] * 100))
+        else:
+            msg += "\t{0}: {1}\n".format(key, player[key])
+    
+    return msg
+
+def showLeaderboard(player = None):
+    curr_leaderboard = readLeaderboard()
+
+    if (player):
+        player_index = getPlayerIndex(player)
+        player = curr_leaderboard[player_index]
+
+        return "```\n" + makePretty(player_index, player) + "\n```"
+
+    else:
+        msg = "```\n"
+        for i, player in enumerate(curr_leaderboard):
+            msg += makePretty(i, player) + "\n"
+            
+            if (i == 10): break
+        return msg + "\n```"
 
 def checkActiveMatchesFile():
-    if not path.exists("activeMatches.json"):
-        with open("activeMatches.json", "w") as activeMatches:
+    if not path.exists(activeMatchPath):
+        with open(activeMatchPath, "w") as activeMatches:
             json.dump(default, activeMatches)
 
 
 def checkLeaderboardFile():
-    if not path.exists("leaderboard.json"):
-        with open("leaderboard.json", "w") as leaderboard:
+    if not path.exists(leaderboardPath):
+        with open(leaderboardPath, "w") as leaderboard:
             json.dump(default, leaderboard)
 
 
@@ -116,7 +158,7 @@ def main():
     checkActiveMatchesFile()
     checkLeaderboardFile()
 
-    print(reportMatch("Matt", "blue"))
+    print(reportMatch("Tux#9267", "orange"))
 
 
 if __name__ == "__main__":
