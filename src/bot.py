@@ -453,7 +453,7 @@ async def restart(ctx):
 
 
 @client.command(name='quit', aliases=['normshutthefuckup'], pass_context=True)
-async def restart(ctx):
+async def quit(ctx):
     if(Jason.isBotAdmin(ctx.message.author.roles)):
         await ctx.send("It's getting dark...")
         os.remove("./data/queue.json")
@@ -518,7 +518,7 @@ async def normq(ctx):
     playerList = Jason.getQueueList()
     queueSize = Jason.getQueueLength()
 
-    await ctx.send("!addmebitch")
+    await ctx.send("Duis says I am not supposed to queue, but I don't listen to players worse than me...")
 
     if (Jason.queueAlreadyPopped() or queueSize == 6):
         await ctx.send("Whoa there Norm! You can't queue until the current queue has finished popping.")
