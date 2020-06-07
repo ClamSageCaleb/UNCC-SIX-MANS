@@ -61,6 +61,9 @@ async def on_message(message):
         msg.add_field(name="!list", value="Lists the current queue", inline=False)
         msg.add_field(name="!random", value="Randomly picks teams", inline=False)
         msg.add_field(name="!captains", value="Randomly selects captains. \nFirst captain picks 1 \nSecond captain picks the next two", inline=False)
+        msg.add_field(name="!report", value="Reports the result of your queue. Use this command followed by the color of the winning team.", inline=False)
+        msg.add_field(name="!leaderboard", value="Shows the top 5 players on the leaderboard.", inline=False)
+        msg.add_field(name="!leaderboard me", value="Shows your rank on the leaderboard.", inline=False)
         msg.add_field(name='!norm, !asknorm, or !8ball', value='Will respond to a yes/no question. Good for predictions', inline=False)
         msg.add_field(name="!help", value="This command :O", inline=False)
         msg.set_thumbnail(url="https://raw.githubusercontent.com/ClamSageCaleb/UNCC-SIX-MANS/master/49ers.png")
@@ -388,7 +391,7 @@ async def reportMatch(ctx, *arg):
         and ctx.message.channel.id != QUEUE_CH_ID
         and not Jason.isBotAdmin(ctx.message.author.roles)
     ):
-        await ctx.send(":x: You can only report matches in the <#{0}> channel.".format(MATCH_REPORT_CH_ID))
+        await ctx.send(":x: You can only report matches in the <#{0}> and <#{1}> channels.".format(MATCH_REPORT_CH_ID, QUEUE_CH_ID))
         return
 
     player_reporting = str(ctx.message.author)
@@ -410,7 +413,7 @@ async def showLeaderboard(ctx, *arg):
     if (player):
         await ctx.send(ctx.message.author.mention + "\n\n" + Leaderboard.showLeaderboard(player))
     else:
-        await ctx.send(ctx.message.author.mention + "\n\n" + Leaderboard.showLeaderboard(limit=5))
+        await ctx.send(ctx.message.author.mention + "\n\n" + Leaderboard.showLeaderboard(limit=5) + "\nTo see the full leaderboard, visit <#{0}>.".format(LEADERBOARD_CH_ID))
 
 
 async def updateLeaderboardChannel():
