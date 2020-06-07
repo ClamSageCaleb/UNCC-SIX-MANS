@@ -29,6 +29,13 @@ client.remove_command('help')
 
 pikaO = 1
 
+# Channel ID's
+QUEUE_CH_ID = 538166641226416162
+TEST_QUEUE_CH_ID = 629502331259584559
+MATCH_REPORT_CH_ID = 622786720328581133
+LEADERBOARD_CH_ID = 718998601790914591
+TUX_TEST_SERVER_CH_ID = 716358749912039429
+
 '''
     Discord Events
 '''
@@ -41,7 +48,7 @@ async def on_message(message):
     :return: Formatted command list
     """
 
-    allowedChannels = [538166641226416162, 629502331259584559, 716358749912039429]
+    allowedChannels = [QUEUE_CH_ID, TEST_QUEUE_CH_ID, MATCH_REPORT_CH_ID, LEADERBOARD_CH_ID, TUX_TEST_SERVER_CH_ID]
 
     if ((message.author == client.user) or not (message.channel.id in allowedChannels)): return
 
@@ -71,7 +78,7 @@ async def on_ready():
 async def list_servers():
 
     await client.wait_until_ready()
-    channel = client.get_channel(538166641226416162) # queue channel = 538166641226416162 | test channel = 629502331259584559
+    channel = client.get_channel(QUEUE_CH_ID)
 
     while True:
 
@@ -112,6 +119,10 @@ async def q(ctx, quiet = False):
 
     if(Jason.isPlayerInQueue(player)):
         await ctx.send(":x: " + player.mention + " already in queue, dummy")
+        return
+
+    if (Leaderboard.isPlayerInActiveMatch(str(player))):
+        await ctx.send(":x: Your previous match has not been reported yet. Report your match in <#{0}> and try again.".format(MATCH_REPORT_CH_ID))
         return
 
     if(queue_length == 0):
@@ -194,21 +205,40 @@ async def leave(ctx):
 
 @client.command(name='kick', aliases=['remove', 'yeet'], pass_context=True)
 async def kick(ctx):
-    if (Jason.queueAlreadyPopped()):
+
+    if (not Jason.isBotAdmin(ctx.message.author.roles)):
+        await ctx.send("You do not have the leg strength to kick other players.")
+        return
+
+    elif (len(ctx.message.mentions) != 1):
+        await ctx.send(":x: Please mention a player in the queue to kick.")
+        return
+
+    elif (Jason.queueAlreadyPopped()):
         await ctx.send(":x: Can't kick players while picking teams.")
+        return
+    
+    elif(Jason.getQueueLength() == 0):
+        await ctx.send(":x: The queue is empty, what are you doing?")
         return
 
     player = ctx.message.mentions[0]
 
-    if(Jason.getQueueLength() == 0):
-        await ctx.send(":x: The queue is empty, what are you doing?")
-
-    elif (Jason.isPlayerInQueue(player)):
+    if (Jason.isPlayerInQueue(player)):
         Jason.removeFromQueue(player)
         await ctx.send(":exclamation: Removed " + player.display_name + " from the queue")
 
     else:
         await ctx.send(":x: User not in queue. To see who is in current queue, type: **!list**")
+
+
+@client.command(name='flip', aliases=['coinflip', 'chance', 'coin'], pass_context=True)
+async def coinFlip(ctx):
+
+    if (random.randint(1,2) == 1):
+        await q(ctx, quiet=False)
+    else:
+        await leave(ctx)
 
 
 @client.command(name='listq', aliases=['list', 'listqueue', 'show', 'showq', 'showqueue', 'inq', 'sq', 'lq', 'status', 'showmethefknqueue', '<:who:599055076639899648>'], pass_context=True)
@@ -234,8 +264,8 @@ async def rnd(ctx):
 
         await ctx.send(
             "**Teams are set!**\n\n" +
-            "🔶 TEAM 1 🔶 \n\t{}".format("\n\t".join([player.mention for player in orangeTeam])) + "\n\n" +
-            "🔷 TEAM 2 🔷 \n\t{}".format("\n\t".join([player.mention for player in blueTeam]))
+            "🔷 BLUE TEAM 🔷 \n\t{}".format("\n\t".join([player.mention for player in blueTeam])) + "\n\n" +
+            "🔶 ORANGE TEAM 🔶 \n\t{}".format("\n\t".join([player.mention for player in orangeTeam]))
         )
 
 
@@ -249,8 +279,8 @@ async def captains(ctx):
         await ctx.send(
             "Captains already set\n\n" +
             "Captains:\n" +
-            "🔶 TEAM 1 🔶: " + orangeCap.mention + "\n" +
-            "🔷 TEAM 2 🔷: " + blueCap.mention + "\n\n" +
+            "🔷 BLUE Team Captain 🔷: " + blueCap.mention + "\n" +
+            "🔶 ORANGE Team Captain 🔶: " + orangeCap.mention + "\n\n" +
             "Available picks:\n" + playerList
         )
         return
@@ -265,9 +295,9 @@ async def captains(ctx):
 
         await ctx.send(
             "Captains:\n" +
-            "🔶 TEAM 1 Captain 🔶: " + orangeCap.mention + "\n" +
-            "🔷 TEAM 2 Captain 🔷: " + blueCap.mention + "\n\n" +
-            "🔶 " + orangeCap.mention + " 🔶 picks first.\n" + 
+            "🔷 BLUE Team Captain 🔷: " + blueCap.mention + "\n" +
+            "🔶 ORANGE Team Captain 🔶: " + orangeCap.mention + "\n\n" +
+            "🔷 " + blueCap.mention + " 🔷 picks first.\n" + 
             "Type **!pick** and mention a player from the queue below.\n\n" +
             "Available picks:\n" + playerList
         )
@@ -279,7 +309,7 @@ async def pick(ctx):
     if (not Jason.queueAlreadyPopped()):
         await ctx.send(":x: Captains not set. If queue is full, please type **!captains**")
 
-    elif(Jason.validateOrangePick(ctx.message.author)):
+    elif(Jason.validateBluePick(ctx.message.author)):
 
         # orange captain picks one player
         if len(ctx.message.mentions) == 0:
@@ -296,8 +326,8 @@ async def pick(ctx):
                 blueCap, orangeCap = Jason.captainsPop()
                 playerList = Jason.getQueueList()
                 await ctx.send(
-                    ctx.message.mentions[0].mention + " was added to 🔶 TEAM 1 🔶\n\n" +
-                    "🔷 " + blueCap.mention + " 🔷 please pick TWO players.\n" +
+                    ctx.message.mentions[0].mention + " was added to 🔷 BLUE TEAM 🔷\n\n" +
+                    "🔶 " + orangeCap.mention + " 🔶 please pick TWO players.\n" +
                     "Ex: `!pick @Twan @Tux`\n\n" +
                     "Available picks:\n" + playerList
                 )
@@ -305,7 +335,7 @@ async def pick(ctx):
                 await ctx.send(":x: " + errorMsg)
                 return
 
-    elif(Jason.validateBluePick(ctx.message.author)):
+    elif(Jason.validateOrangePick(ctx.message.author)):
 
         if len(ctx.message.mentions) == 0:
             await ctx.send(":x: No one was mentioned, please pick a player.")
@@ -323,11 +353,11 @@ async def pick(ctx):
                 blueCap, orangeCap = Jason.captainsPop()
                 blueTeam, orangeTeam = Jason.getTeamList()
                 await ctx.send(
-                    ctx.message.mentions[0].mention + " & " + ctx.message.mentions[1].mention + " added to 🔷 TEAM 2 🔷\n" +
-                    "Last player added to 🔶 TEAM 1 🔶\n\n" +
+                    ctx.message.mentions[0].mention + " & " + ctx.message.mentions[1].mention + " added to 🔶 ORANGE TEAM 🔶\n" +
+                    "Last player added to 🔷 BLUE TEAM 🔷\n\n" +
                     "**Teams are set!**\n\n" +
-                    "🔶 TEAM 1 🔶 \n\t{}".format("\n\t".join([player.mention for player in orangeTeam])) + "\n\n" +
-                    "🔷 TEAM 2 🔷 \n\t{}".format("\n\t".join([player.mention for player in blueTeam]))
+                    "🔷 BLUE TEAM 🔷 \n\t{}".format("\n\t".join([player.mention for player in blueTeam])) + "\n\n" +
+                    "🔶 ORANGE TEAM 🔶 \n\t{}".format("\n\t".join([player.mention for player in orangeTeam]))
                 )
                 Leaderboard.startMatch(blueTeam, orangeTeam)
                 Jason.clearQueue()
@@ -338,34 +368,35 @@ async def pick(ctx):
     else:
         blueCap, orangeCap = Jason.captainsPop()
         blueTeam, orangeTeam = Jason.getTeamList()
-        if (len(orangeTeam) == 1):
+        if (len(blueTeam) == 1):
             await ctx.send(
-                "You are not 🔶 TEAM 1 Captain 🔶\n\n" +
-                "🔶 TEAM 1 Captain 🔶 is: " + orangeCap.mention
+                "You are not 🔷 BLUE Team Captain 🔷\n\n" +
+                "🔷 BLUE Team Captain 🔷 is: " + blueCap.mention
             )
         else:
             await ctx.send(
-                "You are not 🔷 TEAM 2 Captain 🔷 \n\n" +
-                "🔷 TEAM 2 Captain 🔷 is: " + blueCap.mention
+                "You are not 🔶 ORANGE Team Captain 🔶 \n\n" +
+                "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.mention
             )
+
 
 @client.command(name="report", pass_contex=True)
 async def reportMatch(ctx, *arg):
 
-    botAdmin = False
-    for x in ctx.message.author.roles:
-        if(x.name == "Bot Admin"):
-            botAdmin = True
-
-    if (ctx.message.channel.id != 622786720328581133 and not botAdmin):
-        await ctx.send(":x: You can only report matches in the <#622786720328581133> channel.")
+    if (
+        ctx.message.channel.id != MATCH_REPORT_CH_ID
+        and ctx.message.channel.id != QUEUE_CH_ID
+        and not Jason.isBotAdmin(ctx.message.author.roles)
+    ):
+        await ctx.send(":x: You can only report matches in the <#{0}> channel.".format(MATCH_REPORT_CH_ID))
         return
 
     player_reporting = str(ctx.message.author)
 
-    if (len(arg) == 1 and arg[0] == "blue" or arg[0] == "orange"):
+    if (len(arg) == 1 and (arg[0] == "blue" or arg[0] == "orange")):
         msg = Leaderboard.reportMatch(player_reporting, arg[0])
         await ctx.send(msg)
+        await updateLeaderboardChannel()
     else:
         await ctx.send(
             ":x: Report only accepts 'blue' or 'orange' as the winner of the match.\n\n" + 
@@ -376,45 +407,58 @@ async def reportMatch(ctx, *arg):
 @client.command(name="leaderboard", aliases=["standings", "rankings", "stonks"], pass_contex=True)
 async def showLeaderboard(ctx, *arg):
     player = str(ctx.message.author) if len(arg) == 1 else None
-    await ctx.send(ctx.message.author.mention + "\n\n" + Leaderboard.showLeaderboard(player))
+    if (player):
+        await ctx.send(ctx.message.author.mention + "\n\n" + Leaderboard.showLeaderboard(player))
+    else:
+        await ctx.send(ctx.message.author.mention + "\n\n" + Leaderboard.showLeaderboard(limit=5))
+
+
+async def updateLeaderboardChannel():
+    # delete old leaderboard and post updated leaderboard
+    channel = client.get_channel(LEADERBOARD_CH_ID)
+    prev_msg = await channel.fetch_message(channel.last_message_id)
+    await channel.delete_messages([prev_msg])
+    await channel.send(Leaderboard.showLeaderboard())
+
+
+@client.command(name="brokenq", aliases=["requeue", "re-q"], pass_contex=True)
+async def removeLastPoppedQueue(ctx):
+    player = str(ctx.message.author)
+    msg = Leaderboard.brokenQueue(player)
+    await ctx.send(msg)
+
 
 @client.command(name='clear', aliases=['clr', 'reset'], pass_context=True)
 async def clear(ctx):
-    for x in ctx.message.author.roles:
-        if(x.name == "Bot Admin"):
-            Jason.clearQueue()
-
-            await ctx.send("Queue cleared <:UNCCfeelsgood:538182514091491338>")
-            return
-
-    await ctx.send("You do not have permission to clear the queue.")
+    if(Jason.isBotAdmin(ctx.message.author.roles)):
+        Jason.clearQueue()
+        await ctx.send("Queue cleared <:UNCCfeelsgood:538182514091491338>")
+    else:
+        await ctx.send("You do not have permission to clear the queue.")
 
 
 @client.command(name='restart', aliases=['restartbot'], pass_context=True)
 async def restart(ctx):
-    for x in ctx.message.author.roles:
-        if(x.name == "Bot Admin"):
-            await ctx.send("Bot restarting...hopefully this fixes everything <:UNCCfeelsgood:538182514091491338>")
-            os.remove("./data/queue.json")
-            print("Restarting...")
-            subprocess.call(["python", ".\\src\\bot.py"])
-            sys.exit()
-            return
-
-    await ctx.send("You do not have permission to restart me.")
+    if(Jason.isBotAdmin(ctx.message.author.roles)):
+        await ctx.send("Bot restarting...hopefully this fixes everything <:UNCCfeelsgood:538182514091491338>")
+        os.remove("./data/queue.json")
+        print("Restarting...")
+        subprocess.call(["python", ".\\src\\bot.py"])
+        sys.exit()
+    else:
+        await ctx.send("You do not have permission to restart me.")
 
 
 @client.command(name='quit', aliases=['normshutthefuckup'], pass_context=True)
 async def restart(ctx):
-    for x in ctx.message.author.roles:
-        if(x.name == "Bot Admin"):
-            await ctx.send("It's getting dark...")
-            os.remove("./data/queue.json")
-            print("Quitting...")
-            sys.exit()
-            return
-
-    await ctx.send("You can't kill me! You do not possess the power.")
+    if(Jason.isBotAdmin(ctx.message.author.roles)):
+        await ctx.send("It's getting dark...")
+        os.remove("./data/queue.json")
+        print("Quitting...")
+        sys.exit()
+        return
+    else:
+        await ctx.send("You can't kill me! You do not possess the power.")
 
 
 '''
@@ -469,14 +513,23 @@ async def duis(ctx):
 @client.command(name='normq', pass_context=True)
 async def normq(ctx):
     playerList = Jason.getQueueList()
+    queueSize = Jason.getQueueLength()
 
     await ctx.send("!addmebitch")
 
-    await ctx.send(
-        "\n<@716358391328407612> has been added to the queue! \n\n" +
-        "Queue size: " + str(Jason.getQueueLength() + 1) + "/6 \n\n" +
-        "Current queue:\nNorm" + (" " if len(playerList) == 0 else ", ") + playerList
-    )
+    if (Jason.queueAlreadyPopped() or queueSize == 6):
+        await ctx.send("Whoa there Norm! You can't queue until the current queue has finished popping.")
+    elif (len(playerList) == 0):
+        await ctx.send(
+            "<@629502587963572225> wants to queue!\n\n" +
+            "Type **!q** to join"
+        )
+    else:
+        await ctx.send(
+            "<@629502587963572225> has been added to the queue! \n\n" +
+            "Queue size: " + str(queueSize + 1) + "/6 \n\n" +
+            "Current queue:\nNorm" + (" " if len(playerList) == 0 else ", ") + playerList
+        )
 
 
 @client.command(name='teams', aliases=['uncc'], pass_context=True)

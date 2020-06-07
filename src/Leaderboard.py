@@ -48,6 +48,32 @@ def startMatch(blueTeam, orangeTeam):
     })
     writeActiveMatches(curr_matches)
 
+
+def brokenQueue(player):
+    curr_matches = readActiveMatches()
+
+    if (len(curr_matches) == 0):
+        return ":x: There are no active matches."
+
+    match = curr_matches.pop()
+
+    if player in (match["blueTeam"] + match["orangeTeam"]):
+        writeActiveMatches(curr_matches)
+        return "Previous queue removed."
+
+    return "Player is not in queue, therefore cannot report broken queue."
+
+
+def isPlayerInActiveMatch(player):
+    curr_matches = readActiveMatches()
+
+    for match in curr_matches:
+        if player in (match["blueTeam"] + match["orangeTeam"]):
+            return True
+
+    return False
+
+
 def getPlayerIndex(player):
     curr_ldrbrd = readLeaderboard()
 
@@ -61,7 +87,7 @@ def reportMatch(player, whoWon):
     curr_matches = readActiveMatches()
 
     for match in curr_matches:
-        if (player in match["blueTeam"] or player in match["orangeTeam"]):
+        if (player in (match["blueTeam"] + match["orangeTeam"])):
             leaderboard = readLeaderboard()
 
             for teamMember in match["blueTeam"]:
@@ -110,9 +136,9 @@ def reportMatch(player, whoWon):
             curr_matches.remove(match)
             writeActiveMatches(curr_matches)
 
-            return "Match reported"
+            return ":white_check_mark: Match reported"
 
-    return "Match not found"
+    return ":x: Match not found"
 
 def makePretty(player_index, player):
     msg = "Rank: {0}\n".format(player_index + 1)
@@ -124,21 +150,27 @@ def makePretty(player_index, player):
     
     return msg
 
-def showLeaderboard(player = None):
+def showLeaderboard(player = None, limit = None):
     curr_leaderboard = readLeaderboard()
 
     if (player):
         player_index = getPlayerIndex(player)
-        player = curr_leaderboard[player_index]
+        player_data = curr_leaderboard[player_index]
 
-        return "```\n" + makePretty(player_index, player) + "\n```"
+        return "```\nUNCC 6 Mans | {0}\n\n".format(player) + makePretty(player_index, player_data) + "\n```"
 
     else:
         msg = "```\n"
+
+        if (limit):
+            msg += "UNCC 6 Mans | Top {0}\n\n".format(limit)
+        else:
+            msg += "UNCC 6 Mans | Full Leaderboard\n\n"
+
         for i, player in enumerate(curr_leaderboard):
-            msg += makePretty(i, player) + "\n"
-            
-            if (i == 10): break
+            if (not limit or i < limit):
+                msg += makePretty(i, player) + "\n"
+        
         return msg + "\n```"
 
 def checkActiveMatchesFile():

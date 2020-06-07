@@ -1,4 +1,5 @@
 .env
-queue.json
 __pycache__/
+queue.json
 activeMatches.json
+leaderboard.json

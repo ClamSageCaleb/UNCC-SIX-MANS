@@ -81,6 +81,12 @@ def writeQueue(new_queue):
     Utility Functions
 '''
 
+def isBotAdmin(roles):
+    for role in roles:
+        if (role.name == "Bot Admin"):
+            return True
+    return False
+
 
 def indexOfPlayer(player, curr_queue = None):
     if (not curr_queue):
@@ -130,12 +136,12 @@ def checkQueueFile():
 
 def validateOrangePick(player):
     curr_queue = readQueue()
-    return (len(curr_queue["orangeTeam"]) == 1 and player.id == curr_queue["orangeCap"].id)
+    return (len(curr_queue["blueTeam"]) == 2 and player.id == curr_queue["orangeCap"].id)
 
 
 def validateBluePick(player):
     curr_queue = readQueue()
-    return (len(curr_queue["orangeTeam"]) == 2 and player.id == curr_queue["blueCap"].id)
+    return (len(curr_queue["blueTeam"]) == 1 and player.id == curr_queue["blueCap"].id)
 
 
 def getTeamList():
@@ -219,9 +225,9 @@ def pick(player_picked, player_picked_2 = None):
         curr_queue["queue"].pop(indexOfPlayer(player_picked))
 
         if (player_picked_2):
-            curr_queue["blueTeam"].append(player_picked)
-        else:
             curr_queue["orangeTeam"].append(player_picked)
+        else:
+            curr_queue["blueTeam"].append(player_picked)
     else:
         return "Player not in queue, dummy. Try again."
 
@@ -231,9 +237,9 @@ def pick(player_picked, player_picked_2 = None):
 
         if (isPlayerInQueue(player_picked_2)):
             curr_queue["queue"].pop(indexOfPlayer(player_picked_2, curr_queue))
-            curr_queue["blueTeam"].append(player_picked_2)
+            curr_queue["orangeTeam"].append(player_picked_2)
 
-            curr_queue["orangeTeam"].append(curr_queue["queue"].pop(0))
+            curr_queue["blueTeam"].append(curr_queue["queue"].pop(0))
         else:
             return "{0} is not in the queue. Try again".format(player_picked_2.name)
 
