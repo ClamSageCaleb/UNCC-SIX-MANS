@@ -40,36 +40,12 @@ TUX_TEST_SERVER_CH_ID = 716358749912039429
     Discord Events
 '''
 
-# Replaces the basic !help feature, responds with formatted bot commands and usage
 @client.event
 async def on_message(message):
-    """
-    :param message: Sent in by the user. Executed by !help
-    :return: Formatted command list
-    """
-
     allowedChannels = [QUEUE_CH_ID, TEST_QUEUE_CH_ID, MATCH_REPORT_CH_ID, LEADERBOARD_CH_ID, TUX_TEST_SERVER_CH_ID]
 
-    if ((message.author == client.user) or not (message.channel.id in allowedChannels)): return
-
-    if message.content.startswith('!help'):
-        msg = discord.Embed(title='__**Server Commands**__', description="", color=0x38761D)
-        msg.add_field(name="!q", value="Adds you to the queue", inline=False)
-        msg.add_field(name="!qq", value="Same as !q but with no ping :)", inline=False)
-        msg.add_field(name="!leave", value="Removes you from the queue", inline=False)
-        msg.add_field(name="!kick", value="Kicks someone from the queue, will require a vote", inline=False)
-        msg.add_field(name="!list", value="Lists the current queue", inline=False)
-        msg.add_field(name="!random", value="Randomly picks teams", inline=False)
-        msg.add_field(name="!captains", value="Randomly selects captains. \nFirst captain picks 1 \nSecond captain picks the next two", inline=False)
-        msg.add_field(name="!report", value="Reports the result of your queue. Use this command followed by the color of the winning team.", inline=False)
-        msg.add_field(name="!leaderboard", value="Shows the top 5 players on the leaderboard.", inline=False)
-        msg.add_field(name="!leaderboard me", value="Shows your rank on the leaderboard.", inline=False)
-        msg.add_field(name='!norm, !asknorm, or !8ball', value='Will respond to a yes/no question. Good for predictions', inline=False)
-        msg.add_field(name="!help", value="This command :O", inline=False)
-        msg.set_thumbnail(url="https://raw.githubusercontent.com/ClamSageCaleb/UNCC-SIX-MANS/master/49ers.png")
-        msg.set_footer(text="Developed by Twan, Clam, and Tux")
-        await message.channel.send(embed=msg)
-    await client.process_commands(message)
+    if (message.author != client.user and message.channel.id in allowedChannels):
+        await client.process_commands(message)
 
 
 @client.event
@@ -108,7 +84,6 @@ async def list_servers():
 '''
     Discord Commands - Queue Commands
 '''
-
 
 @client.command(name='q', aliases=['addmepapanorm', 'Q', 'addmebitch', 'queue', 'join'], pass_context=True)
 async def q(ctx, quiet = False):
@@ -409,11 +384,14 @@ async def reportMatch(ctx, *arg):
 
 @client.command(name="leaderboard", aliases=["standings", "rankings", "stonks"], pass_contex=True)
 async def showLeaderboard(ctx, *arg):
-    player = str(ctx.message.author) if len(arg) == 1 else None
-    if (player):
-        await ctx.send(ctx.message.author.mention + "\n\n" + Leaderboard.showLeaderboard(player))
-    else:
+    if (len(ctx.message.mentions) == 1):
+        await ctx.send(ctx.message.author.mention + "\n\n" + Leaderboard.showLeaderboard(str(ctx.message.mentions[0])))
+    elif (len(arg) == 1 and arg[0] == "me"):
+        await ctx.send(ctx.message.author.mention + "\n\n" + Leaderboard.showLeaderboard(str(ctx.message.author)))
+    elif (len(arg) == 0 and len(ctx.message.mentions) == 0):
         await ctx.send(ctx.message.author.mention + "\n\n" + Leaderboard.showLeaderboard(limit=5) + "\nTo see the full leaderboard, visit <#{0}>.".format(LEADERBOARD_CH_ID))
+    else:
+        await ctx.send(":x: Mention someone to see their rank, use 'me' to see your rank, include nothing to see the top 5 on the leaderboard.")
 
 
 async def updateLeaderboardChannel():
@@ -467,7 +445,6 @@ async def quit(ctx):
 '''
     Discord Commands - Easter Eggs
 '''
-
 
 @client.command(name='twan', aliases=['<:twantheswan:540327706076905472>'], pass_context=True)
 async def twan(ctx):
@@ -591,10 +568,30 @@ async def eight_ball(ctx):
 async def fuck(ctx):
     await ctx.send("u")
 
+
+@client.command(name="help", pass_context=True)
+async def help(ctx):
+    msg = discord.Embed(title='__**Server Commands**__', description="", color=0x38761D)
+    msg.add_field(name="!q", value="Adds you to the queue", inline=False)
+    msg.add_field(name="!qq", value="Same as !q but with no ping :)", inline=False)
+    msg.add_field(name="!leave", value="Removes you from the queue", inline=False)
+    msg.add_field(name="!kick", value="Kicks someone from the queue, will require a vote", inline=False)
+    msg.add_field(name="!list", value="Lists the current queue", inline=False)
+    msg.add_field(name="!random", value="Randomly picks teams", inline=False)
+    msg.add_field(name="!captains", value="Randomly selects captains. \nFirst captain picks 1 \nSecond captain picks the next two", inline=False)
+    msg.add_field(name="!report", value="Reports the result of your queue. Use this command followed by the color of the winning team.", inline=False)
+    msg.add_field(name="!leaderboard", value="Shows the top 5 players on the leaderboard.", inline=False)
+    msg.add_field(name="!leaderboard me", value="Shows your rank on the leaderboard.", inline=False)
+    msg.add_field(name='!norm, !asknorm, or !8ball', value='Will respond to a yes/no question. Good for predictions', inline=False)
+    msg.add_field(name="!help", value="This command :O", inline=False)
+    msg.set_thumbnail(url="https://raw.githubusercontent.com/ClamSageCaleb/UNCC-SIX-MANS/master/49ers.png")
+    msg.set_footer(text="Developed by Twan, Clam, and Tux")
+    await ctx.send(embed=msg)
+
+
 '''
     Main function
 '''
-
 
 def main():
     Jason.checkQueueFile()
