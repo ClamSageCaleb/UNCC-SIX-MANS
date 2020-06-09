@@ -1,11 +1,11 @@
 import json
 from os import path
-import os
 
 default = []
 
 activeMatchPath = "./data/activeMatches.json"
 leaderboardPath = "./data/leaderboard.json"
+
 
 def readActiveMatches() -> list:
     checkActiveMatchesFile()
@@ -36,7 +36,8 @@ def saveLeaderboard(new_leaderboard):
 
 def startMatch(blueTeam, orangeTeam):
     curr_matches = readActiveMatches()
-    blue = []; orange = []
+    blue = []
+    orange = []
 
     for i in range(len(blueTeam)):
         blue.append(blueTeam[i].name)
@@ -80,8 +81,9 @@ def getPlayerIndex(player):
     for i, row in enumerate(curr_ldrbrd):
         if (row["Name"] == player):
             return i
-    
+
     return -1
+
 
 def reportMatch(player, whoWon):
     curr_matches = readActiveMatches()
@@ -92,8 +94,12 @@ def reportMatch(player, whoWon):
 
             for teamMember in match["blueTeam"]:
 
-                if (whoWon == "blue"): win = 1; loss = 0
-                else: win = 0; loss = 1
+                if (whoWon == "blue"):
+                    win = 1
+                    loss = 0
+                else:
+                    win = 0
+                    loss = 1
 
                 player_index = getPlayerIndex(teamMember)
                 if (player_index == -1):
@@ -109,12 +115,19 @@ def reportMatch(player, whoWon):
                     leaderboard[player_index]["Wins"] += win
                     leaderboard[player_index]["Losses"] += loss
                     leaderboard[player_index]["Matches Played"] += 1
-                    leaderboard[player_index]["Win Perc"] = float("{:.2f}".format(int(leaderboard[player_index]["Wins"]) / int(leaderboard[player_index]["Matches Played"])))
+
+                    total_wins = int(leaderboard[player_index]["Wins"])
+                    total_matches = int(leaderboard[player_index]["Matches Played"])
+                    leaderboard[player_index]["Win Perc"] = float("{:.2f}".format(total_wins / total_matches))
 
             for teamMember in match["orangeTeam"]:
 
-                if (whoWon == "orange"): win = 1; loss = 0
-                else: win = 0; loss = 1
+                if (whoWon == "orange"):
+                    win = 1
+                    loss = 0
+                else:
+                    win = 0
+                    loss = 1
 
                 player_index = getPlayerIndex(teamMember)
                 if (player_index == -1):
@@ -130,7 +143,10 @@ def reportMatch(player, whoWon):
                     leaderboard[player_index]["Wins"] += win
                     leaderboard[player_index]["Losses"] += loss
                     leaderboard[player_index]["Matches Played"] += 1
-                    leaderboard[player_index]["Win Perc"] = float("{:.2f}".format(int(leaderboard[player_index]["Wins"]) / int(leaderboard[player_index]["Matches Played"])))
+
+                    total_wins = int(leaderboard[player_index]["Wins"])
+                    total_matches = int(leaderboard[player_index]["Matches Played"])
+                    leaderboard[player_index]["Win Perc"] = float("{:.2f}".format(total_wins / total_matches))
 
             saveLeaderboard(leaderboard)
             curr_matches.remove(match)
@@ -140,6 +156,7 @@ def reportMatch(player, whoWon):
 
     return ":x: Match not found"
 
+
 def makePretty(player_index, player):
     msg = "Rank: {0}\n".format(player_index + 1)
     for key in player:
@@ -147,10 +164,11 @@ def makePretty(player_index, player):
             msg += "\t{0}: {1}%\n".format(key, int(player[key] * 100))
         else:
             msg += "\t{0}: {1}\n".format(key, player[key])
-    
+
     return msg
 
-def showLeaderboard(player = None, limit = None):
+
+def showLeaderboard(player=None, limit=None):
     curr_leaderboard = readLeaderboard()
 
     if (player):
@@ -158,7 +176,10 @@ def showLeaderboard(player = None, limit = None):
         player_data = curr_leaderboard[player_index]
 
         if (player_data["Matches Played"] <= 5):
-            return ":x: You have not played enough matches to make it on the leaderboard. You have played {0} matches and need 5 to be placed on the leaderboard.".format(player_data["Matches Played"])
+            return (
+                ":x: You have not played enough matches to make it on the leaderboard. You have played"
+                " {0} matches and need 5 to be placed on the leaderboard.".format(player_data["Matches Played"])
+            )
 
         index = 0
         for i, p in enumerate(curr_leaderboard):
@@ -182,8 +203,9 @@ def showLeaderboard(player = None, limit = None):
             if ((not limit or index < limit) and player_data["Matches Played"] >= 5):
                 msg += makePretty(index, player_data) + "\n"
                 index += 1
-        
+
         return msg + "\n```"
+
 
 def checkActiveMatchesFile():
     if not path.exists(activeMatchPath):

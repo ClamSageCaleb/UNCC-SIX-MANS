@@ -1,4 +1,3 @@
-from datetime import datetime
 from os import path
 import json
 import random
@@ -81,6 +80,7 @@ def writeQueue(new_queue):
     Utility Functions
 '''
 
+
 def isBotAdmin(roles):
     for role in roles:
         if (role.name == "Bot Admin"):
@@ -88,14 +88,14 @@ def isBotAdmin(roles):
     return False
 
 
-def indexOfPlayer(player, curr_queue = None):
+def indexOfPlayer(player, curr_queue=None):
     if (not curr_queue):
         curr_queue = readQueue()
 
     for i, ballchaser in enumerate(curr_queue["queue"]):
         if (ballchaser.id == player.id):
             return i
-    
+
     return -1
 
 
@@ -168,6 +168,10 @@ def removeFromQueue(player):
 
     if (index != -1):
         curr_queue["queue"].pop(index)
+
+        if (len(curr_queue["queue"]) == 0):
+            curr_queue["timeReset"] = 0
+
         writeQueue(curr_queue)
 
 
@@ -215,8 +219,9 @@ def captainsPop():
 
     return blueCap, orangeCap
 
+
 # Returns a string if there is an error. Otherwise returns an empty string
-def pick(player_picked, player_picked_2 = None):
+def pick(player_picked, player_picked_2=None):
     curr_queue = readQueue()
 
     player_picked = BallChaser(str(player_picked), player_picked.id)
