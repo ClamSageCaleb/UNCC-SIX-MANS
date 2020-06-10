@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-    <img src="https://github.com/ClamSageCaleb/UNCC-SIX-MANS/blob/master/norm.gif" alt="Character Selector" width="200">
+    <img src="https://raw.githubusercontent.com/ClamSageCaleb/UNCC-SIX-MANS/master/media/norm.gif" alt="Character Selector" width="200">
   <br>
     UNCC SIX MANS
   <br>

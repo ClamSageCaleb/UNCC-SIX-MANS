@@ -664,7 +664,7 @@ async def help(ctx):
         value="This command :O",
         inline=False
     )
-    msg.set_thumbnail(url="https://raw.githubusercontent.com/ClamSageCaleb/UNCC-SIX-MANS/master/49ers.png")
+    msg.set_thumbnail(url="https://raw.githubusercontent.com/ClamSageCaleb/UNCC-SIX-MANS/master/media/49ers.png")
     msg.set_footer(text="Developed by Twan, Clam, and Tux")
     await ctx.send(embed=msg)
 
