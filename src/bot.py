@@ -384,7 +384,7 @@ async def reportMatch(ctx, *arg):
         )
 
 
-@client.command(name="leaderboard", aliases=["standings", "rankings", "stonks"], pass_contex=True)
+@client.command(name="leaderboard", aliases=["standings", "rank", "rankings", "stonks"], pass_contex=True)
 async def showLeaderboard(ctx, *arg):
     if (len(ctx.message.mentions) == 1):
         await ctx.send(ctx.message.author.mention + "\n\n" + Leaderboard.showLeaderboard(str(ctx.message.mentions[0])))
