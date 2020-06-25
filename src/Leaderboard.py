@@ -44,6 +44,13 @@ def startMatch(blueTeam, orangeTeam):
         orange.append(orangeTeam[i].name)
 
     curr_matches.append({
+        "reportedWinner": {
+            "player": {
+                "name": "",
+                "team": ""
+            },
+            "winningTeam": "",
+        },
         "blueTeam": blue,
         "orangeTeam": orange
     })
@@ -85,11 +92,45 @@ def getPlayerIndex(player):
     return -1
 
 
+def reportConfirm(player, match, curr_matches, match_index, whoWon):
+    # If first responder or a winning team disagreement, we update the report
+    if (
+        match["reportedWinner"]["winningTeam"] == "" or
+        match["reportedWinner"]["winningTeam"] != whoWon
+    ):
+        match["reportedWinner"]["winningTeam"] = whoWon
+        match["reportedWinner"]["player"]["name"] = player
+
+        if (player in match["blueTeam"]):
+            match["reportedWinner"]["player"]["team"] = "blue"
+        else:
+            match["reportedWinner"]["player"]["team"] = "orange"
+
+        curr_matches[match_index] = match
+        writeActiveMatches(curr_matches)
+        return "Match reported, awaiting confirmation from other team."
+
+    # Make sure second reported is on the other team
+    reportingPlayersTeam = "blue" if player in match["blueTeam"] else "orange"
+    if (reportingPlayersTeam == match["reportedWinner"]["player"]["team"]):
+        return (
+            ":x: Your team has already reported the match."
+            " One person from the other team must now confirm."
+        )
+
+    return ""
+
+
 def reportMatch(player, whoWon):
     curr_matches = readActiveMatches()
 
-    for match in curr_matches:
+    for i, match in enumerate(curr_matches):
         if (player in (match["blueTeam"] + match["orangeTeam"])):
+
+            errMsg = reportConfirm(player, match, curr_matches, i, whoWon)
+            if (errMsg != ""):
+                return errMsg
+
             leaderboard = readLeaderboard()
 
             for teamMember in match["blueTeam"]:

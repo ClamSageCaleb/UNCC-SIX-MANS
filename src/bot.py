@@ -376,7 +376,10 @@ async def reportMatch(ctx, *arg):
     if (len(arg) == 1 and (arg[0] == "blue" or arg[0] == "orange")):
         msg = Leaderboard.reportMatch(player_reporting, arg[0])
         await ctx.send(msg)
-        await updateLeaderboardChannel()
+
+        # if match was reported successfully, update leaderboard channel
+        if (":white_check_mark:" in msg):
+            await updateLeaderboardChannel()
     else:
         await ctx.send(
             ":x: Report only accepts 'blue' or 'orange' as the winner of the match.\n\n"

@@ -101,7 +101,7 @@ def indexOfPlayer(player, curr_queue=None):
 
 def queueAlreadyPopped():
     curr_queue = readQueue()
-    return (not curr_queue["orangeCap"] == "" or not curr_queue["blueCap"] == "")
+    return (curr_queue["orangeCap"] != "" or curr_queue["blueCap"] != "")
 
 
 def getQueueLength():
