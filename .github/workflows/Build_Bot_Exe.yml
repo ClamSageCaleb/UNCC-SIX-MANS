@@ -34,6 +34,5 @@ jobs:
     - name: Publish build to release folder
       run: |
         pip install pyinstaller
-        cd release
         if [ -f Norm_the_6_Mans_Bot.spec ]; then pyinstaller Norm_the_6_Mans_Bot.spec; fi
         if ![ -f Norm_the_6_Mans_Bot.spec ]; then pyinstaller --distpath release/dist --workpath release/build  --exclude-module tkinter -i 'media/norm_icon.ico' -n Norm_the_6_Mans_Bot --onefile src/bot.py; fi
