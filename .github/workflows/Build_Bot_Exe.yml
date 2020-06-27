@@ -12,7 +12,7 @@ on:
 jobs:  
   build:
     name: Create Norm Executable
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
 
@@ -49,12 +49,6 @@ jobs:
           release_name: Release 4.04
           draft: true
           prerelease: true
-
-      - name: Zip dist folder
-        uses: papeloto/action-zip@v1
-        with:
-          files: dist/
-          dest: NormPackaged.zip
 
       - name: Upload Release Asset
         id: upload-release-asset 
