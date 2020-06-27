@@ -45,14 +45,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: 4.04
-          release_name: Release 4.04
-          draft: true
-          prerelease: true
+          tag_name: UPDATE_ME
+          release_name: Release template
+          body: |
+            -- THIS IS A TEMPLATE MADE AUTOMATICALLY -- 
+            -- UPDATE THE TAG AND RELEASE NAME AND DELETE THIS LINE BEFORE PUBLISHING --
 
-      - shell: bash
+            Changes in this release:
+          draft: true
+          prerelease: false
+
+      - name: Add default .env file
         run: |
-          echo TOKEN= > dist/.env
+          echo TOKEN=YOUR_DISCORD_TOKEN_HERE > dist/.env
 
       - name: Zip dist folder
         uses: papeloto/action-zip@v1
