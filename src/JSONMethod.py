@@ -1,4 +1,6 @@
 from os import path
+from os import getcwd
+from os import mkdir
 import json
 import random
 
@@ -11,7 +13,7 @@ default = {
     "blueTeam": []
 }
 
-queueFilePath = "./data/queue.json"
+queueFilePath = "{0}\\data\\queue.json".format(getcwd())
 
 
 class BallChaser:
@@ -130,6 +132,7 @@ def clearQueue():
 
 def checkQueueFile():
     if not path.exists(queueFilePath):
+        mkdir("data")
         with open(queueFilePath, "w") as queue:
             json.dump(default, queue)
 
