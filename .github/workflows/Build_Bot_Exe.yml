@@ -60,10 +60,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Build project
-          run: |
-            pip install pyinstaller
-            if [ -f Norm_the_6_Mans_Bot.spec ]; then pyinstaller Norm_the_6_Mans_Bot.spec; fi
-            if ![ -f Norm_the_6_Mans_Bot.spec ]; then pyinstaller --distpath release/dist --workpath release/build  --exclude-module tkinter -i 'media/norm_icon.ico' -n Norm_the_6_Mans_Bot --onefile src/bot.py; fi
+        run: |
+          pip install pyinstaller
+          if [ -f Norm_the_6_Mans_Bot.spec ]; then pyinstaller Norm_the_6_Mans_Bot.spec; fi
+          if ![ -f Norm_the_6_Mans_Bot.spec ]; then pyinstaller --distpath release/dist --workpath release/build  --exclude-module tkinter -i 'media/norm_icon.ico' -n Norm_the_6_Mans_Bot --onefile src/bot.py; fi
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
