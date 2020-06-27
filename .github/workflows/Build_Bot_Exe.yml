@@ -37,7 +37,10 @@ jobs:
         run: |
           pip install pyinstaller
           pyinstaller --exclude-module tkinter -i 'media/norm_icon.ico' -n Norm_the_6_Mans_Bot --onefile src/bot.py
-
+          
+      - name: Make result built file executable
+        run: |
+          chmod +x /home/runner/work/UNCC-SIX-MANS/UNCC-SIX-MANS/dist/Norm_the_6_Mans_Bot
 
       - name: Upload packaged executable as artifact
         uses: actions/upload-artifact@v2
