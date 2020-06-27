@@ -42,5 +42,5 @@ jobs:
       - name: Upload packaged executable as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: NormExe
+          name: Norm_the_6_Mans_Bot.exe
           path: /home/runner/work/UNCC-SIX-MANS/UNCC-SIX-MANS/dist/Norm_the_6_Mans_Bot
