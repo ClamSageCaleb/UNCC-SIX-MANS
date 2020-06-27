@@ -50,6 +50,10 @@ jobs:
           draft: true
           prerelease: true
 
+      - shell: bash
+        run: |
+          echo TOKEN= > dist/.env
+
       - name: Zip dist folder
         uses: papeloto/action-zip@v1
         with:
