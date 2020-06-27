@@ -39,28 +39,8 @@ jobs:
           if [ -f Norm_the_6_Mans_Bot.spec ]; then pyinstaller Norm_the_6_Mans_Bot.spec; fi
           if ![ -f Norm_the_6_Mans_Bot.spec ]; then pyinstaller --distpath release/dist --workpath release/build  --exclude-module tkinter -i 'media/norm_icon.ico' -n Norm_the_6_Mans_Bot --onefile src/bot.py; fi
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      - name: Upload packaged executable as artifact
+        uses: actions/upload-artifact@v2
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: |
-            Changes in this Release
-            - First Change
-            - Second Change
-          draft: false
-          prerelease: false
-
-      - name: Upload Release Asset
-        id: upload-release-asset 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./release/dist/Norm_the_6_Mans_Bot.exe
-          asset_name: Norm_the_6_Mans_Bot.exe
-          asset_content_type: application/exe
+          name: NormExe
+          path: dist/Norm_the_6_Mans_Bot.exe
