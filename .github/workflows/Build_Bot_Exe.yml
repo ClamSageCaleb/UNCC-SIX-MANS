@@ -11,7 +11,7 @@ on:
 
 jobs:  
   build:
-    name: Create Release
+    name: Create Norm Executable
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -36,7 +36,7 @@ jobs:
       - name: Build project
         run: |
           pip install pyinstaller
-          pyinstaller --exclude-module tkinter -i 'media/norm_icon.ico' -n Norm_the_6_Mans_Bot --onefile src/bot.py; fi
+          pyinstaller --exclude-module tkinter -i 'media/norm_icon.ico' -n Norm_the_6_Mans_Bot --onefile src/bot.py
 
 
       - name: Upload packaged executable as artifact
