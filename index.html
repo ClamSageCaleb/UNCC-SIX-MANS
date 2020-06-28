@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -12,10 +13,68 @@
 <body>
   <h1>Norm the 6 Mans Bot</h1>
   <h2>The official 6 mans bot for the UNC Charlotte Rocket League Community</h2>
+  <img draggable="false" alt="Norm" src="media/norm.gif" width=400 />
   <div>
-    <a href="release/dist/Norm_the_6_Mans_Bot.exe" download="">Click here</a>
-    <span> to download the latest version of Norm.</span>
+    <a href="https://github.com/ClamSageCaleb/UNCC-SIX-MANS/releases">Latest Norm Release</a>
+    <p>Created by Caleb, Twan the Swan, and Tux</p>
   </div>
+
+  <section id="documentation">
+    <h2>Norm's Documentation</h2>
+    <hr />
+
+    <h3>Commands</h3>
+    <ul>
+      <li><span>!q</span>: adds you to the queue</li>
+      <li><span>!qq</span>: adds you to the queue without pinging everyone</li>
+      <li><span>!leave</span>: removes you from the queue</li>
+      <li><span>!flip</span>: 50/50 chance of joining or leaving the queue</li>
+      <li><span>!list</span>: lists the players currently in the queue</li>
+      <li><span>!brokenq</span>: destroys the latest popped queue</li>
+    </ul>
+
+    <h3>Once the Queue Pops (once the queue has 6 people)</h3>
+    <ul>
+      <li><span>!random</span>: randomly assigns teams</li>
+      <li><span>!captains</span>: chooses two captains to pick teams manually</li>
+    </ul>
+
+    <h3>Captains Mode</h3>
+    <p>Blue captain will pick first and pick ONE player:</p>
+    <ul>
+      <li><span>!pick [mention player]</span></li>
+    </ul>
+    <p>After the blue captain picks a player, the orange captain will pick TWO people:</p>
+    <ul>
+      <li><span>!pick [mention player 1] [mention player 2]</span></li>
+    </ul>
+    <p>The last player will be automatically added to the Blue team</p>
+
+    <h3>Once the Series Ends</h3>
+    <p>One player from each team will report the winner of the series using:</p>
+    <ul>
+      <li><span>!report [winning team color]</span></li>
+    </ul>
+    <em>You cannot queue again until the match has been reported by both teams.</em>
+
+    <h3>The Leaderboard</h3>
+    <ul>
+      <li><span>!leaderboard</span>: shows the top 5 on the leaderboard</li>
+      <li>
+        <ul>
+          <li><span>!leaderboard me</span>: shows your rank on the leaderboard</li>
+          <li><span>!leaderboard [mention player]</span>: shows mentioned player's rank on the leaderboard</li>
+        </ul>
+      </li>
+    </ul>
+    <em>You must play 5 series before being added to the leaderboard.</em>
+
+    <h3>Stale Queue Clear</h3>
+    <p>
+      After 1 hour of no one joining the queue, Norm will remove everyone from the queue, and you will need to
+      re-queue.
+    </p>
+  </section>
 </body>
 
 </html>
