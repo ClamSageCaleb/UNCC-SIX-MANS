@@ -5,7 +5,7 @@ name: Build Norm Executable
 
 on:
   push:
-    branches: [ release_and_website ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 
@@ -46,7 +46,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: UPDATE_ME
-          release_name: Release template
+          release_name: New Release Template
           body: |
             -- THIS IS A TEMPLATE MADE AUTOMATICALLY -- 
             -- UPDATE THE TAG AND RELEASE NAME AND DELETE THIS LINE BEFORE PUBLISHING --
