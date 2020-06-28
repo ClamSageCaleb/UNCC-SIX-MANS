@@ -10,9 +10,10 @@ __status__ = "Production"
 
 import asyncio
 import os
+import time
 import random
 import discord
-from discord.ext.commands import Bot
+from discord.ext.commands import Bot, CommandNotFound
 from dotenv import load_dotenv
 import JSONMethod as Jason
 import Leaderboard
@@ -49,6 +50,12 @@ async def on_message(message):
 
 
 @client.event
+async def on_command_error(ctx, error):
+    if isinstance(error, CommandNotFound):
+        return
+
+
+@client.event
 async def on_ready():
     await client.change_presence(activity=discord.Game(name="6 mans"))
     print("Logged in as " + client.user.name)
@@ -67,7 +74,12 @@ async def list_servers():
                 title="Stale Queue Update",
                 desc="The queue has been inactive for 1 hr and has now been reset."
             )
-            await channel.send(embed=embed)
+
+            try:
+                await channel.send(embed=embed)
+            except Exception:
+                print("! Norm does not have access to post in the queue channel.")
+                return
 
         elif (Jason.getQueueTime() != 0):
             timeSpent = Jason.getQueueTime() * 10
@@ -78,7 +90,12 @@ async def list_servers():
                     title="Stale Queue Update",
                     desc="Inactive for " + str(timeSpent) + " min. Queue will clear in " + str(timeLeft) + " min."
                 )
+
+            try:
                 await channel.send(embed=embed)
+            except Exception:
+                print("! Norm does not have access to post in the queue channel.")
+                return
 
         if (Jason.getQueueLength() != 0):
             Jason.incrementTimer()
@@ -412,8 +429,12 @@ async def pick(ctx):
                     title="Player Added to Team",
                     desc=ctx.message.mentions[0].mention + " was added to 🔷 BLUE TEAM 🔷"
                 ).add_field(
+                    name="\u200b",
+                    value="\u200b",
+                    inline=False
+                ).add_field(
                     name="🔶 ORANGE team 🔶 please pick TWO players.",
-                    desc="Ex: `!pick @Twan @Tux`",
+                    value="Ex: `!pick @Twan @Tux`",
                     inline=False
                 ).add_field(
                     name="\u200b",
@@ -458,14 +479,14 @@ async def pick(ctx):
 
                 embed = QueueUpdateEmbed(
                     title="**Teams are Set!**",
-                    desc=player1.mention + " & " + player2.mention + " added to 🔶 ORANGE TEAM 🔶\n"
-                    "Last player added to 🔷 BLUE TEAM 🔷\n\n"
-                ).add_field(
-                    name="🔶 ORANGE team 🔶 please pick TWO players.",
-                    desc="Ex: `!pick @Twan @Tux`",
-                    inline=False
+                    desc="🔶 ORANGE TEAM 🔶 picked " + player1.mention + " & " + player2.mention +
+                    "\n\nLast player added to 🔷 BLUE TEAM 🔷"
                 ).add_field(
                     name="\u200b",
+                    value="\u200b",
+                    inline=False
+                ).add_field(
+                    name="Final Rosters:",
                     value="\u200b",
                     inline=False
                 ).add_field(
@@ -502,7 +523,7 @@ async def pick(ctx):
                 "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.mention
             )
 
-    ctx.send(embed=embed)
+    await ctx.send(embed=embed)
 
 
 @client.command(name="report", pass_contex=True)
@@ -527,19 +548,23 @@ async def reportMatch(ctx, *arg):
         if (":x:" in msg):
             embed = ErrorEmbed(
                 title="Match Not Found",
-                desc="You aren not apart of any currently active matches."
+                desc=msg[4:]
             )
         elif (":white_check_mark:" in msg):
             embed = QueueUpdateEmbed(
                 title="Match Reported",
-                desc="Your match has been reported successfully."
+                desc=msg[19:]
             )
-            # if match was reported successfully, update leaderboard channel
-            await updateLeaderboardChannel()
+
+            try:
+                # if match was reported successfully, update leaderboard channel
+                await updateLeaderboardChannel()
+            except Exception:
+                print("! Norm does not have access to update the leaderboard.")
         else:
-            embed = ErrorEmbed(
-                title="Something Went Wrong",
-                desc="Report match did not return a valid string."
+            embed = InfoEmbed(
+                title="Match Reported, Needs Confirmation",
+                desc=msg
             )
     else:
         embed = ErrorEmbed(
@@ -895,8 +920,16 @@ def main():
     client.loop.create_task(list_servers())
 
     # Add token here
-    load_dotenv()
-    client.run(os.getenv("TOKEN"))
+    try:
+        load_dotenv()
+        client.run(os.getenv("TOKEN"))
+    except Exception:
+        print(
+            "! There was an error loading the Discord token from the .env file.\n"
+            "Make sure your .env file is in the same directory as the Norm executable and that the token is correct.\n"
+            "The program will now close."
+        )
+        time.sleep(5)
 
 
 if __name__ == "__main__":

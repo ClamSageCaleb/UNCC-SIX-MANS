@@ -127,9 +127,9 @@ def reportMatch(player, whoWon):
     for i, match in enumerate(curr_matches):
         if (player in (match["blueTeam"] + match["orangeTeam"])):
 
-            errMsg = reportConfirm(player, match, curr_matches, i, whoWon)
-            if (errMsg != ""):
-                return errMsg
+            msg = reportConfirm(player, match, curr_matches, i, whoWon)
+            if (msg != ""):
+                return msg
 
             leaderboard = readLeaderboard()
 
@@ -193,7 +193,7 @@ def reportMatch(player, whoWon):
             curr_matches.remove(match)
             writeActiveMatches(curr_matches)
 
-            return ":white_check_mark: Match reported"
+            return ":white_check_mark: Match has been reported successfully."
 
     return ":x: Match not found"
 
