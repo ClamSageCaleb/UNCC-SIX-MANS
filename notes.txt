@@ -77,8 +77,3 @@ ________________________________________
     }
   ]
 }
-
-________________________________________
-
-Run this command in the release directory
-Build command: pyinstaller --exclude-module tkinter -i '../media/norm_icon.ico' -n Norm_the_6_Mans_Bot --onefile ../src/bot.py
