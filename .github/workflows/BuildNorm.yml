@@ -1,0 +1,47 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Build Norm Executable
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:  
+  build:
+    name: Create Norm Executable
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Build project
+        run: |
+          pip install pyinstaller
+          pyinstaller --exclude-module tkinter -i 'media/norm_icon.ico' -n Norm_the_6_Mans_Bot --onefile src/bot.py
+
+      - name: Add default .env file
+        run: |
+          echo TOKEN=YOUR_DISCORD_TOKEN_HERE > dist/.env
+
+      - name: Zip dist folder
+        uses: papeloto/action-zip@v1
+        with:
+          files: dist/
+          dest: NormPackaged.zip
+
+      - name: Upload Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-artifact@v2
+        with:
+          path: ./NormPackaged.zip
+          name: NormPackaged.zip
