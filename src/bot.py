@@ -756,6 +756,7 @@ async def normq(ctx):
     queueSize = Jason.getQueueLength()
 
     await ctx.send("Duis says I am not supposed to queue, but I don't listen to players worse than me...")
+    await ctx.send("!q")
 
     if (Jason.queueAlreadyPopped() or queueSize == 6):
         embed = ErrorEmbed(
