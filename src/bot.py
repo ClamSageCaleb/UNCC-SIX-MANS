@@ -17,6 +17,8 @@ from discord.ext.commands import Bot
 from dotenv import load_dotenv
 import JSONMethod as Jason
 import Leaderboard
+from EmbedHelper import ErrorEmbed
+from EmbedHelper import QueueUpdateEmbed
 # from datetime import datetime
 
 # Bot prefix and Discord Bot token
@@ -91,51 +93,57 @@ async def list_servers():
 @client.command(name='q', aliases=['addmepapanorm', 'Q', 'addmebitch', 'queue', 'join'], pass_context=True)
 async def q(ctx, quiet=False):
     queue_length = Jason.getQueueLength()
-
-    if (Jason.queueAlreadyPopped()):
-        await ctx.send(":x: Please wait until current lobby has been set.")
-        return
-
     player = ctx.message.author
 
-    if(Jason.isPlayerInQueue(player)):
-        await ctx.send(":x: " + player.mention + " already in queue, dummy")
-        return
-
-    if (Leaderboard.isPlayerInActiveMatch(str(player))):
-        await ctx.send(
-            ":x: Your previous match has not been reported yet."
-            " Report your match in <#{0}> and try again.".format(MATCH_REPORT_CH_ID)
+    if (Jason.queueAlreadyPopped()):
+        embed = ErrorEmbed(
+            title="Current lobby not set",
+            desc="Please wait until current lobby has been set.",
         )
-        return
 
-    if(queue_length == 0):
+    elif(Jason.isPlayerInQueue(player)):
+        embed = ErrorEmbed(
+            title="Already in queue",
+            desc="You are already in the queue, dummy.",
+        )
+
+    elif (Leaderboard.isPlayerInActiveMatch(str(player))):
+        embed = ErrorEmbed(
+            title="Match still active",
+            desc="Your previous match has not been reported yet."
+            " Report your match in <#{0}> and try again.".format(MATCH_REPORT_CH_ID),
+        )
+
+    elif(queue_length == 0):
         Jason.addToQueue(player)
 
         if (quiet):
-            await ctx.send(
-                "- Silent Queue :shushing_face:-\n\n" +
-                player.mention + " wants to queue!\n\n"
-                "Type **!q** to join"
+            embed = QueueUpdateEmbed(
+                title="Queue has started :shushing_face:",
+                desc="{} wants to queue!\n\nType **!q** to join".format(player.mention),
             )
+            await ctx.send(embed=embed)
         else:
-            await ctx.send(
-                "@here\n\n" +
-                player.mention + " wants to queue!\n\n"
-                "Type **!q** to join"
+            embed = QueueUpdateEmbed(
+                title="Queue has started!",
+                desc="@here\n\n{} wants to queue!\n\nType **!q** to join".format(player.mention),
             )
 
     elif(queue_length >= 6):
-        await ctx.send(":x: Queue full, wait until teams are picked.")
+        embed = ErrorEmbed(
+            title="Queue already full",
+            desc="Queue is already full, please wait until the current queue is set and try again.",
+        )
 
     elif(queue_length == 5):
         Jason.addToQueue(player)
         playerList = Jason.getQueueList()
 
-        await ctx.send(
-            player.mention + " added to the queue!" + "\n\n"
-            "Queue size: " + str(queue_length + 1) + "/6 \n"
-            "Current queue:\n" + playerList+"\n\n"
+        embed = QueueUpdateEmbed(
+            title="Queue popped!",
+            desc=player.mention + " added to the queue!" + "\n\n"
+            "Queue size: " + str(queue_length + 1) + "/6\n\n"
+            "Current queue:\n" + playerList + "\n\n"
             "**Queue is now full!** \n\n"
             "Type !random for random teams.\n"
             "Type !captains to get picked last."
@@ -145,11 +153,14 @@ async def q(ctx, quiet=False):
         Jason.addToQueue(player)
         playerList = Jason.getQueueList()
 
-        await ctx.send(
-            player.mention + " added to the queue!\n\n"
+        embed = QueueUpdateEmbed(
+            title="Player added to queue",
+            desc=player.mention + " has been added to the queue!\n\n"
             "Queue size: " + str(queue_length + 1) + "/6\n\n"
             "Current queue:\n" + playerList
         )
+
+    await ctx.send(embed=embed)
 
 
 @client.command(name='qq', aliases=['quietq', 'QQ', 'quietqueue', 'shh', 'dontping'], pass_context=True)
