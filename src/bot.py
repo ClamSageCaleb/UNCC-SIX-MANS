@@ -11,7 +11,6 @@ __status__ = "Production"
 import asyncio
 import os
 import sys
-import subprocess
 import random
 import discord
 from discord.ext.commands import Bot
@@ -225,7 +224,7 @@ async def coinFlip(ctx):
         await leave(ctx)
 
 
-@client.command(name='listq', aliases=['list', 'listqueue', 'show', 'showq', 'showqueue', 'inq', 'sq', 'lq', 'status', 'showmethefknqueue', '<:who:599055076639899648>'], pass_context=True) # noqa
+@client.command(name='listq', aliases=['list', 'listqueue', 'show', 'showq', 'showqueue', 'inq', 'sq', 'lq', 'status', 'showmethefknqueue', '<:who:599055076639899648>'], pass_context=True)  # noqa
 async def listq(ctx):
     if (Jason.getQueueLength() == 0):
         await ctx.send("Queue is empty, join the queue by typing **!q**")
@@ -251,7 +250,7 @@ async def rnd(ctx):
         )
 
 
-@client.command(name='captains', aliases=['cap', 'iwanttopickteams', 'Captains', 'captain', 'Captain', 'Cap'], pass_context=True) # noqa
+@client.command(name='captains', aliases=['cap', 'iwanttopickteams', 'Captains', 'captain', 'Captain', 'Cap'], pass_context=True)  # noqa
 async def captains(ctx):
     if (Jason.queueAlreadyPopped()):
         blueCap, orangeCap = Jason.captainsPop()
@@ -430,16 +429,20 @@ async def clear(ctx):
         await ctx.send("You do not have permission to clear the queue.")
 
 
+# Disabling command as it does not work with the new executable.
+# TODO: Find a new way to restart Norm since he is now an executable
 @client.command(name='restart', aliases=['restartbot'], pass_context=True)
 async def restart(ctx):
-    if(Jason.isBotAdmin(ctx.message.author.roles)):
-        await ctx.send("Bot restarting...hopefully this fixes everything <:UNCCfeelsgood:538182514091491338>")
-        os.remove("./data/queue.json")
-        print("Restarting...")
-        subprocess.call(["python", ".\\src\\bot.py"])
-        sys.exit()
-    else:
-        await ctx.send("You do not have permission to restart me.")
+    await ctx.send("This command is temporarily disabled.")
+
+    # if(Jason.isBotAdmin(ctx.message.author.roles)):
+    #     await ctx.send("Bot restarting...hopefully this fixes everything <:UNCCfeelsgood:538182514091491338>")
+    #     os.remove("./data/queue.json")
+    #     print("Restarting...")
+    #     subprocess.call(["python", ".\\src\\bot.py"])
+    #     sys.exit()
+    # else:
+    #     await ctx.send("You do not have permission to restart me.")
 
 
 @client.command(name='quit', aliases=['normshutthefuckup'], pass_context=True)
@@ -498,7 +501,7 @@ async def pika(ctx):
     pikaO = pikaO + 1
 
 
-@client.command(name='zappa', aliases=['zapp', 'zac', '<:zappa:632813684678197268>', '<:zapp:632813709579911179>'], pass_context=True) # noqa
+@client.command(name='zappa', aliases=['zapp', 'zac', '<:zappa:632813684678197268>', '<:zapp:632813709579911179>'], pass_context=True)  # noqa
 async def zappa(ctx):
     await ctx.send(
         "<:zappa:632813684678197268> <:zapp:632813709579911179> brainyzac more like brainyWACK amirite...that is"

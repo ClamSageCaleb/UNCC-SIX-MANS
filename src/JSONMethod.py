@@ -132,7 +132,8 @@ def clearQueue():
 
 def checkQueueFile():
     if not path.exists(queueFilePath):
-        mkdir("data")
+        if not path.exists("data"):
+            mkdir("data")
         with open(queueFilePath, "w") as queue:
             json.dump(default, queue)
 
