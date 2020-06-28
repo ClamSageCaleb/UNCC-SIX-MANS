@@ -61,15 +61,15 @@ def brokenQueue(player):
     curr_matches = readActiveMatches()
 
     if (len(curr_matches) == 0):
-        return ":x: There are no active matches."
+        return "There are no currently active matches."
 
     match = curr_matches.pop()
 
     if (player in (match["blueTeam"] + match["orangeTeam"])):
         writeActiveMatches(curr_matches)
-        return "Previous queue removed."
+        return ":white_check_mark: Previous queue removed."
 
-    return ":x: Player is not in queue, therefore cannot report broken queue."
+    return "You are not in the queue; therefore you cannot report a broken queue."
 
 
 def isPlayerInActiveMatch(player):
@@ -217,10 +217,7 @@ def showLeaderboard(player=None, limit=None):
         player_data = curr_leaderboard[player_index]
 
         if (player_data["Matches Played"] <= 5):
-            return (
-                ":x: You have not played enough matches to make it on the leaderboard. You have played"
-                " {0} matches and need 5 to be placed on the leaderboard.".format(player_data["Matches Played"])
-            )
+            return (player_data["Name"], player_data["Matches Played"])
 
         index = 0
         for i, p in enumerate(curr_leaderboard):
@@ -229,15 +226,10 @@ def showLeaderboard(player=None, limit=None):
             elif (p["Matches Played"] >= 5):
                 index += 1
 
-        return "```\nUNCC 6 Mans | {0}\n\n".format(player) + makePretty(index, player_data) + "\n```"
+        return "```" + makePretty(index, player_data) + "\n```"
 
     else:
         msg = "```\n"
-
-        if (limit):
-            msg += "UNCC 6 Mans | Top {0}\n\n".format(limit)
-        else:
-            msg += "UNCC 6 Mans | Full Leaderboard\n\n"
 
         index = 0
         for player_data in curr_leaderboard:

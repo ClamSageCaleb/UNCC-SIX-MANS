@@ -250,7 +250,7 @@ def pick(player_picked, player_picked_2=None):
 
             curr_queue["blueTeam"].append(curr_queue["queue"].pop(0))
         else:
-            return "{0} is not in the queue. Try again".format(player_picked_2.name)
+            return "{0} is not in the queue. Try again.".format(player_picked_2.name)
 
     writeQueue(curr_queue)
     return ""
