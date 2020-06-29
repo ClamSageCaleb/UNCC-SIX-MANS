@@ -2,7 +2,7 @@ __author__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __copyright__ = "Copyright 2019, MIT License"
 __credits__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __license__ = "MIT"
-__version__ = "0.0.2"
+__version__ = "4.0.6"
 __maintainer__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __email__ = "caleb.benjamin9799@gmail.com"
 __status__ = "Production"
@@ -58,7 +58,7 @@ async def on_command_error(ctx, error):
 @client.event
 async def on_ready():
     await client.change_presence(activity=discord.Game(name="6 mans"))
-    print("Logged in as " + client.user.name)
+    print("Logged in as " + client.user.name + " version 4.0.6")
 
 
 async def list_servers():
@@ -396,6 +396,132 @@ async def captains(ctx):
     await ctx.send(embed=embed)
 
 
+def orangeTeamPick(ctx):
+    """
+    Helper function for the !pick command when orange team is picking.
+
+    Parameters:
+        ctx (Discord Context): The ctx passed into the !pick command.
+
+    Returns:
+        Discord.Embed: An embedded message to send.
+
+    """
+    if len(ctx.message.mentions) == 0:
+        embed = ErrorEmbed(
+            title="No Mentioned Player",
+            desc="No one was mentioned, please pick an available player."
+        )
+    elif len(ctx.message.mentions) != 1:
+        embed = ErrorEmbed(
+            title="Too Many Mentioned Players",
+            desc="More than one player mentioned, please pick just one player."
+        )
+    else:
+
+        errorMsg = Jason.pick(ctx.message.mentions[0])
+
+        if (errorMsg == ""):
+            blueCap, orangeCap = Jason.captainsPop()
+            playerList = Jason.getQueueList()
+
+            embed = QueueUpdateEmbed(
+                title="Player Added to Team",
+                desc=ctx.message.mentions[0].mention + " was added to 🔷 BLUE TEAM 🔷"
+            ).add_field(
+                name="\u200b",
+                value="\u200b",
+                inline=False
+            ).add_field(
+                name="🔶 ORANGE team 🔶 please pick TWO players.",
+                value="Ex: `!pick @Twan @Tux`",
+                inline=False
+            ).add_field(
+                name="\u200b",
+                value="\u200b",
+                inline=False
+            ).add_field(
+                name="Available picks",
+                value=playerList,
+                inline=False
+            )
+        else:
+            embed = ErrorEmbed(
+                title="Player Not in Queue",
+                desc=errorMsg
+            )
+
+    return embed
+
+
+def blueTeamPick(ctx):
+    """
+    Helper function for the !pick command when blue team is picking.
+
+    Parameters:
+        ctx (Discord Context): The ctx passed into the !pick command.
+
+    Returns:
+        Discord.Embed: An embedded message to send.
+
+    """
+    if len(ctx.message.mentions) == 0:
+        embed = ErrorEmbed(
+            title="No Mentioned Player",
+            desc="No one was mentioned, please pick an available player."
+        )
+
+    elif len(ctx.message.mentions) != 2:
+        embed = ErrorEmbed(
+            title="Incorrect Format",
+            desc="Use format: `!pick @player1 @player2`"
+        )
+        # this was where you could just pick one player at a time, but it seemed to break
+        # so I just removed it for now
+
+    else:
+
+        errorMsg = Jason.pick(ctx.message.mentions[0], ctx.message.mentions[1])
+
+        if (errorMsg == ""):
+            [player1, player2] = ctx.message.mentions
+
+            blueCap, orangeCap = Jason.captainsPop()
+            blueTeam, orangeTeam = Jason.getTeamList()
+
+            embed = QueueUpdateEmbed(
+                title="**Teams are Set!**",
+                desc="🔶 ORANGE TEAM 🔶 picked " + player1.mention + " & " + player2.mention +
+                "\n\nLast player added to 🔷 BLUE TEAM 🔷"
+            ).add_field(
+                name="\u200b",
+                value="\u200b",
+                inline=False
+            ).add_field(
+                name="Final Rosters:",
+                value="\u200b",
+                inline=False
+            ).add_field(
+                name="🔷 BLUE TEAM 🔷",
+                value="\n".join([player.mention for player in blueTeam]),
+                inline=False
+            ).add_field(
+                name="🔶 ORANGE TEAM 🔶",
+                value="\n".join([player.mention for player in orangeTeam]),
+                inline=False
+            )
+
+            Leaderboard.startMatch(blueTeam, orangeTeam)
+            Jason.clearQueue()
+        else:
+            embed = ErrorEmbed(
+                title="Player(s) Not Found",
+                desc="Either one or both of the players you mentioned is not in the queue. Try again."
+            )
+
+    return embed
+
+
 @client.command(name='pick', aliases=['add', 'choose', '<:pick:628999871554387969>'], pass_context=True)
 async def pick(ctx):
     if (not Jason.queueAlreadyPopped()):
@@ -405,107 +531,10 @@ async def pick(ctx):
         )
 
     elif(Jason.validateBluePick(ctx.message.author)):
-
-        # orange captain picks one player
-        if len(ctx.message.mentions) == 0:
-            embed = ErrorEmbed(
-                title="No Mentioned Player",
-                desc="No one was mentioned, please pick an available player."
-            )
-        elif len(ctx.message.mentions) != 1:
-            embed = ErrorEmbed(
-                title="Too Many Mentioned Players",
-                desc="More than one player mentioned, please pick just one player."
-            )
-        else:
-
-            errorMsg = Jason.pick(ctx.message.mentions[0])
-
-            if (errorMsg == ""):
-                blueCap, orangeCap = Jason.captainsPop()
-                playerList = Jason.getQueueList()
-
-                embed = QueueUpdateEmbed(
-                    title="Player Added to Team",
-                    desc=ctx.message.mentions[0].mention + " was added to 🔷 BLUE TEAM 🔷"
-                ).add_field(
-                    name="\u200b",
-                    value="\u200b",
-                    inline=False
-                ).add_field(
-                    name="🔶 ORANGE team 🔶 please pick TWO players.",
-                    value="Ex: `!pick @Twan @Tux`",
-                    inline=False
-                ).add_field(
-                    name="\u200b",
-                    value="\u200b",
-                    inline=False
-                ).add_field(
-                    name="Available picks",
-                    value=playerList,
-                    inline=False
-                )
-            else:
-                embed = ErrorEmbed(
-                    title="Player Not in Queue",
-                    desc=errorMsg
-                )
+        embed = orangeTeamPick(ctx)
 
     elif(Jason.validateOrangePick(ctx.message.author)):
-
-        if len(ctx.message.mentions) == 0:
-            embed = ErrorEmbed(
-                title="No Mentioned Player",
-                desc="No one was mentioned, please pick an available player."
-            )
-
-        elif len(ctx.message.mentions) != 2:
-            embed = ErrorEmbed(
-                title="Incorrect Format",
-                desc="Use format: `!pick @player1 @player2`"
-            )
-            # this was where you could just pick one player at a time, but it seemed to break
-            # so I just removed it for now
-
-        else:
-
-            errorMsg = Jason.pick(ctx.message.mentions[0], ctx.message.mentions[1])
-
-            if (errorMsg == ""):
-                [player1, player2] = ctx.message.mentions
-
-                blueCap, orangeCap = Jason.captainsPop()
-                blueTeam, orangeTeam = Jason.getTeamList()
-
-                embed = QueueUpdateEmbed(
-                    title="**Teams are Set!**",
-                    desc="🔶 ORANGE TEAM 🔶 picked " + player1.mention + " & " + player2.mention +
-                    "\n\nLast player added to 🔷 BLUE TEAM 🔷"
-                ).add_field(
-                    name="\u200b",
-                    value="\u200b",
-                    inline=False
-                ).add_field(
-                    name="Final Rosters:",
-                    value="\u200b",
-                    inline=False
-                ).add_field(
-                    name="🔷 BLUE TEAM 🔷",
-                    value="\n".join([player.mention for player in blueTeam]),
-                    inline=False
-                ).add_field(
-                    name="🔶 ORANGE TEAM 🔶",
-                    value="\n".join([player.mention for player in orangeTeam]),
-                    inline=False
-                )
-
-                Leaderboard.startMatch(blueTeam, orangeTeam)
-                Jason.clearQueue()
-            else:
-                embed = ErrorEmbed(
-                    title="Player(s) Not Found",
-                    desc="Either one or both of the players you mentioned is not in the queue. Try again."
-                )
+        embed = blueTeamPick(ctx)
 
     else:
         blueCap, orangeCap = Jason.captainsPop()
@@ -579,8 +608,8 @@ async def reportMatch(ctx, *arg):
 @client.command(name="leaderboard", aliases=["standings", "rank", "rankings", "stonks"], pass_contex=True)
 async def showLeaderboard(ctx, *arg):
 
-    playerMentioned = len(ctx.message.mentions) == 1
-    selfRank = len(arg) == 1 and arg[0] == "me"
+    playerMentioned: bool = len(ctx.message.mentions) == 1
+    selfRank: bool = len(arg) == 1 and arg[0] == "me"
 
     if (playerMentioned or selfRank):
 
@@ -590,7 +619,7 @@ async def showLeaderboard(ctx, *arg):
             player_name = str(ctx.message.author)
         players_rank = Leaderboard.showLeaderboard(player_name)
 
-        if (type(players_rank) != tuple):
+        if (type(players_rank) == str):
             embed = InfoEmbed(
                 title="Leaderboard Placement for {0}".format(player_name),
                 desc=players_rank
@@ -619,7 +648,7 @@ async def showLeaderboard(ctx, *arg):
 
 
 async def updateLeaderboardChannel():
-    # delete old leaderboard and post updated leaderboard
+    """Deletes the old leaderboard and posts the updated one."""
     channel = client.get_channel(LEADERBOARD_CH_ID)
     prev_msg = await channel.fetch_message(channel.last_message_id)
     await channel.delete_messages([prev_msg])
