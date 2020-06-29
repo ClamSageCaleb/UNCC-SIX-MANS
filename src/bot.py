@@ -333,17 +333,8 @@ async def captains(ctx):
 
         embed = InfoEmbed(
             title="Captains Already Set",
-            desc=""
-        ).add_field(
-            name="\u200b",
-            value="\u200b",
-            inline=False
-        ).add_field(
-            name="🔷 BLUE Team Captain 🔷",
-            value=blueCap.mention
-        ).add_field(
-            name="🔶 ORANGE Team Captain 🔶",
-            value=orangeCap.mention
+            desc="🔷 BLUE Team Captain 🔷: " + blueCap.mention +
+            "\n\n🔶 ORANGE Team Captain 🔶: " + orangeCap.mention
         ).add_field(
             name="\u200b",
             value="\u200b",
@@ -363,18 +354,9 @@ async def captains(ctx):
         playerList = Jason.getQueueList()
 
         embed = QueueUpdateEmbed(
-            title="Captains - Team Selection",
-            desc=""
-        ).add_field(
-            name="\u200b",
-            value="\u200b",
-            inline=False
-        ).add_field(
-            name="🔷 BLUE Team Captain 🔷",
-            value=blueCap.mention
-        ).add_field(
-            name="🔶 ORANGE Team Captain 🔶",
-            value=orangeCap.mention
+            title="Captains",
+            desc="🔷 BLUE Team Captain 🔷: " + blueCap.mention +
+            "\n\n🔶 ORANGE Team Captain 🔶: " + orangeCap.mention
         ).add_field(
             name="\u200b",
             value="\u200b",
@@ -396,9 +378,9 @@ async def captains(ctx):
     await ctx.send(embed=embed)
 
 
-def orangeTeamPick(ctx):
+def blueTeamPick(ctx):
     """
-    Helper function for the !pick command when orange team is picking.
+    Helper function for the !pick command when blue team is picking.
 
     Parameters:
         ctx (Discord Context): The ctx passed into the !pick command.
@@ -454,9 +436,9 @@ def orangeTeamPick(ctx):
     return embed
 
 
-def blueTeamPick(ctx):
+async def orangeTeamPick(ctx):
     """
-    Helper function for the !pick command when blue team is picking.
+    Helper function for the !pick command when orange team is picking.
 
     Parameters:
         ctx (Discord Context): The ctx passed into the !pick command.
@@ -490,17 +472,16 @@ def blueTeamPick(ctx):
             blueTeam, orangeTeam = Jason.getTeamList()
 
             embed = QueueUpdateEmbed(
-                title="**Teams are Set!**",
+                title="Final Players Added",
                 desc="🔶 ORANGE TEAM 🔶 picked " + player1.mention + " & " + player2.mention +
                 "\n\nLast player added to 🔷 BLUE TEAM 🔷"
-            ).add_field(
-                name="\u200b",
-                value="\u200b",
-                inline=False
-            ).add_field(
-                name="Final Rosters:",
-                value="\u200b",
-                inline=False
+            )
+
+            await ctx.send(embed=embed)
+
+            embed = QueueUpdateEmbed(
+                title="Teams are Set!",
+                desc=""
             ).add_field(
                 name="🔷 BLUE TEAM 🔷",
                 value="\n".join([player.mention for player in blueTeam]),
@@ -531,10 +512,10 @@ async def pick(ctx):
         )
 
     elif(Jason.validateBluePick(ctx.message.author)):
-        embed = orangeTeamPick(ctx)
+        embed = blueTeamPick(ctx)
 
     elif(Jason.validateOrangePick(ctx.message.author)):
-        embed = blueTeamPick(ctx)
+        embed = await orangeTeamPick(ctx)
 
     else:
         blueCap, orangeCap = Jason.captainsPop()
