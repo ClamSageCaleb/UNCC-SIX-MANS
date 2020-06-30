@@ -2,7 +2,7 @@ __author__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __copyright__ = "Copyright 2019, MIT License"
 __credits__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __license__ = "MIT"
-__version__ = "0.0.2"
+__version__ = "4.1.0"
 __maintainer__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __email__ = "caleb.benjamin9799@gmail.com"
 __status__ = "Production"
@@ -10,13 +10,14 @@ __status__ = "Production"
 
 import asyncio
 import os
-import sys
+import time
 import random
 import discord
-from discord.ext.commands import Bot
+from discord.ext.commands import Bot, CommandNotFound
 from dotenv import load_dotenv
 import JSONMethod as Jason
 import Leaderboard
+from EmbedHelper import ErrorEmbed, QueueUpdateEmbed, AdminEmbed, InfoEmbed
 # from datetime import datetime
 
 # Bot prefix and Discord Bot token
@@ -49,9 +50,15 @@ async def on_message(message):
 
 
 @client.event
+async def on_command_error(ctx, error):
+    if isinstance(error, CommandNotFound):
+        return
+
+
+@client.event
 async def on_ready():
     await client.change_presence(activity=discord.Game(name="6 mans"))
-    print("Logged in as " + client.user.name)
+    print("Logged in as " + client.user.name + " version 4.0.6")
 
 
 async def list_servers():
@@ -63,16 +70,32 @@ async def list_servers():
 
         if (Jason.getQueueTime() >= 6 and Jason.getQueueLength() != 0):
             Jason.clearQueue()
-            await channel.send("Inactive for 1 hr. Queue reset")
+            embed = InfoEmbed(
+                title="Stale Queue Update",
+                desc="The queue has been inactive for 1 hr and has now been reset."
+            )
+
+            try:
+                await channel.send(embed=embed)
+            except Exception:
+                print("! Norm does not have access to post in the queue channel.")
+                return
 
         elif (Jason.getQueueTime() != 0):
             timeSpent = Jason.getQueueTime() * 10
             timeLeft = 60 - timeSpent
 
             if(timeLeft == 30 or timeLeft == 10):
-                await channel.send(
-                    "Inactive for " + str(timeSpent) + " min. Queue will clear in " + str(timeLeft) + " min."
+                embed = InfoEmbed(
+                    title="Stale Queue Update",
+                    desc="Inactive for " + str(timeSpent) + " min. Queue will clear in " + str(timeLeft) + " min."
                 )
+
+            try:
+                await channel.send(embed=embed)
+            except Exception:
+                print("! Norm does not have access to post in the queue channel.")
+                return
 
         if (Jason.getQueueLength() != 0):
             Jason.incrementTimer()
@@ -91,51 +114,56 @@ async def list_servers():
 @client.command(name='q', aliases=['addmepapanorm', 'Q', 'addmebitch', 'queue', 'join'], pass_context=True)
 async def q(ctx, quiet=False):
     queue_length = Jason.getQueueLength()
-
-    if (Jason.queueAlreadyPopped()):
-        await ctx.send(":x: Please wait until current lobby has been set.")
-        return
-
     player = ctx.message.author
 
-    if(Jason.isPlayerInQueue(player)):
-        await ctx.send(":x: " + player.mention + " already in queue, dummy")
-        return
-
-    if (Leaderboard.isPlayerInActiveMatch(str(player))):
-        await ctx.send(
-            ":x: Your previous match has not been reported yet."
-            " Report your match in <#{0}> and try again.".format(MATCH_REPORT_CH_ID)
+    if (Jason.queueAlreadyPopped()):
+        embed = ErrorEmbed(
+            title="Current Lobby Not Set",
+            desc="Please wait until current lobby has been set.",
         )
-        return
 
-    if(queue_length == 0):
+    elif(Jason.isPlayerInQueue(player)):
+        embed = ErrorEmbed(
+            title="Already in Queue",
+            desc="You are already in the queue, dummy.",
+        )
+
+    elif (Leaderboard.isPlayerInActiveMatch(str(player))):
+        embed = ErrorEmbed(
+            title="Match Still Active",
+            desc="Your previous match has not been reported yet."
+            " Report your match in <#{0}> and try again.".format(MATCH_REPORT_CH_ID),
+        )
+
+    elif(queue_length == 0):
         Jason.addToQueue(player)
 
         if (quiet):
-            await ctx.send(
-                "- Silent Queue :shushing_face:-\n\n" +
-                player.mention + " wants to queue!\n\n"
-                "Type **!q** to join"
+            embed = QueueUpdateEmbed(
+                title="Queue has Started :shushing_face:",
+                desc="{0} wants to queue!\n\nType **!q** to join".format(player.mention),
             )
         else:
-            await ctx.send(
-                "@here\n\n" +
-                player.mention + " wants to queue!\n\n"
-                "Type **!q** to join"
+            embed = QueueUpdateEmbed(
+                title="Queue has Started!",
+                desc="@here\n\n{0} wants to queue!\n\nType **!q** to join".format(player.mention),
             )
 
     elif(queue_length >= 6):
-        await ctx.send(":x: Queue full, wait until teams are picked.")
+        embed = ErrorEmbed(
+            title="Queue Already Full",
+            desc="Queue is already full, please wait until the current queue is set and try again.",
+        )
 
     elif(queue_length == 5):
         Jason.addToQueue(player)
         playerList = Jason.getQueueList()
 
-        await ctx.send(
-            player.mention + " added to the queue!" + "\n\n"
-            "Queue size: " + str(queue_length + 1) + "/6 \n"
-            "Current queue:\n" + playerList+"\n\n"
+        embed = QueueUpdateEmbed(
+            title="Queue Popped!",
+            desc=player.mention + " added to the queue!" + "\n\n"
+            "Queue size: " + str(queue_length + 1) + "/6\n\n"
+            "Current queue:\n" + playerList + "\n\n"
             "**Queue is now full!** \n\n"
             "Type !random for random teams.\n"
             "Type !captains to get picked last."
@@ -145,11 +173,14 @@ async def q(ctx, quiet=False):
         Jason.addToQueue(player)
         playerList = Jason.getQueueList()
 
-        await ctx.send(
-            player.mention + " added to the queue!\n\n"
+        embed = QueueUpdateEmbed(
+            title="Player Added to Queue",
+            desc=player.mention + " has been added to the queue!\n\n"
             "Queue size: " + str(queue_length + 1) + "/6\n\n"
             "Current queue:\n" + playerList
         )
+
+    await ctx.send(embed=embed)
 
 
 @client.command(name='qq', aliases=['quietq', 'QQ', 'quietqueue', 'shh', 'dontping'], pass_context=True)
@@ -159,61 +190,84 @@ async def qq(ctx):
 
 @client.command(name='leave', aliases=['yoink', 'gtfo', 'getmethefuckouttahere'], pass_context=True)
 async def leave(ctx):
-
-    if (Jason.queueAlreadyPopped()):
-        await ctx.send("TOO LATE! You should've left before captains were picked.")
-        return
-
     player = ctx.message.author
     username = player.display_name
 
-    if(Jason.isPlayerInQueue(player)):
+    if (Jason.queueAlreadyPopped()):
+        embed = ErrorEmbed(
+            title="Queue Already Popped",
+            desc="TOO LATE! You should've left before captains were picked."
+        )
+
+    elif(Jason.isPlayerInQueue(player)):
 
         Jason.removeFromQueue(player)
         playerList = Jason.getQueueList()
 
         if(Jason.getQueueLength() != 0):
-            await ctx.send(
-                username + " has left the queue.\n\n"
+            embed = QueueUpdateEmbed(
+                title="Player Left Queue",
+                desc=username + " has left the queue.\n\n"
                 "Queue size: " + str(Jason.getQueueLength()) + "/6\n\n"
-                "Remaining players: " + playerList
+                "Remaining players:\n" + playerList
             )
         else:
-            await ctx.send(
-                username + " has left the queue.\n\n"
+            embed = QueueUpdateEmbed(
+                title="Player Left Queue",
+                desc=username + " has left the queue.\n\n"
                 "Queue is now empty."
             )
     else:
-        await ctx.send(":x: You are not in the queue, type **!q** to join")
+        embed = ErrorEmbed(
+            title="Not in Queue",
+            desc="You are not in the queue, type **!q** to join"
+        )
+
+    await ctx.send(embed=embed)
 
 
 @client.command(name='kick', aliases=['remove', 'yeet'], pass_context=True)
 async def kick(ctx):
+    player = ctx.message.mentions[0]
 
     if (not Jason.isBotAdmin(ctx.message.author.roles)):
-        await ctx.send("You do not have the leg strength to kick other players.")
-        return
+        embed = ErrorEmbed(
+            title="Permission Denied",
+            desc="You do not have the leg strength to kick other players."
+        )
 
     elif (len(ctx.message.mentions) != 1):
-        await ctx.send(":x: Please mention a player in the queue to kick.")
-        return
+        embed = ErrorEmbed(
+            title="Did Not Mention a Player",
+            desc="Please mention a player in the queue to kick."
+        )
 
     elif (Jason.queueAlreadyPopped()):
-        await ctx.send(":x: Can't kick players while picking teams.")
-        return
+        embed = ErrorEmbed(
+            title="Queue Already Popped",
+            desc="Can't kick players while picking teams."
+        )
 
     elif(Jason.getQueueLength() == 0):
-        await ctx.send(":x: The queue is empty, what are you doing?")
-        return
-
-    player = ctx.message.mentions[0]
+        embed = ErrorEmbed(
+            title="Queue is Empty",
+            desc="The queue is empty, what are you doing?"
+        )
 
     if (Jason.isPlayerInQueue(player)):
         Jason.removeFromQueue(player)
-        await ctx.send(":exclamation: Removed " + player.display_name + " from the queue")
+        embed = AdminEmbed(
+            title="Kicked Player",
+            desc="Removed " + player.display_name + " from the queue"
+        )
 
     else:
-        await ctx.send(":x: User not in queue. To see who is in current queue, type: **!list**")
+        embed = ErrorEmbed(
+            title="User Not in Queue",
+            desc="To see who is in current queue, type: **!list**"
+        )
+
+    await ctx.send(embed=embed)
 
 
 @client.command(name='flip', aliases=['coinflip', 'chance', 'coin'], pass_context=True)
@@ -227,27 +281,53 @@ async def coinFlip(ctx):
 @client.command(name='listq', aliases=['list', 'listqueue', 'show', 'showq', 'showqueue', 'inq', 'sq', 'lq', 'status', 'showmethefknqueue', '<:who:599055076639899648>'], pass_context=True)  # noqa
 async def listq(ctx):
     if (Jason.getQueueLength() == 0):
-        await ctx.send("Queue is empty, join the queue by typing **!q**")
+        embed = QueueUpdateEmbed(
+            title="Queue is Empty",
+            desc="Join the queue by typing **!q**"
+        )
     elif (Jason.queueAlreadyPopped()):
         await captains(ctx)
+        return
     else:
         playerList = Jason.getQueueList()
-        await ctx.send("Current queue: " + str(Jason.getQueueLength()) + "/6 \n" + playerList)
+        embed = QueueUpdateEmbed(
+            title="Current Queue",
+            desc="Queue size: " + str(Jason.getQueueLength()) + "/6\n\n" + "Current queue:\n" + playerList
+        )
+
+    await ctx.send(embed=embed)
 
 
 @client.command(name='rnd', aliases=['random', 'idontwanttopickteams', 'fuckcaptains'], pass_context=True)
 async def rnd(ctx):
-    if(Jason.getQueueLength() != 6):
-        await ctx.send(":x: Queue is not full")
+    if (Jason.queueAlreadyPopped()):
+        embed = ErrorEmbed(
+            title="Captains Already Chosen",
+            desc="You cannot change your mind once you pick captains."
+        )
+    elif(Jason.getQueueLength() != 6):
+        embed = ErrorEmbed(
+            title="Queue is Not Full",
+            desc="You cannot pop a queue until is full."
+        )
     else:
         blueTeam, orangeTeam = Jason.randomPop()
         Leaderboard.startMatch(blueTeam, orangeTeam)
 
-        await ctx.send(
-            "**Teams are set!**\n\n"
-            "🔷 BLUE TEAM 🔷 \n\t{}".format("\n\t".join([player.mention for player in blueTeam])) + "\n\n"
-            "🔶 ORANGE TEAM 🔶 \n\t{}".format("\n\t".join([player.mention for player in orangeTeam]))
+        embed = QueueUpdateEmbed(
+            title="Teams are Set!",
+            desc=""
+        ).add_field(
+            name="🔷 BLUE TEAM 🔷",
+            value="\n".join([player.mention for player in blueTeam]),
+            inline=False
+        ).add_field(
+            name="🔶 ORANGE TEAM 🔶",
+            value="\n".join([player.mention for player in orangeTeam]),
+            inline=False
         )
+
+    await ctx.send(embed=embed)
 
 
 @client.command(name='captains', aliases=['cap', 'iwanttopickteams', 'Captains', 'captain', 'Captain', 'Cap'], pass_context=True)  # noqa
@@ -255,185 +335,380 @@ async def captains(ctx):
     if (Jason.queueAlreadyPopped()):
         blueCap, orangeCap = Jason.captainsPop()
         playerList = Jason.getQueueList()
+        blueTeam, orangeTeam = Jason.getTeamList()
 
-        await ctx.send(
-            "Captains already set\n\n"
-            "Captains:\n"
-            "🔷 BLUE Team Captain 🔷: " + blueCap.mention + "\n"
-            "🔶 ORANGE Team Captain 🔶: " + orangeCap.mention + "\n\n"
-            "Available picks:\n" + playerList
+        embed = InfoEmbed(
+            title="Captains Already Set",
+            desc="🔷 BLUE Team Captain 🔷: " + blueCap.mention +
+            "\n\n🔶 ORANGE Team Captain 🔶: " + orangeCap.mention
+        ).add_field(
+            name="\u200b",
+            value="\u200b",
+            inline=False
+        )
+
+        if (len(blueTeam) == 1):
+            embed.add_field(
+                name="It is 🔷 BLUE Team's 🔷 turn to pick",
+                value="Type **!pick** and mention a player from the queue below.",
+                inline=False
+            )
+        else:
+            embed.add_field(
+                name="It is 🔶 ORANGE Team's 🔶 turn to pick",
+                value="Please pick two players.\nEx: `!pick @Twan @Tux`",
+                inline=False
+            )
+
+        embed.add_field(
+            name="\u200b",
+            value="\u200b",
+            inline=False
+        ).add_field(
+            name="Available picks",
+            value=playerList,
+            inline=False
         )
     elif (Jason.getQueueLength() != 6):
-        await ctx.send(":x: Queue is not full. STOP")
+        embed = ErrorEmbed(
+            title="Queue is Not Full",
+            desc="You cannot pop a queue until is full."
+        )
     else:
         blueCap, orangeCap = Jason.captainsPop()
         playerList = Jason.getQueueList()
 
-        await ctx.send(
-            "Captains:\n"
-            "🔷 BLUE Team Captain 🔷: " + blueCap.mention + "\n"
-            "🔶 ORANGE Team Captain 🔶: " + orangeCap.mention + "\n\n"
-            "🔷 " + blueCap.mention + " 🔷 picks first.\n"
-            "Type **!pick** and mention a player from the queue below.\n\n"
-            "Available picks:\n" + playerList
+        embed = QueueUpdateEmbed(
+            title="Captains",
+            desc="🔷 BLUE Team Captain 🔷: " + blueCap.mention +
+            "\n\n🔶 ORANGE Team Captain 🔶: " + orangeCap.mention
+        ).add_field(
+            name="\u200b",
+            value="\u200b",
+            inline=False
+        ).add_field(
+            name="🔷 BLUE Team 🔷 picks first",
+            value="Type **!pick** and mention a player from the queue below.",
+            inline=False
+        ).add_field(
+            name="\u200b",
+            value="\u200b",
+            inline=False
+        ).add_field(
+            name="Available picks",
+            value=playerList,
+            inline=False
         )
+
+    await ctx.send(embed=embed)
+
+
+def blueTeamPick(ctx):
+    """
+    Helper function for the !pick command when blue team is picking.
+
+    Parameters:
+        ctx (Discord Context): The ctx passed into the !pick command.
+
+    Returns:
+        Discord.Embed: An embedded message to send.
+
+    """
+    if len(ctx.message.mentions) == 0:
+        embed = ErrorEmbed(
+            title="No Mentioned Player",
+            desc="No one was mentioned, please pick an available player."
+        )
+    elif len(ctx.message.mentions) != 1:
+        embed = ErrorEmbed(
+            title="Too Many Mentioned Players",
+            desc="More than one player mentioned, please pick just one player."
+        )
+    else:
+
+        errorMsg = Jason.pick(ctx.message.mentions[0])
+
+        if (errorMsg == ""):
+            blueCap, orangeCap = Jason.captainsPop()
+            playerList = Jason.getQueueList()
+
+            embed = QueueUpdateEmbed(
+                title="Player Added to Team",
+                desc=ctx.message.mentions[0].mention + " was added to 🔷 BLUE TEAM 🔷"
+            ).add_field(
+                name="\u200b",
+                value="\u200b",
+                inline=False
+            ).add_field(
+                name="🔶 ORANGE team 🔶 please pick TWO players.",
+                value="Ex: `!pick @Twan @Tux`",
+                inline=False
+            ).add_field(
+                name="\u200b",
+                value="\u200b",
+                inline=False
+            ).add_field(
+                name="Available picks",
+                value=playerList,
+                inline=False
+            )
+        else:
+            embed = ErrorEmbed(
+                title="Player Not in Queue",
+                desc=errorMsg
+            )
+
+    return embed
+
+
+async def orangeTeamPick(ctx):
+    """
+    Helper function for the !pick command when orange team is picking.
+
+    Parameters:
+        ctx (Discord Context): The ctx passed into the !pick command.
+
+    Returns:
+        Discord.Embed: An embedded message to send.
+
+    """
+    if len(ctx.message.mentions) == 0:
+        embed = ErrorEmbed(
+            title="No Mentioned Player",
+            desc="No one was mentioned, please pick an available player."
+        )
+
+    elif len(ctx.message.mentions) != 2:
+        embed = ErrorEmbed(
+            title="Incorrect Format",
+            desc="Use format: `!pick @player1 @player2`"
+        )
+        # this was where you could just pick one player at a time, but it seemed to break
+        # so I just removed it for now
+
+    else:
+
+        errorMsg = Jason.pick(ctx.message.mentions[0], ctx.message.mentions[1])
+
+        if (errorMsg == ""):
+            [player1, player2] = ctx.message.mentions
+
+            blueCap, orangeCap = Jason.captainsPop()
+            blueTeam, orangeTeam = Jason.getTeamList()
+
+            embed = QueueUpdateEmbed(
+                title="Final Players Added",
+                desc="🔶 ORANGE TEAM 🔶 picked " + player1.mention + " & " + player2.mention +
+                "\n\nLast player added to 🔷 BLUE TEAM 🔷"
+            )
+
+            await ctx.send(embed=embed)
+
+            embed = QueueUpdateEmbed(
+                title="Teams are Set!",
+                desc=""
+            ).add_field(
+                name="🔷 BLUE TEAM 🔷",
+                value="\n".join([player.mention for player in blueTeam]),
+                inline=False
+            ).add_field(
+                name="🔶 ORANGE TEAM 🔶",
+                value="\n".join([player.mention for player in orangeTeam]),
+                inline=False
+            )
+
+            Leaderboard.startMatch(blueTeam, orangeTeam)
+            Jason.clearQueue()
+        else:
+            embed = ErrorEmbed(
+                title="Player(s) Not Found",
+                desc="Either one or both of the players you mentioned is not in the queue. Try again."
+            )
+
+    return embed
 
 
 @client.command(name='pick', aliases=['add', 'choose', '<:pick:628999871554387969>'], pass_context=True)
 async def pick(ctx):
     if (not Jason.queueAlreadyPopped()):
-        await ctx.send(":x: Captains not set. If queue is full, please type **!captains**")
+        embed = ErrorEmbed(
+            title="Captains Not Set",
+            desc="If queue is full, please type **!captains**"
+        )
 
     elif(Jason.validateBluePick(ctx.message.author)):
-
-        # orange captain picks one player
-        if len(ctx.message.mentions) == 0:
-            await ctx.send(":x: No one was mentioned, please pick an available player.")
-            return
-        elif len(ctx.message.mentions) != 1:
-            await ctx.send(":x: More than one player mentioned, please pick just one player.")
-            return
-        else:
-
-            errorMsg = Jason.pick(ctx.message.mentions[0])
-
-            if (errorMsg == ""):
-                blueCap, orangeCap = Jason.captainsPop()
-                playerList = Jason.getQueueList()
-                await ctx.send(
-                    ctx.message.mentions[0].mention + " was added to 🔷 BLUE TEAM 🔷\n\n"
-                    "🔶 " + orangeCap.mention + " 🔶 please pick TWO players.\n"
-                    "Ex: `!pick @Twan @Tux`\n\n"
-                    "Available picks:\n" + playerList
-                )
-            else:
-                await ctx.send(":x: " + errorMsg)
-                return
+        embed = blueTeamPick(ctx)
 
     elif(Jason.validateOrangePick(ctx.message.author)):
-
-        if len(ctx.message.mentions) == 0:
-            await ctx.send(":x: No one was mentioned, please pick a player.")
-
-        elif len(ctx.message.mentions) != 2:
-            await ctx.send(":x: Use format: `!pick @player1 @player2`")
-            # this was where you could just pick one player at a time, but it seemed to break
-            # so I just removed it for now
-
-        else:
-
-            errorMsg = Jason.pick(ctx.message.mentions[0], ctx.message.mentions[1])
-
-            if (errorMsg == ""):
-                [player1, player2] = ctx.message.mentions
-
-                blueCap, orangeCap = Jason.captainsPop()
-                blueTeam, orangeTeam = Jason.getTeamList()
-                await ctx.send(
-                    player1.mention + " & " + player2.mention + " added to 🔶 ORANGE TEAM 🔶\n"
-                    "Last player added to 🔷 BLUE TEAM 🔷\n\n"
-                    "**Teams are set!**\n\n"
-                    "🔷 BLUE TEAM 🔷 \n\t{}".format("\n\t".join([player.mention for player in blueTeam])) + "\n\n"
-                    "🔶 ORANGE TEAM 🔶 \n\t{}".format("\n\t".join([player.mention for player in orangeTeam]))
-                )
-                Leaderboard.startMatch(blueTeam, orangeTeam)
-                Jason.clearQueue()
-            else:
-                await ctx.send("Either one or both of the players you mentioned is not in the queue. Try again")
-                return
+        embed = await orangeTeamPick(ctx)
 
     else:
         blueCap, orangeCap = Jason.captainsPop()
         blueTeam, orangeTeam = Jason.getTeamList()
         if (len(blueTeam) == 1):
-            await ctx.send(
-                "You are not 🔷 BLUE Team Captain 🔷\n\n"
+            embed = ErrorEmbed(
+                title="Not the Blue Captain",
+                desc="You are not 🔷 BLUE Team Captain 🔷\n\n"
                 "🔷 BLUE Team Captain 🔷 is: " + blueCap.mention
             )
         else:
-            await ctx.send(
-                "You are not 🔶 ORANGE Team Captain 🔶 \n\n"
+            embed = ErrorEmbed(
+                title="Not the Orange Captain",
+                desc="You are not 🔶 ORANGE Team Captain 🔶 \n\n"
                 "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.mention
             )
+
+    await ctx.send(embed=embed)
 
 
 @client.command(name="report", pass_contex=True)
 async def reportMatch(ctx, *arg):
+    player_reporting = str(ctx.message.author)
 
     if (
         ctx.message.channel.id != MATCH_REPORT_CH_ID
         and ctx.message.channel.id != QUEUE_CH_ID
         and not Jason.isBotAdmin(ctx.message.author.roles)
     ):
-        await ctx.send(
-            ":x: You can only report matches in the <#{0}> and <#{1}> channels.".format(MATCH_REPORT_CH_ID, QUEUE_CH_ID)
+        embed = ErrorEmbed(
+            title="Can't Do That Here",
+            desc="You can only report matches in the <#{0}> and <#{1}> channels.".format(
+                MATCH_REPORT_CH_ID, QUEUE_CH_ID
+            )
         )
-        return
 
-    player_reporting = str(ctx.message.author)
-
-    if (len(arg) == 1 and (arg[0] == "blue" or arg[0] == "orange")):
+    elif (len(arg) == 1 and (str(arg[0]).lower() == "blue" or str(arg[0]).lower() == "orange")):
         msg = Leaderboard.reportMatch(player_reporting, arg[0])
-        await ctx.send(msg)
 
-        # if match was reported successfully, update leaderboard channel
-        if (":white_check_mark:" in msg):
-            await updateLeaderboardChannel()
+        if (":x:" in msg):
+            embed = ErrorEmbed(
+                title="Match Not Found",
+                desc=msg[4:]
+            )
+        elif (":white_check_mark:" in msg):
+            embed = QueueUpdateEmbed(
+                title="Match Reported",
+                desc=msg[19:]
+            )
+
+            try:
+                # if match was reported successfully, update leaderboard channel
+                await updateLeaderboardChannel()
+            except Exception:
+                print("! Norm does not have access to update the leaderboard.")
+        else:
+            embed = InfoEmbed(
+                title="Match Reported, Needs Confirmation",
+                desc=msg
+            )
     else:
-        await ctx.send(
-            ":x: Report only accepts 'blue' or 'orange' as the winner of the match.\n\n"
+        embed = ErrorEmbed(
+            title="Incorrect Report Format",
+            desc="Report only accepts 'blue' or 'orange' as the winner of the match.\n\n"
             "Use the format: `!report blue`"
         )
+
+    await ctx.send(embed=embed)
 
 
 @client.command(name="leaderboard", aliases=["standings", "rank", "rankings", "stonks"], pass_contex=True)
 async def showLeaderboard(ctx, *arg):
-    if (len(ctx.message.mentions) == 1):
-        await ctx.send(ctx.message.author.mention + "\n\n" + Leaderboard.showLeaderboard(str(ctx.message.mentions[0])))
-    elif (len(arg) == 1 and arg[0] == "me"):
-        await ctx.send(ctx.message.author.mention + "\n\n" + Leaderboard.showLeaderboard(str(ctx.message.author)))
+
+    playerMentioned: bool = len(ctx.message.mentions) == 1
+    selfRank: bool = len(arg) == 1 and arg[0] == "me"
+
+    if (playerMentioned or selfRank):
+
+        if (playerMentioned):
+            player_name = str(ctx.message.mentions[0])
+        else:
+            player_name = str(ctx.message.author)
+        players_rank = Leaderboard.showLeaderboard(player_name)
+
+        if (type(players_rank) == str):
+            embed = InfoEmbed(
+                title="Leaderboard Placement for {0}".format(player_name),
+                desc=players_rank
+            )
+        else:
+            embed = ErrorEmbed(
+                title="Not Enough Matches Played",
+                desc="{0} has played {1}/5 matches needed to be"
+                " on the leaderboard.".format(players_rank[0], players_rank[1])
+            )
+
     elif (len(arg) == 0 and len(ctx.message.mentions) == 0):
-        await ctx.send(
-            ctx.message.author.mention + "\n\n" +
-            Leaderboard.showLeaderboard(limit=5) +
+        embed = InfoEmbed(
+            title="UNCC 6 Mans | Top 5",
+            desc=Leaderboard.showLeaderboard(limit=5) +
             "\nTo see the full leaderboard, visit <#{0}>.".format(LEADERBOARD_CH_ID)
         )
     else:
-        await ctx.send(
-            ":x: Mention someone to see their rank, use 'me' to see your rank,"
+        embed = ErrorEmbed(
+            title="Leaderboard Command Help",
+            desc="Mention someone to see their rank, use 'me' to see your rank,"
             " include nothing to see the top 5 on the leaderboard."
         )
 
+    await ctx.send(embed=embed)
+
 
 async def updateLeaderboardChannel():
-    # delete old leaderboard and post updated leaderboard
+    """Deletes the old leaderboard and posts the updated one."""
     channel = client.get_channel(LEADERBOARD_CH_ID)
     prev_msg = await channel.fetch_message(channel.last_message_id)
     await channel.delete_messages([prev_msg])
-    await channel.send(Leaderboard.showLeaderboard())
+    embed = InfoEmbed(
+        title="UNCC 6 Mans | Full Leaderboard",
+        desc=Leaderboard.showLeaderboard()
+    )
+    await channel.send(embed=embed)
 
 
 @client.command(name="brokenq", aliases=["requeue", "re-q"], pass_contex=True)
 async def removeLastPoppedQueue(ctx):
     player = str(ctx.message.author)
     msg = Leaderboard.brokenQueue(player)
-    await ctx.send(msg)
+
+    if (":white_check_mark:" in msg):
+        embed = QueueUpdateEmbed(
+            title="Popped Queue Removed",
+            desc="The popped queue has been removed from active matches. You may now re-queue."
+        )
+    else:
+        embed = ErrorEmbed(
+            title="Could Not Remove Queue",
+            desc=msg
+        )
+
+    await ctx.send(embed=embed)
 
 
 @client.command(name='clear', aliases=['clr', 'reset'], pass_context=True)
 async def clear(ctx):
     if(Jason.isBotAdmin(ctx.message.author.roles)):
         Jason.clearQueue()
-        await ctx.send("Queue cleared <:UNCCfeelsgood:538182514091491338>")
+        embed = AdminEmbed(
+            title="Queue Cleared",
+            desc="The queue has been cleared by an admin.  <:UNCCfeelsgood:538182514091491338>"
+        )
     else:
-        await ctx.send("You do not have permission to clear the queue.")
+        embed = ErrorEmbed(
+            title="Permission Denied",
+            desc="You do not have permission to clear the queue."
+        )
+
+    await ctx.send(embed=embed)
 
 
 # Disabling command as it does not work with the new executable.
 # TODO: Find a new way to restart Norm since he is now an executable
 @client.command(name='restart', aliases=['restartbot'], pass_context=True)
 async def restart(ctx):
-    await ctx.send("This command is temporarily disabled.")
+    await ctx.send(embed=AdminEmbed(
+        title="Command Diasbled",
+        desc="This command is temporarily disabled."
+    ))
 
     # if(Jason.isBotAdmin(ctx.message.author.roles)):
     #     await ctx.send("Bot restarting...hopefully this fixes everything <:UNCCfeelsgood:538182514091491338>")
@@ -443,18 +718,6 @@ async def restart(ctx):
     #     sys.exit()
     # else:
     #     await ctx.send("You do not have permission to restart me.")
-
-
-@client.command(name='quit', aliases=['normshutthefuckup'], pass_context=True)
-async def quit(ctx):
-    if(Jason.isBotAdmin(ctx.message.author.roles)):
-        await ctx.send("It's getting dark...")
-        os.remove("./data/queue.json")
-        print("Quitting...")
-        sys.exit()
-        return
-    else:
-        await ctx.send("You can't kill me! You do not possess the power.")
 
 
 '''
@@ -528,20 +791,27 @@ async def normq(ctx):
     queueSize = Jason.getQueueLength()
 
     await ctx.send("Duis says I am not supposed to queue, but I don't listen to players worse than me...")
+    await ctx.send("!q")
 
     if (Jason.queueAlreadyPopped() or queueSize == 6):
-        await ctx.send("Whoa there Norm! You can't queue until the current queue has finished popping.")
+        embed = ErrorEmbed(
+            title="Current Lobby Not Set",
+            desc="Whoa there Norm! You can't queue until the current queue has finished popping."
+        )
     elif (len(playerList) == 0):
-        await ctx.send(
-            "<@629502587963572225> wants to queue!\n\n"
-            "Type **!q** to join"
+        embed = QueueUpdateEmbed(
+            title="Norm has Started the Queue!",
+            desc="<@629502587963572225> wants to queue!\n\nType **!q** to join",
         )
     else:
-        await ctx.send(
-            "<@629502587963572225> has been added to the queue! \n\n"
-            "Queue size: " + str(queueSize + 1) + "/6 \n\n"
+        embed = QueueUpdateEmbed(
+            title="Norm Added to Queue",
+            desc="<@629502587963572225> has been added to the queue!\n\n"
+            "Queue size: " + str(queueSize + 1) + "/6\n\n"
             "Current queue:\nNorm" + (" " if len(playerList) == 0 else ", ") + playerList
         )
+
+    await ctx.send(embed=embed)
 
 
 @client.command(name='teams', aliases=['uncc'], pass_context=True)
@@ -686,8 +956,16 @@ def main():
     client.loop.create_task(list_servers())
 
     # Add token here
-    load_dotenv()
-    client.run(os.getenv("TOKEN"))
+    try:
+        load_dotenv()
+        client.run(os.getenv("TOKEN"))
+    except Exception:
+        print(
+            "! There was an error loading the Discord token from the .env file.\n"
+            "Make sure your .env file is in the same directory as the Norm executable and that the token is correct.\n"
+            "The program will now close."
+        )
+        time.sleep(5)
 
 
 if __name__ == "__main__":

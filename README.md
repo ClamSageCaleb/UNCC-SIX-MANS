@@ -9,6 +9,8 @@
 <h4 align="center">UNCC SIX MANS OFFICIAL DISCORD BOT.</h4>
 <br>
 
+![Build](https://github.com/ClamSageCaleb/UNCC-SIX-MANS/workflows/Build%20Norm%20Executable/badge.svg)
+
 ## Key Features
 
 * WIP 
