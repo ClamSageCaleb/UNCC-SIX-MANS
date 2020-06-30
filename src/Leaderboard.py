@@ -65,6 +65,9 @@ def brokenQueue(player):
 
     match = curr_matches.pop()
 
+    if (match["reportedWinner"]["winningTeam"] != ""):
+        return "You cannot report a broken queue once someone reports the match."
+
     if (player in (match["blueTeam"] + match["orangeTeam"])):
         writeActiveMatches(curr_matches)
         return ":white_check_mark: Previous queue removed."
@@ -250,14 +253,3 @@ def checkLeaderboardFile():
     if not path.exists(leaderboardPath):
         with open(leaderboardPath, "w") as leaderboard:
             json.dump(default, leaderboard)
-
-
-def main():
-    checkActiveMatchesFile()
-    checkLeaderboardFile()
-
-    print(reportMatch("Tux#9267", "orange"))
-
-
-if __name__ == "__main__":
-    main()

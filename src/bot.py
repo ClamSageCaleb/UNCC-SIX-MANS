@@ -2,7 +2,7 @@ __author__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __copyright__ = "Copyright 2019, MIT License"
 __credits__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __license__ = "MIT"
-__version__ = "4.0.6"
+__version__ = "4.1.0"
 __maintainer__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __email__ = "caleb.benjamin9799@gmail.com"
 __status__ = "Production"
@@ -141,12 +141,12 @@ async def q(ctx, quiet=False):
         if (quiet):
             embed = QueueUpdateEmbed(
                 title="Queue has Started :shushing_face:",
-                desc="{} wants to queue!\n\nType **!q** to join".format(player.mention),
+                desc="{0} wants to queue!\n\nType **!q** to join".format(player.mention),
             )
         else:
             embed = QueueUpdateEmbed(
                 title="Queue has Started!",
-                desc="@here\n\n{} wants to queue!\n\nType **!q** to join".format(player.mention),
+                desc="@here\n\n{0} wants to queue!\n\nType **!q** to join".format(player.mention),
             )
 
     elif(queue_length >= 6):
@@ -300,7 +300,12 @@ async def listq(ctx):
 
 @client.command(name='rnd', aliases=['random', 'idontwanttopickteams', 'fuckcaptains'], pass_context=True)
 async def rnd(ctx):
-    if(Jason.getQueueLength() != 6):
+    if (Jason.queueAlreadyPopped()):
+        embed = ErrorEmbed(
+            title="Captains Already Chosen",
+            desc="You cannot change your mind once you pick captains."
+        )
+    elif(Jason.getQueueLength() != 6):
         embed = ErrorEmbed(
             title="Queue is Not Full",
             desc="You cannot pop a queue until is full."
@@ -330,12 +335,32 @@ async def captains(ctx):
     if (Jason.queueAlreadyPopped()):
         blueCap, orangeCap = Jason.captainsPop()
         playerList = Jason.getQueueList()
+        blueTeam, orangeTeam = Jason.getTeamList()
 
         embed = InfoEmbed(
             title="Captains Already Set",
             desc="🔷 BLUE Team Captain 🔷: " + blueCap.mention +
             "\n\n🔶 ORANGE Team Captain 🔶: " + orangeCap.mention
         ).add_field(
+            name="\u200b",
+            value="\u200b",
+            inline=False
+        )
+
+        if (len(blueTeam) == 1):
+            embed.add_field(
+                name="It is 🔷 BLUE Team's 🔷 turn to pick",
+                value="Type **!pick** and mention a player from the queue below.",
+                inline=False
+            )
+        else:
+            embed.add_field(
+                name="It is 🔶 ORANGE Team's 🔶 turn to pick",
+                value="Please pick two players.\nEx: `!pick @Twan @Tux`",
+                inline=False
+            )
+
+        embed.add_field(
             name="\u200b",
             value="\u200b",
             inline=False
@@ -522,13 +547,13 @@ async def pick(ctx):
         blueTeam, orangeTeam = Jason.getTeamList()
         if (len(blueTeam) == 1):
             embed = ErrorEmbed(
-                title="Not a Captain",
+                title="Not the Blue Captain",
                 desc="You are not 🔷 BLUE Team Captain 🔷\n\n"
                 "🔷 BLUE Team Captain 🔷 is: " + blueCap.mention
             )
         else:
             embed = ErrorEmbed(
-                title="Not a Captain",
+                title="Not the Orange Captain",
                 desc="You are not 🔶 ORANGE Team Captain 🔶 \n\n"
                 "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.mention
             )
@@ -546,13 +571,13 @@ async def reportMatch(ctx, *arg):
         and not Jason.isBotAdmin(ctx.message.author.roles)
     ):
         embed = ErrorEmbed(
-            title="Can't do that here",
+            title="Can't Do That Here",
             desc="You can only report matches in the <#{0}> and <#{1}> channels.".format(
                 MATCH_REPORT_CH_ID, QUEUE_CH_ID
             )
         )
 
-    elif (len(arg) == 1 and (arg[0] == "blue" or arg[0] == "orange")):
+    elif (len(arg) == 1 and (str(arg[0]).lower() == "blue" or str(arg[0]).lower() == "orange")):
         msg = Leaderboard.reportMatch(player_reporting, arg[0])
 
         if (":x:" in msg):
@@ -609,7 +634,7 @@ async def showLeaderboard(ctx, *arg):
             embed = ErrorEmbed(
                 title="Not Enough Matches Played",
                 desc="{0} has played {1}/5 matches needed to be"
-                " on the leaderboard".format(players_rank[0], players_rank[1])
+                " on the leaderboard.".format(players_rank[0], players_rank[1])
             )
 
     elif (len(arg) == 0 and len(ctx.message.mentions) == 0):
