@@ -1,14 +1,8 @@
+from FilePaths import activeMatchPath, leaderboardPath
 import json
-from os import path
-
-default = []
-
-activeMatchPath = "./data/activeMatches.json"
-leaderboardPath = "./data/leaderboard.json"
 
 
 def readActiveMatches() -> list:
-    checkActiveMatchesFile()
     fileToRead = open(activeMatchPath, "r")
     matches = json.load(fileToRead)
     fileToRead.close()
@@ -21,7 +15,6 @@ def writeActiveMatches(new_match_list):
 
 
 def readLeaderboard():
-    checkLeaderboardFile()
     fileToRead = open(leaderboardPath, "r")
     ldrbrd = json.load(fileToRead)
     fileToRead.close()
@@ -241,15 +234,3 @@ def showLeaderboard(player=None, limit=None):
                 index += 1
 
         return msg + "\n```"
-
-
-def checkActiveMatchesFile():
-    if not path.exists(activeMatchPath):
-        with open(activeMatchPath, "w") as activeMatches:
-            json.dump(default, activeMatches)
-
-
-def checkLeaderboardFile():
-    if not path.exists(leaderboardPath):
-        with open(leaderboardPath, "w") as leaderboard:
-            json.dump(default, leaderboard)

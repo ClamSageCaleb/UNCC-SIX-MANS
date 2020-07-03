@@ -9,16 +9,16 @@ __status__ = "Production"
 
 
 import asyncio
-import os
-import time
-import random
 import discord
 from discord.ext.commands import Bot, CommandNotFound
-from dotenv import load_dotenv
+from EmbedHelper import ErrorEmbed, QueueUpdateEmbed, AdminEmbed, InfoEmbed
+from FilePaths import checkProgramFiles
 import JSONMethod as Jason
 import Leaderboard
-from EmbedHelper import ErrorEmbed, QueueUpdateEmbed, AdminEmbed, InfoEmbed
-# from datetime import datetime
+import os
+from pathlib import Path
+import random
+import time
 
 # Bot prefix and Discord Bot token
 BOT_PREFIX = ("!")
@@ -58,7 +58,7 @@ async def on_command_error(ctx, error):
 @client.event
 async def on_ready():
     await client.change_presence(activity=discord.Game(name="6 mans"))
-    print("Logged in as " + client.user.name + " version 4.0.6")
+    print("Logged in as " + client.user.name + " version 4.1.0")
 
 
 async def list_servers():
@@ -99,10 +99,6 @@ async def list_servers():
 
         if (Jason.getQueueLength() != 0):
             Jason.incrementTimer()
-
-        # now = datetime.now()
-        # current_time = now.strftime("%H:%M:%S")
-        # print("Current Time =", current_time)
 
         await asyncio.sleep(600)
 
@@ -335,7 +331,7 @@ async def captains(ctx):
     if (Jason.queueAlreadyPopped()):
         blueCap, orangeCap = Jason.captainsPop()
         playerList = Jason.getQueueList()
-        blueTeam, orangeTeam = Jason.getTeamList()
+        blueTeam, _ = Jason.getTeamList()
 
         embed = InfoEmbed(
             title="Captains Already Set",
@@ -429,7 +425,6 @@ def blueTeamPick(ctx):
         errorMsg = Jason.pick(ctx.message.mentions[0])
 
         if (errorMsg == ""):
-            blueCap, orangeCap = Jason.captainsPop()
             playerList = Jason.getQueueList()
 
             embed = QueueUpdateEmbed(
@@ -492,8 +487,6 @@ async def orangeTeamPick(ctx):
 
         if (errorMsg == ""):
             [player1, player2] = ctx.message.mentions
-
-            blueCap, orangeCap = Jason.captainsPop()
             blueTeam, orangeTeam = Jason.getTeamList()
 
             embed = QueueUpdateEmbed(
@@ -544,7 +537,7 @@ async def pick(ctx):
 
     else:
         blueCap, orangeCap = Jason.captainsPop()
-        blueTeam, orangeTeam = Jason.getTeamList()
+        blueTeam, _ = Jason.getTeamList()
         if (len(blueTeam) == 1):
             embed = ErrorEmbed(
                 title="Not the Blue Captain",
@@ -951,21 +944,32 @@ async def help(ctx):
 
 
 def main():
-    Jason.checkQueueFile()
-
+    checkProgramFiles()
     client.loop.create_task(list_servers())
+    token = Jason.getDiscordToken()
 
-    # Add token here
-    try:
-        load_dotenv()
-        client.run(os.getenv("TOKEN"))
-    except Exception:
-        print(
-            "! There was an error loading the Discord token from the .env file.\n"
-            "Make sure your .env file is in the same directory as the Norm executable and that the token is correct.\n"
-            "The program will now close."
+    if (token == ""):
+        token = Jason.updateDiscordToken(
+            input("No Discord Bot token found. Paste your Discord Bot token below and hit ENTER.\ntoken: ")
         )
+
+    # clear screen to hide token
+    if os.name == 'nt':
+        _ = os.system('cls')
+    else:
+        _ = os.system('clear')
+
+    try:
+        client.run(token)
+    except discord.errors.LoginFailure:
+        print(
+            "! There was an error with the token you provided. Please verify your bot token and try again.\n"
+            "If you need help locating the token for your bot, visit https://www.writebots.com/discord-bot-token/"
+        )
+        os.remove("{0}/SixMans/config.json".format(Path.home()))
         time.sleep(5)
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":

@@ -27,7 +27,7 @@ jobs:
       - name: Build project
         run: |
           pip install pyinstaller
-          pyinstaller --exclude-module tkinter -i 'media/norm_icon.ico' -n Norm_the_6_Mans_Bot --onefile src/bot.py
+          pyinstaller --exclude-module tkinter -i 'media/norm_icon.ico' -n Norm_the_6_Mans_Bot --add-data 'default_data/;data/' --onefile src/bot.py
 
       - name: Add default .env file
         run: |
