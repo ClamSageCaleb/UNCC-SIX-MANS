@@ -1,5 +1,4 @@
 {
   "python.linting.flake8Enabled": true,
   "python.linting.enabled": true,
-  "python.pythonPath": "/home/mattw/anaconda3/envs/six-mans/bin/python"
 }
