@@ -5,7 +5,7 @@ name: Build Norm Executable - Unix
 
 on:
   push:
-    branches: [ master, program_files ]
+    branches: [ master ]
 
 jobs:  
   build:
