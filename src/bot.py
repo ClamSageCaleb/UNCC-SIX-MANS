@@ -9,6 +9,7 @@ __status__ = "Production"
 
 
 import asyncio
+import CheckForUpdates
 import discord
 from discord.ext.commands import Bot, CommandNotFound
 from EmbedHelper import ErrorEmbed, QueueUpdateEmbed, AdminEmbed, InfoEmbed
@@ -58,7 +59,13 @@ async def on_command_error(ctx, error):
 @client.event
 async def on_ready():
     await client.change_presence(activity=discord.Game(name="6 mans"))
-    print("Logged in as " + client.user.name + " version 4.1.0")
+    print("Logged in as " + client.user.name + " version " + __version__)
+
+    channel = client.get_channel(QUEUE_CH_ID)
+    await channel.send(embed=AdminEmbed(
+        title="Norm Started",
+        desc="Current version: v{0}".format(__version__)
+    ))
 
 
 async def list_servers():
@@ -711,6 +718,26 @@ async def restart(ctx):
     #     sys.exit()
     # else:
     #     await ctx.send("You do not have permission to restart me.")
+
+
+@client.command(name='update', pass_context=True)
+async def update(ctx):
+
+    if(Jason.isBotAdmin(ctx.message.author.roles)):
+        await ctx.send(embed=AdminEmbed(
+            title="Checking For Updates",
+            desc="Please hang tight."
+        ))
+        CheckForUpdates.updateBot()
+        await ctx.send(embed=AdminEmbed(
+            title="Already Up to Date",
+            desc="Current version: v{0}".format(__version__)
+        ))
+    else:
+        await ctx.send(embed=AdminEmbed(
+            title="Permission Denied",
+            desc="You do not have permission to check for updates."
+        ))
 
 
 '''
