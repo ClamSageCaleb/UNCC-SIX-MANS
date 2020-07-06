@@ -9,6 +9,7 @@ __status__ = "Production"
 
 
 import asyncio
+import AWSHelper as AWS
 import CheckForUpdates
 import discord
 from discord.ext.commands import Bot, CommandNotFound
@@ -60,6 +61,8 @@ async def on_command_error(ctx, error):
 async def on_ready():
     await client.change_presence(activity=discord.Game(name="6 mans"))
     print("Logged in as " + client.user.name + " version " + __version__)
+
+    AWS.readLeaderboard()
 
     channel = client.get_channel(QUEUE_CH_ID)
     await channel.send(embed=AdminEmbed(

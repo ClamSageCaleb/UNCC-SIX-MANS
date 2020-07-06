@@ -1,0 +1,16 @@
+table {
+    width: 100%;
+    border-spacing: 1em 10px;
+}
+
+th, td {
+    text-align: center;
+}
+
+td:first-child {
+    text-align: left;
+}
+
+tfoot {
+    color: #a0a0a0;
+}

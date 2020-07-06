@@ -7,7 +7,10 @@
   <title>Norm the 6 Mans Bot</title>
   <link rel="icon" href="./media/norm_icon.ico" />
   <link rel="stylesheet" href="./github_pages_files/css/main.css" />
+  <link rel="stylesheet" href="./github_pages_files/css/leaderboard.css" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+  <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+  <script src="github_pages_files/js/main.js"></script>
 </head>
 
 <body>
@@ -74,6 +77,23 @@
       After 1 hour of no one joining the queue, Norm will remove everyone from the queue, and you will need to
       re-queue.
     </p>
+  </section>
+
+  <section id="leaderboard">
+    <table id="leaderboard-table">
+      <caption>UNCC 6 Mans | Full Leaderboard</caption>
+      <thead>
+      <tr>
+        <th id="name" scope="col">Name</th>
+        <th id="wins" scope="col">Wins</th>
+        <th id="losses" scope="col">Losses</th>
+        <th id="matches-played" scope="col">Matches Played</th>
+        <th id="win-perc" scope="col">Win Percentage</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+    <tfoot></tfoot>
+    </table>
   </section>
 </body>
 
