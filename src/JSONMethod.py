@@ -1,6 +1,4 @@
-from os import path
-from os import getcwd
-from os import mkdir
+from FilePaths import queueFilePath, tokenPath
 import json
 import random
 
@@ -12,8 +10,6 @@ default = {
     "orangeTeam": [],
     "blueTeam": []
 }
-
-queueFilePath = "{0}\\data\\queue.json".format(getcwd())
 
 
 class BallChaser:
@@ -130,12 +126,21 @@ def clearQueue():
     writeQueue(default)
 
 
-def checkQueueFile():
-    if not path.exists(queueFilePath):
-        if not path.exists("data"):
-            mkdir("data")
-        with open(queueFilePath, "w") as queue:
-            json.dump(default, queue)
+def getDiscordToken():
+    with open(tokenPath, "r") as config:
+        token = json.load(config)["token"]
+
+    return token
+
+
+def updateDiscordToken(newToken):
+    with open(tokenPath, "w") as config:
+        configFile = {
+            "token": newToken
+        }
+        json.dump(configFile, config)
+
+    return newToken
 
 
 def validateOrangePick(player):

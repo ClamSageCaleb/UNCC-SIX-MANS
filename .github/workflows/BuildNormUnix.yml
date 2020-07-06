@@ -1,15 +1,15 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: Lint Project Files
+name: Build Norm Executable - Unix
 
 on:
-  pull_request:
+  push:
     branches: [ master ]
 
 jobs:  
   build:
-    name: Verify Python files pass linting
+    name: Build project files
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -22,11 +22,16 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flake8
-
-      - name: Lint with flake8
+          pip install -r requirements.txt
+          
+      - name: Build project
         run: |
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          pip install pyinstaller
+          pyinstaller --exclude-module tkinter -i 'media/norm_icon.ico' -n Norm_the_6_Mans_Bot --onefile src/bot.py
+
+      - name: Upload Binary as Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-artifact@v2
+        with:
+          path: dist/Norm_the_6_Mans_Bot
+          name: Norm_the_6_Mans_Bot_Linux

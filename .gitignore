@@ -1,5 +1,4 @@
 .env
 __pycache__/
-queue.json
-activeMatches.json
-leaderboard.json
+data/
+release/
