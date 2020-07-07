@@ -1,10 +1,27 @@
-$(function() {
+$(function () {
+    if (!location.hash) location.hash = "about";
+
     $.ajax({
         type: "get",
         url: "https://uncc-six-mans.s3.amazonaws.com/Leaderboard.json",
         dataType: "json",
         success: (data) => populateTable(data)
     })
+
+    $("#content").css("height", window.innerHeight - 50);
+    setActiveTab();
+
+    $("#content").on('scroll', function (e) {
+        $('section').each(function () {
+            if ($(this).offset().top < window.pageYOffset
+                && $(this).offset().top +
+                $(this).height() > window.pageYOffset
+            ) {
+                var data = $(this).attr('id');
+                window.location.hash = data;
+            }
+        });
+    });
 });
 
 function populateTable(ballChasers) {
@@ -29,4 +46,25 @@ function populateTable(ballChasers) {
             <td colspan="4">Players with less than 5 matches played: ${not_enough_matches.join(",")}</td>
         </tr>`
     )
+
+    $("#content").scroll(function () {
+        console.log($(this).scrollTop())
+        if ($(this).scrollTop() < 850 && location.hash !== "about") location.hash = "about";
+        else if ($(this).scrollTop() < 2000 && location.hash !== "documentation") location.hash = "documentation";
+        else if (location.hash !== "leaderboard") location.hash = "leaderboard";
+    });
+}
+
+$(window).on("hashchange", setActiveTab);
+
+function setActiveTab() {
+    const activePage = location.hash;
+    const pages = ["#about", "#documentation", "#leaderboard"];
+
+    pages.forEach(page => {
+        if (activePage === page)
+            $(`a[href="${page}"]`).addClass("active");
+        else
+            $(`a[href="${page}"]`).removeClass("active");
+    })
 }

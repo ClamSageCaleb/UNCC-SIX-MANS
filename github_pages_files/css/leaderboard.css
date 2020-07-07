@@ -14,3 +14,7 @@ td:first-child {
 tfoot {
     color: #a0a0a0;
 }
+
+caption {
+    margin-bottom: 20px;
+}

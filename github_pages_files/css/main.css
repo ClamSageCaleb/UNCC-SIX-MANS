@@ -2,24 +2,14 @@ html {
   margin: 0;
   font-family: Roboto, sans-serif;
   font-size: 16px;
+  scroll-behavior: smooth;
 }
 
 body {
   background-color: #333;
-  color: #f2f2f2
-}
-
-* {
-  letter-spacing: 1px;
-  line-height: 25px;
-}
-
-h1, h2, h3 {
-  letter-spacing: 2px;
-}
-
-h1, h2 {
-  text-align: center;
+  color: #f2f2f2;
+  margin: 0;
+  overflow: hidden;
 }
 
 h1 {
@@ -44,6 +34,7 @@ hr {
   height: 1px;
   margin-top: -10px;
   width: 90%;
+  margin: 100px auto;
 }
 
 ul {
@@ -61,13 +52,23 @@ span {
   margin: 0 2px;
 }
 
-div {
+.center {
   text-align: center;
 }
 
+#content {
+  overflow: auto;
+  scroll-behavior: smooth;
+}
+
 section {
+  padding: 20px 0;
   width: 700px;
-  margin: 100px auto;
+  margin: auto;
+}
+
+#about {
+  width: 90%;
 }
 
 a, a:visited, a:active {
@@ -76,11 +77,62 @@ a, a:visited, a:active {
   text-decoration: none;
 }
 
-a:hover {
+#about a:hover {
   text-decoration: underline;
 }
 
 img {
   display: block;
   margin: auto;
+}
+
+footer {
+  margin: 100px auto 10px 10px;
+}
+
+header {
+  height: 50px;
+  background-color: #259963;
+  position: relative;
+}
+
+header a, header a:active, header a:visited {
+  color: #fffffff2;
+  cursor: pointer;
+  padding: 5px 10px;
+  margin: 0 5px;
+  width: 250px;
+  border-radius: 4px;
+  transition: background-color ease-in 150ms;
+}
+
+header a:hover:not(.active) {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.active {
+  background-color: rgba(112, 112, 112, 0.794);
+}
+
+header > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  height: 100%;
+  width: 50%;
+  margin: auto;
+}
+
+#github-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: fit-content;
+  margin: auto;
+}
+
+#github-link img {
+  margin: 0;
+  margin-left: 10px;
 }
