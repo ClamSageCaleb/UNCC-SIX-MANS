@@ -19,7 +19,7 @@
   <header>
     <div id="nav-container" class="center">
       <a href="#about">
-        About
+        <img id="logo" alt="Logo" src="media/SixMansLogo.png" width="50px" />
       </a>
       <a href="#documentation">
         Documentation
@@ -35,7 +35,7 @@
       <section id="about">
         <h1>Norm the 6 Mans Bot</h1>
         <h2>The official 6 mans bot for the UNC Charlotte Rocket League Community</h2>
-        <img draggable="false" alt="Norm" src="media/norm.gif" width=400 />
+        <img id="norm" draggable="false" alt="Norm" src="media/norm.gif" width=400 />
         <div class="center">
           <a href="https://github.com/ClamSageCaleb/UNCC-SIX-MANS/releases" id="github-link">
             Latest Norm Release
@@ -112,11 +112,12 @@
           </caption>
           <thead>
             <tr>
+              <th id="rank" scope="col">Rank</th>
               <th id="name" scope="col">Name</th>
               <th id="wins" scope="col">Wins</th>
               <th id="losses" scope="col">Losses</th>
               <th id="matches-played" scope="col">Matches Played</th>
-              <th id="win-perc" scope="col">Win Percentage</th>
+              <th id="win-perc" scope="col">Win Percentage %</th>
             </tr>
           </thead>
           <tbody></tbody>

@@ -1,14 +1,13 @@
 table {
     width: 100%;
     border-spacing: 1em 10px;
+    border-collapse: collapse;
+    background-color: rgb(32, 35, 39);
 }
 
 th, td {
     text-align: center;
-}
-
-td:first-child {
-    text-align: left;
+    padding: 10px 0;
 }
 
 tfoot {
@@ -17,4 +16,26 @@ tfoot {
 
 caption {
     margin-bottom: 20px;
+}
+
+tr {
+    border-bottom: 1px solid grey;
+}
+
+tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+thead tr {
+  background-color: #259963;
+  border: none;
+}
+
+tfoot td {
+    text-align: left;
+    text-indent: 1cm;
+}
+
+tfoot tr {
+    border: none;
 }

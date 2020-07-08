@@ -16,8 +16,10 @@ h1 {
   margin-top: 100px;
 }
 
-body > h2:first-of-type {
+#about > h2:first-of-type {
   margin-bottom: 0px;
+  font-weight: 400;
+  font-size: 2rem;
 }
 
 h3 {
@@ -63,12 +65,17 @@ span {
 
 section {
   padding: 20px 0;
-  width: 700px;
   margin: auto;
+  width: 90%;
 }
 
-#about {
+section#documentation {
+  width: 700px;
+}
+
+section#leaderboard {
   width: 90%;
+  max-width: 1000px;
 }
 
 a, a:visited, a:active {
@@ -81,7 +88,7 @@ a, a:visited, a:active {
   text-decoration: underline;
 }
 
-img {
+#norm {
   display: block;
   margin: auto;
 }
@@ -94,30 +101,36 @@ header {
   height: 50px;
   background-color: #259963;
   position: relative;
+  padding: 5px 0;
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 3px -2px, rgba(0, 0, 0, 0.14) 0px 3px 4px 0px, rgba(0, 0, 0, 0.12) 0px 1px 8px 0px;
 }
 
 header a, header a:active, header a:visited {
   color: #fffffff2;
   cursor: pointer;
   padding: 5px 10px;
-  margin: 0 5px;
-  width: 250px;
+  margin: 0 50px;
   border-radius: 4px;
   transition: background-color ease-in 150ms;
 }
 
-header a:hover:not(.active) {
-  background-color: rgba(255, 255, 255, 0.1);
+header img {
+  padding: 0;
+  vertical-align: middle;
 }
 
-.active {
-  background-color: rgba(112, 112, 112, 0.794);
+header a:first-of-type {
+  padding: 2px 5px;
+}
+
+header a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 header > div {
   display: flex;
   align-items: center;
-  justify-content: space-evenly;
+  justify-content: center;
   height: 100%;
   width: 50%;
   margin: auto;
