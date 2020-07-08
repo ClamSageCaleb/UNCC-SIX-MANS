@@ -39,14 +39,14 @@ jobs:
           pyinstaller --exclude-module tkinter -i 'media/norm_icon.ico' -n Norm_the_6_Mans_Bot --onefile src/bot.py
 
       - name: Upload Binary as Release Asset
-        if: matrix.os == "windows-latest"
+        if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v2
         with:
           path: dist/Norm_the_6_Mans_Bot.exe
           name: Norm_the_6_Mans_Bot_Windows
 
       - name: Upload Binary as Release Asset
-        if: matrix.os == "ubuntu-latest"
+        if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v2
         with:
           path: dist/Norm_the_6_Mans_Bot
