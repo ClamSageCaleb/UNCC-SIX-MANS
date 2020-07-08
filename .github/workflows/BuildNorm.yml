@@ -5,7 +5,7 @@ name: Build Norm Executable
 
 on:
   push:
-    branches: [ master, aws_implementation ]
+    branches: [ master ]
 
 jobs:  
   build:
