@@ -9,7 +9,6 @@
       "type": "python",
       "request": "launch",
       "program": "${workspaceFolder}/src/bot.py",
-      // "args": ["dev"],
       "console": "integratedTerminal"
     }
   ]
