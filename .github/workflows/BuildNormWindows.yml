@@ -25,10 +25,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Add environment variables
-        uses: "finnp/create-file-action@master"
-          env:
-            FILE_NAME: ".env"
-            FILE_DATA: "status=prod"
+        run: echo status=prod > .env
           
       - name: Build project
         run: |
