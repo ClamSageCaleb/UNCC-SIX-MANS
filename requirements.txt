@@ -3,3 +3,4 @@ python-dotenv==0.13.0
 flake8
 wget
 requests
+boto3
