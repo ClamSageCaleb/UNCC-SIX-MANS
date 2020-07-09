@@ -26,7 +26,7 @@ def saveLeaderboard(new_leaderboard):
     sorted_ldrbrd = sorted(new_leaderboard, key=lambda x: (x["Win Perc"], x["Wins"]), reverse=True)
     with open(leaderboardPath, "w") as ldrbrd:
         json.dump(sorted_ldrbrd, ldrbrd)
-    AWS.writeLeaderboard()
+    AWS.writeRemoteLeaderboard()
 
 
 def startMatch(blueTeam, orangeTeam):

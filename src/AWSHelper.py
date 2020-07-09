@@ -28,13 +28,13 @@ if (s3 is None):
     )
 
 
-def readLeaderboard():
+def readRemoteLeaderboard():
     leaderboard = s3.Object("uncc-six-mans", leaderboardFile)
     leaderboard = json.loads(leaderboard.get()["Body"].read().decode("utf-8"))
     with open(leaderboardPath, "w") as ldrbrd:
         json.dump(leaderboard, ldrbrd)
 
 
-def writeLeaderboard():
+def writeRemoteLeaderboard():
     with open(leaderboardPath, "rb") as leaderboard:
         s3.Bucket("uncc-six-mans").put_object(ACL="public-read", Key=leaderboardFile, Body=leaderboard)
