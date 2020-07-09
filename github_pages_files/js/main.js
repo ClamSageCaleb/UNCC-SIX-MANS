@@ -12,13 +12,15 @@ $(function () {
 
 function populateTable(ballChasers) {
     not_enough_matches = [];
-    ballChasers.forEach((ballChaser, rank) => {
+    let rank = 0;
+    ballChasers.forEach(ballChaser => {
         if (ballChaser["Matches Played"] < 5) {
             not_enough_matches.push(ballChaser["Name"]);
         } else {
+            rank += 1;
             $("#leaderboard-table > tbody").append(
                 `<tr>
-                    <td headers="name">${rank + 1}</td>
+                    <td headers="name">${rank}</td>
                     <td headers="name">${ballChaser["Name"]}</td>
                     <td headers="wins">${ballChaser["Wins"]}</td>
                     <td headers="losses">${ballChaser["Losses"]}</td>
@@ -30,7 +32,10 @@ function populateTable(ballChasers) {
     });
     $("#leaderboard-table > tfoot").append(
         `<tr>
-            <td colspan="6">Players with less than 5 matches played: ${not_enough_matches.join(",")}</td>
+            <td colspan="6">Players with less than 5 matches played:</td>
+        </tr>
+        <tr>
+            <td colspan="6">${not_enough_matches.join(", ")}</td>
         </tr>`
     )
 }
