@@ -1,0 +1,25 @@
+* {
+    letter-spacing: 1px;
+    line-height: 25px;
+}
+
+h1, h2, h3 {
+    letter-spacing: 2px;
+    line-height: 40px;
+}
+
+h1, h2 {
+    text-align: center;
+}
+
+h1 {
+  font-size: 3.052rem;
+}
+
+h2, caption {
+    font-size: 2.441rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+}
