@@ -184,12 +184,15 @@ def removeFromQueue(player):
         writeQueue(curr_queue)
 
 
-def getQueueList():
+def getQueueList(mentionPlayers: bool = False):
     curr_queue = readQueue()
     playerList = []
 
     for player in curr_queue["queue"]:
-        playerList.append(player.name.split("#")[0])
+        if (mentionPlayers):
+            playerList.append(player.mention)
+        else:
+            playerList.append(player.name.split("#")[0])
 
     return ", ".join(playerList)
 
