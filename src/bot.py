@@ -77,13 +77,12 @@ async def list_servers():
 
         if (Jason.getQueueTime() >= 6 and Jason.getQueueLength() != 0):
             Jason.clearQueue()
-            embed = InfoEmbed(
-                title="Stale Queue Update",
-                desc="The queue has been inactive for 1 hr and has now been reset."
-            )
 
             try:
-                await channel.send(embed=embed)
+                await channel.send(embed=InfoEmbed(
+                    title="Stale Queue Reset",
+                    desc="The queue has been inactive for 1 hr and has now been reset."
+                ))
             except Exception:
                 print("! Norm does not have access to post in the queue channel.")
                 return
@@ -93,16 +92,14 @@ async def list_servers():
             timeLeft = 60 - timeSpent
 
             if(timeLeft == 30 or timeLeft == 10):
-                embed = InfoEmbed(
-                    title="Stale Queue Update",
-                    desc="Inactive for " + str(timeSpent) + " min. Queue will clear in " + str(timeLeft) + " min."
-                )
-
-            try:
-                await channel.send(embed=embed)
-            except Exception:
-                print("! Norm does not have access to post in the queue channel.")
-                return
+                try:
+                    await channel.send(embed=InfoEmbed(
+                        title="Stale Queue Update",
+                        desc="Inactive for " + str(timeSpent) + " min. Queue will clear in " + str(timeLeft) + " min."
+                    ))
+                except Exception:
+                    print("! Norm does not have access to post in the queue channel.")
+                    return
 
         if (Jason.getQueueLength() != 0):
             Jason.incrementTimer()
@@ -147,9 +144,10 @@ async def q(ctx, quiet=False):
                 desc="{0} wants to queue!\n\nType **!q** to join".format(player.mention),
             )
         else:
+            await ctx.send("@here Queue has started!")
             embed = QueueUpdateEmbed(
-                title="Queue has Started!",
-                desc="@here\n\n{0} wants to queue!\n\nType **!q** to join".format(player.mention),
+                title="Queue Started",
+                desc="{0} wants to queue!\n\nType **!q** to join".format(player.mention),
             )
 
     elif(queue_length >= 6):
@@ -160,17 +158,17 @@ async def q(ctx, quiet=False):
 
     elif(queue_length == 5):
         Jason.addToQueue(player)
-        playerList = Jason.getQueueList()
+        mentionedPlayerList = Jason.getQueueList(mentionPlayers=True)
 
-        embed = QueueUpdateEmbed(
+        await ctx.send(embed=QueueUpdateEmbed(
             title="Queue Popped!",
             desc=player.mention + " added to the queue!" + "\n\n"
-            "Queue size: " + str(queue_length + 1) + "/6\n\n"
-            "Current queue:\n" + playerList + "\n\n"
             "**Queue is now full!** \n\n"
             "Type !random for random teams.\n"
             "Type !captains to get picked last."
-        )
+        ))
+        await ctx.send("Queue has popped! Get ready!\n" + mentionedPlayerList)
+        return
 
     else:
         Jason.addToQueue(player)
