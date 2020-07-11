@@ -2,32 +2,24 @@ html {
   margin: 0;
   font-family: Roboto, sans-serif;
   font-size: 16px;
+  scroll-behavior: smooth;
 }
 
 body {
   background-color: #333;
-  color: #f2f2f2
-}
-
-* {
-  letter-spacing: 1px;
-  line-height: 25px;
-}
-
-h1, h2, h3 {
-  letter-spacing: 2px;
-}
-
-h1, h2 {
-  text-align: center;
+  color: #f2f2f2;
+  margin: 0;
+  overflow: hidden;
 }
 
 h1 {
   margin-top: 100px;
 }
 
-body > h2:first-of-type {
+#about > h2:first-of-type {
   margin-bottom: 0px;
+  font-weight: 400;
+  font-size: 2rem;
 }
 
 h3 {
@@ -44,6 +36,7 @@ hr {
   height: 1px;
   margin-top: -10px;
   width: 90%;
+  margin: 100px auto;
 }
 
 ul {
@@ -61,13 +54,28 @@ span {
   margin: 0 2px;
 }
 
-div {
+.center {
   text-align: center;
 }
 
+#content {
+  overflow: auto;
+  scroll-behavior: smooth;
+}
+
 section {
+  padding: 20px 0;
+  margin: auto;
+  width: 90%;
+}
+
+section#commands {
   width: 700px;
-  margin: 100px auto;
+}
+
+section#leaderboard {
+  width: 90%;
+  max-width: 1000px;
 }
 
 a, a:visited, a:active {
@@ -76,11 +84,68 @@ a, a:visited, a:active {
   text-decoration: none;
 }
 
-a:hover {
+#about a:hover {
   text-decoration: underline;
 }
 
-img {
+#norm {
   display: block;
   margin: auto;
+}
+
+footer {
+  margin: 100px auto 10px 10px;
+}
+
+header {
+  height: 50px;
+  background-color: #259963;
+  position: relative;
+  padding: 5px 0;
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 3px -2px, rgba(0, 0, 0, 0.14) 0px 3px 4px 0px, rgba(0, 0, 0, 0.12) 0px 1px 8px 0px;
+}
+
+header a, header a:active, header a:visited {
+  color: #fffffff2;
+  cursor: pointer;
+  padding: 5px 10px;
+  margin: 0 50px;
+  border-radius: 4px;
+  transition: background-color ease-in 150ms;
+}
+
+header img {
+  padding: 0;
+  vertical-align: middle;
+}
+
+header a:first-of-type {
+  padding: 2px 5px;
+}
+
+header a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+header > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 50%;
+  margin: auto;
+}
+
+#github-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: fit-content;
+  margin: auto;
+}
+
+#github-link img {
+  margin: 0;
+  margin-left: 10px;
 }

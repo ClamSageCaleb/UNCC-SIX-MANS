@@ -1,0 +1,43 @@
+table {
+    width: 100%;
+    border-spacing: 1em 10px;
+    border-collapse: collapse;
+    background-color: rgb(32, 35, 39);
+}
+
+th, td {
+    text-align: center;
+    padding: 10px 0;
+}
+
+tfoot {
+    color: #a0a0a0;
+}
+
+caption {
+    margin-bottom: 20px;
+}
+
+tr {
+    border-bottom: 1px solid grey;
+}
+
+tbody tr:hover {
+    background-color: rgba(179, 179, 179, 0.1);
+    color: #B3A369;
+}
+
+thead tr {
+  background-color: #259963;
+  border: none;
+}
+
+tfoot td {
+    text-align: left;
+    padding-left: 10px;
+    padding-bottom: 2px;
+}
+
+tfoot tr {
+    border: none;
+}

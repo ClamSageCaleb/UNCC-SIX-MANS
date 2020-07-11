@@ -5,10 +5,11 @@ __license__ = "MIT"
 __version__ = "4.1.1"
 __maintainer__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __email__ = "caleb.benjamin9799@gmail.com"
-__status__ = "Production"
+__status__ = "dev"
 
 
 import asyncio
+import AWSHelper as AWS
 import CheckForUpdates
 import discord
 from discord.ext.commands import Bot, CommandNotFound
@@ -61,11 +62,20 @@ async def on_ready():
     await client.change_presence(activity=discord.Game(name="6 mans"))
     print("Logged in as " + client.user.name + " version " + __version__)
 
-    channel = client.get_channel(QUEUE_CH_ID)
-    await channel.send(embed=AdminEmbed(
-        title="Norm Started",
-        desc="Current version: v{0}".format(__version__)
-    ))
+    try:
+        AWS.readRemoteLeaderboard()
+    except Exception as e:
+        # this should only throw an exception if the Leaderboard file does not exist or the credentials are invalid
+        print(e)
+
+    try:
+        channel = client.get_channel(QUEUE_CH_ID)
+        await channel.send(embed=AdminEmbed(
+            title="Norm Started",
+            desc="Current version: v{0}".format(__version__)
+        ))
+    except Exception:
+        print("! Norm does not have access to post in the queue channel.")
 
 
 async def list_servers():

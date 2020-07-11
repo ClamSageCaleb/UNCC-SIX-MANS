@@ -1,5 +1,5 @@
 import bot
-from os import name, getcwd, startfile
+import os
 import requests
 import sys
 import wget
@@ -13,13 +13,13 @@ def updateBot():
     if (release_version[1:] > bot.__version__):
         print("A new version is available")
 
-        if name == 'nt':
+        if os.name == 'nt':
             print("Getting new Windows binary...")
 
             newFile = wget.download(
                 "https://github.com/ClamSageCaleb/UNCC-SIX-MANS/releases"
                 "/download/{0}/Norm_the_6_Mans_Bot_{0}.exe".format(release_version),
-                getcwd() + "/Norm_the_6_Mans_Bot_{0}.exe".format(release_version)
+                os.getcwd() + "/Norm_the_6_Mans_Bot_{0}.exe".format(release_version)
             )
-            startfile(newFile)
+            os.startfile(newFile)
             sys.exit()
