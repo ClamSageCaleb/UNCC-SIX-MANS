@@ -5,7 +5,6 @@ __license__ = "MIT"
 __version__ = "4.2.1"
 __maintainer__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __email__ = "caleb.benjamin9799@gmail.com"
-__status__ = "dev"
 
 
 import asyncio

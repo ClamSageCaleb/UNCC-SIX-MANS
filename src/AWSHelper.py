@@ -1,17 +1,18 @@
 import boto3
-from dotenv import load_dotenv
-from os import getenv
 import json
+from os import path
+from sys import argv
 from FilePaths import leaderboardPath, tokenPath
 
 
+s3 = None
+leaderboardFile = ""
 aws_id = ""
 aws_secret = ""
-s3 = None
 
-# the lack of .env file results in dev
-load_dotenv()
-status = getenv("status")
+# Set prod/dev status based on file extension
+_, file_extension = path.splitext(argv[0])
+status = "prod" if file_extension == ".exe" else "dev"
 leaderboardFile = "Leaderboard.json" if status == "prod" else "Test_Leaderboard.json"
 
 if (aws_id == "" or aws_secret == ""):
