@@ -5,9 +5,9 @@ from sys import argv
 from FilePaths import leaderboardPath, tokenPath
 
 
-s3 = None
 aws_id = ""
 aws_secret = ""
+s3 = None
 
 # Set prod/dev status based on file extension
 _, file_extension = path.splitext(argv[0])
