@@ -6,7 +6,6 @@ from FilePaths import leaderboardPath, tokenPath
 
 
 s3 = None
-leaderboardFile = ""
 aws_id = ""
 aws_secret = ""
 
