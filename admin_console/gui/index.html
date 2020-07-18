@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Norm Admin Console</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+  <link rel="stylesheet" href="styles.css">
+  <script src="/eel.js"></script>
+  <script src="main.js"></script>
+</head>
+
+<body>
+  <header>
+    <h1>Welcome to the admin console for Norm the 6 Mans Bot</h1>
+    <button onclick="getAllData()">Refresh</button>
+  </header>
+  <main>
+    <section>
+      <h2>Current Queue</h2>
+      <hr />
+      <div id="queue"></div>
+    </section>
+    <section>
+      <h2>Active Matches</h2>
+      <hr />
+      <div id="activeMatches"></div>
+    </section>
+    <section>
+      <h2>Leaderboard</h2>
+      <hr />
+      <div id="leaderboard"></div>
+    </section>
+    <section>
+      <h2>Config</h2>
+      <hr />
+      <div id="config"></div>
+    </section>
+  </main>
+</body>
+
+</html>
