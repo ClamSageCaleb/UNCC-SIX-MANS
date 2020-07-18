@@ -30,29 +30,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Add environment variables
-        run: echo status=prod > .env
-          
       - name: Build project
-        if: matrix.os == 'windows-latest'
         run: |
           pip install pyinstaller
-          pyinstaller --exclude-module tkinter -i 'media/norm_icon.ico' -n Norm_the_6_Mans_Bot --add-data '.env;.' --onefile src/bot.py
+          pyinstaller --exclude-module tkinter -i 'media/norm_icon.ico' -n Norm_the_6_Mans_Bot --onefile src/bot.py
 
-      - name: Build project
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          pip install pyinstaller
-          pyinstaller --exclude-module tkinter -i 'media/norm_icon.ico' -n Norm_the_6_Mans_Bot --add-data '.env:.' --onefile src/bot.py
-
-      - name: Upload Binary as Release Asset
+      - name: Upload Binary as Release Asset - Windows
         if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v2
         with:
           path: dist/Norm_the_6_Mans_Bot.exe
           name: Norm_the_6_Mans_Bot_Windows
 
-      - name: Upload Binary as Release Asset
+      - name: Upload Binary as Release Asset - Unix
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v2
         with:
