@@ -1,29 +1,104 @@
-document.addEventListener('DOMContentLoaded', getAllData);
+document.addEventListener('DOMContentLoaded', documnetLoad);
+
+function documnetLoad() {
+  getAllData();
+  document.getElementById("plainText").onchange = handleConfigCheckChange;
+  document.getElementById("config-form").onsubmit = saveConfigChanges;
+}
 
 function getAllData() {
   getQueue();
+  getReserves();
   getActiveMatches();
   getLeaderboard();
   getConfig();
-  document.getElementById("plainText").onchange = handleConfigCheckChange;
 }
 
 function getQueue() {
-  const queueArea = document.getElementById("queue-select");
+  const queueArea = document.getElementById("curr-queue-content");
   queueArea.innerHTML = "";
+  let content = "";
 
   eel.getCurrentQueue()((currQueue) => {
-    document.getElementById("queue-timer").innerText = "Time Reset: " + currQueue["timeReset"]
+    content = `
+      <p>Queue Timer: ${currQueue["timeReset"]}</p>
+      <hr />
+      <div class="col-headers">
+        <span></span>
+        <span>Player</span>
+        <span>Team</span>
+        <span>Captain</span>
+      </div>
+      <hr />
+      `;
 
     const queue = currQueue["queue"];
+    const blueTeam = currQueue["blueTeam"];
+    const orangeTeam = currQueue["orangeTeam"];
 
     queue.forEach(player => {
-      const content = document.createElement("option");
-
-      content.append(player["name"]);
-      content.value = player["name"];
-      queueArea.append(content);
+      content +=
+        `<div class="player">
+        <input id="player-selection-${player["name"]}" class="player-select" type="checkbox"/>
+        <label for="player-selection-${player["name"]}">${player["name"]}</label>
+        <select>
+          <option value="N/A" selected>N/A</option>
+          <option value="Blue">Blue</option>
+          <option value="Orange">Orange</option>
+        </select>
+        <input type="checkbox" disabled/>
+        </div>`;
     });
+
+    blueTeam.forEach(player => {
+      const isCaptain = player["name"] === currQueue["blueCap"]["name"];
+
+      content +=
+        `<div class="player">
+        <input id="player-selection-${player["name"]}" class="player-select" type="checkbox"/>
+        <label for="player-selection-${player["name"]}">${player["name"]}</label>
+        <select>
+          <option value="N/A">N/A</option>
+          <option value="Blue" selected>Blue</option>
+          <option value="Orange">Orange</option>
+        </select>
+        <input type="checkbox" ${isCaptain ? "checked" : ""}/>
+        </div>`;
+    });
+
+    orangeTeam.forEach(player => {
+      const isCaptain = player["name"] === currQueue["orangeCap"]["name"];
+
+      content +=
+        `<div class="player">
+        <input id="player-selection-${player["name"]}" class="player-select" type="checkbox"/>
+        <label for="player-selection-${player["name"]}">${player["name"]}</label>
+        <select>
+          <option value="N/A">N/A</option>
+          <option value="Blue">Blue</option>
+          <option value="Orange" selected>Orange</option>
+        </select>
+        <input type="checkbox" ${isCaptain ? "checked" : ""}/>
+        </div>`;
+    });
+    queueArea.innerHTML = content;
+  });
+}
+
+function getReserves() {
+  const reservePlayerArea = document.getElementById("reserve-players");
+  reservePlayerArea.innerHTML = "";
+  let content = "";
+
+  eel.getReserves()(reserves => {
+    reserves.forEach(player => {
+      content +=
+        `<div class="reserve-player">
+          <input id="player-selection-${player["name"]}" class="player-select" type="checkbox"/>
+          <label for="player-selection-${player["name"]}">${player["name"]}</label>
+        </div>`
+    });
+    reservePlayerArea.innerHTML = content;
   });
 }
 
@@ -97,4 +172,50 @@ function handleConfigCheckChange(e) {
   document.getElementById("awsId").type = type;
   document.getElementById("awsKey").type = type;
   document.getElementById("discordBotKey").type = type;
+}
+
+function saveConfigChanges(e) {
+  e.preventDefault();
+  const newConfig = {
+    "aws_access_key_id": document.getElementById("awsId").value,
+    "aws_secret_access_key": document.getElementById("awsKey").value,
+    "token": document.getElementById("discordBotKey").value,
+  }
+  eel.setConfig(newConfig)(ret => console.log(ret));
+}
+
+function removePlayersFromQueue() {
+  const queuedPlayers = Array.from(document.getElementById("curr-queue-content").getElementsByClassName("player-select"));
+
+  eel.getCurrentQueue()((currQueue) => {
+    let removedPlayers = [];
+    let newQueue = { ...currQueue };
+    const queueLists = ["queue", "blueTeam", "orangeTeam"];
+
+    queuedPlayers.forEach((player) => {
+      if (player.checked) {
+        const playerName = player.id.split("-")[2];
+
+        queueLists.forEach(key => {
+          const queueIndex = newQueue[key].findIndex(p => p["name"] === playerName);
+          if (queueIndex !== -1) {
+            removedPlayers.push(newQueue[key].splice(queueIndex, 1)[0]);
+          }
+        });
+      }
+    })
+
+    eel.setCurrentQueue(newQueue)(ret => console.log(ret));
+
+    eel.getReserves()(reserves => {
+      let newReserves = Array.from(reserves);
+      removedPlayers.forEach(player => newReserves.push(player));
+
+      eel.setReserves(newReserves)(ret => {
+        console.log(ret);
+        getQueue();
+        getReserves();
+      });
+    });
+  })
 }

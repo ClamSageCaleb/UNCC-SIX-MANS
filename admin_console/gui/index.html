@@ -21,19 +21,19 @@
       <div class="queue-content">
         <div class="card">
           <h2>Current Queue</h2>
-          <div class="card-content">
-            <p id="queue-timer"></p>
-            <hr />
-            <select id="queue-select" multiple size="6"></select>
+          <div id="curr-queue-content" class="card-content"></div>
+          <div>
+            <button>Clear Queue</button>
+            <button onclick="removePlayersFromQueue()">Remove Selected</button>
           </div>
-        </div>
-        <div class="shift-btns">
-          <button>&#8249;</button>
-          <button>&#8250;</button>
         </div>
         <div class="card">
           <h2>Reserve Players</h2>
-          <div class="card-content"></div>
+          <div id="reserve-players" class="card-content"></div>
+          <div>
+            <button>Add Selected</button>
+            <button>Add New Reserve</button>
+          </div>
         </div>
       </div>
     </section>
@@ -73,7 +73,7 @@
         </div>
       </div>
       <div class="config-content">
-        <form class="config">
+        <form id="config-form" class="config">
           <div>
             <label for="awsId">AWS ID</label>
             <input type="password" id="awsId" name="awsId">

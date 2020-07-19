@@ -9,7 +9,7 @@ html {
   background-color: #ececec;
 }
 
-.card .card-content, #leaderboard .content, #current-queue .queue-content .shift-btns button, #config .config-content {
+.card .card-content, #leaderboard .content, #config .config-content {
   background-color: white;
   border: 1px solid rgba(0, 0, 0, 0.2);
   padding: 15px;
@@ -39,33 +39,45 @@ h2 {
 .card .card-content .col-headers, .card .card-content .player {
   display: -ms-grid;
   display: grid;
-      grid-template-areas: "player team captain";
-  -ms-grid-columns: 1fr 1fr 1fr;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-areas: "input player team captain";
+  -ms-grid-columns: 1fr 2fr 2fr 2fr;
+      grid-template-columns: 1fr 2fr 2fr 2fr;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-column-gap: 2px;
+          column-gap: 2px;
 }
 
-.card .card-content .col-headers span, .card .card-content .player span {
+.card .card-content .col-headers label, .card .card-content .player label {
   font-size: 14px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.card .card-content .col-headers span:nth-child(1), .card .card-content .player span:nth-child(1) {
-  text-align: left;
+.card .card-content .col-headers span:nth-child(1), .card .card-content .col-headers input.player-select, .card .card-content .player span:nth-child(1), .card .card-content .player input.player-select {
   -ms-grid-row: 1;
   -ms-grid-column: 1;
+  grid-area: input;
+}
+
+.card .card-content .col-headers span:nth-child(2), .card .card-content .col-headers label, .card .card-content .player span:nth-child(2), .card .card-content .player label {
+  text-align: left;
+  -ms-grid-row: 1;
+  -ms-grid-column: 2;
   grid-area: player;
 }
 
-.card .card-content .col-headers span:nth-child(2), .card .card-content .player span:nth-child(2) {
-  text-align: center;
+.card .card-content .col-headers span:nth-child(3), .card .card-content .col-headers select, .card .card-content .player span:nth-child(3), .card .card-content .player select {
   -ms-grid-row: 1;
-  -ms-grid-column: 2;
+  -ms-grid-column: 3;
   grid-area: team;
 }
 
-.card .card-content .col-headers span:nth-child(3), .card .card-content .player span:nth-child(3) {
-  text-align: right;
+.card .card-content .col-headers span:nth-child(4), .card .card-content .col-headers input:not(.player-select), .card .card-content .player span:nth-child(4), .card .card-content .player input:not(.player-select) {
   -ms-grid-row: 1;
-  -ms-grid-column: 3;
+  -ms-grid-column: 4;
   grid-area: captain;
 }
 
@@ -76,6 +88,36 @@ h2 {
 .card .card-content .player span {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.card .card-content .reserve-player {
+  display: -ms-grid;
+  display: grid;
+      grid-template-areas: "input player";
+  -ms-grid-columns: fit-content 1fr;
+      grid-template-columns: -webkit-fit-content 1fr;
+      grid-template-columns: fit-content 1fr;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-column-gap: 5px;
+          column-gap: 5px;
+}
+
+.card .card-content .reserve-player label {
+  font-size: 14px;
+  text-align: center;
+  -ms-grid-row: 1;
+  -ms-grid-column: 2;
+  grid-area: player;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card .card-content .reserve-player input.player-select {
+  -ms-grid-row: 1;
+  -ms-grid-column: 1;
+  grid-area: input;
 }
 
 #refresh {
@@ -145,31 +187,18 @@ h2 {
 
 #current-queue .queue-content .card-content {
   height: 250px;
+  width: 300px;
+  border-radius: 4px 0px 0px 4px;
 }
 
-#current-queue .queue-content .card-content select {
-  width: 100%;
-  height: 90%;
-  border: none;
-  overflow: hidden;
+#current-queue .queue-content .card-content input {
+  -ms-grid-column-align: center;
+      justify-self: center;
 }
 
-#current-queue .queue-content .card-content select option {
-  padding: 9px 0;
-}
-
-#current-queue .queue-content .shift-btns {
-  -ms-flex-item-align: center;
-      -ms-grid-row-align: center;
-      align-self: center;
-}
-
-#current-queue .queue-content .shift-btns button {
-  font-size: 26px;
-  display: block;
-  text-align: center;
-  margin: 5px 10px;
-  padding: 3px 7px;
+#current-queue .queue-content #reserve-players {
+  width: 190px;
+  border-radius: 0px 4px 4px 0px;
 }
 
 #active-matches {

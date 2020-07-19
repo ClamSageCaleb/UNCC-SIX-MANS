@@ -1,5 +1,5 @@
 import eel
-from FilePaths import queueFilePath, tokenPath, activeMatchPath, leaderboardPath
+from FilePaths import queueFilePath, tokenPath, activeMatchPath, leaderboardPath, reservesPath
 import json
 
 eel.init("gui")
@@ -14,11 +14,47 @@ def getCurrentQueue():
 
 
 @eel.expose
+def setCurrentQueue(newQueue):
+    try:
+        with open(queueFilePath, "w") as queueFile:
+            json.dump(newQueue, queueFile)
+    except Exception as e:
+        return e
+
+    return "Queue updated."
+
+
+@eel.expose
+def getReserves():
+    fileToRead = open(reservesPath, "r")
+    reserves = json.load(fileToRead)
+    fileToRead.close()
+    return reserves
+
+
+@eel.expose
+def setReserves(newReserves):
+    try:
+        with open(reservesPath, "w") as reservesFile:
+            json.dump(newReserves, reservesFile)
+    except Exception as e:
+        return e
+
+    return "Reserves updated."
+
+
+@eel.expose
 def getActiveMatches():
     fileToRead = open(activeMatchPath, "r")
     matches = json.load(fileToRead)
     fileToRead.close()
     return matches
+
+
+@eel.expose
+def setActiveMatches(newActiveMatches):
+    with open(activeMatchPath, "w") as activeMatchFile:
+        json.dump(newActiveMatches, activeMatchFile)
 
 
 @eel.expose
@@ -35,6 +71,17 @@ def getConfig():
     config = json.load(fileToRead)
     fileToRead.close()
     return config
+
+
+@eel.expose
+def setConfig(newConfig):
+    try:
+        with open(tokenPath, "w") as config:
+            json.dump(newConfig, config)
+    except Exception as e:
+        return e
+
+    return "Config successfully updated."
 
 
 eel.start("index.html", size=(1356, 900))
