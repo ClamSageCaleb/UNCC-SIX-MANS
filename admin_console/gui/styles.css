@@ -1,66 +1,244 @@
 * {
   margin: 0;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
 }
 
 html {
-  margin: 0;
   font-family: Roboto, sans-serif;
-  font-size: 16px;
   scroll-behavior: smooth;
-  background-color: #333;
+  background-color: #ececec;
 }
 
-header {
-  text-align: center;
-  margin: 10px 0;
-}
-
-header h1 {
-  color: #7dff7d;
-}
-
-header button {
-  background-color: #3d6cc3;
-  color: white;
+.card .card-content, #leaderboard .content, #current-queue .queue-content .shift-btns button, #config .config-content {
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  padding: 15px;
   border-radius: 4px;
-  border: none;
-  font-size: 20px;
-  padding: 5px;
-  cursor: pointer;
-  margin: 10px;
 }
 
-main {
+h2 {
+  font-size: 26px;
+  margin-left: 10px;
+  margin-bottom: 5px;
+}
+
+.card .card-content {
+  width: 215px;
+}
+
+.card .card-content p {
+  text-align: center;
+  font-size: 16px;
+}
+
+.card .card-content hr {
+  margin: 5px;
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+.card .card-content .col-headers, .card .card-content .player {
+  display: -ms-grid;
+  display: grid;
+      grid-template-areas: "player team captain";
+  -ms-grid-columns: 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr;
+}
+
+.card .card-content .col-headers span, .card .card-content .player span {
+  font-size: 14px;
+}
+
+.card .card-content .col-headers span:nth-child(1), .card .card-content .player span:nth-child(1) {
+  text-align: left;
+  -ms-grid-row: 1;
+  -ms-grid-column: 1;
+  grid-area: player;
+}
+
+.card .card-content .col-headers span:nth-child(2), .card .card-content .player span:nth-child(2) {
+  text-align: center;
+  -ms-grid-row: 1;
+  -ms-grid-column: 2;
+  grid-area: team;
+}
+
+.card .card-content .col-headers span:nth-child(3), .card .card-content .player span:nth-child(3) {
+  text-align: right;
+  -ms-grid-row: 1;
+  -ms-grid-column: 3;
+  grid-area: captain;
+}
+
+.card .card-content .player {
+  margin: 15px 0px;
+}
+
+.card .card-content .player span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#refresh {
+  position: absolute;
+  top: 25px;
+  right: 50px;
+  width: 150px;
+  background-color: #4AAAE9;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 20px;
+  -webkit-box-shadow: 0px 3px 6px #8b8b8b;
+          box-shadow: 0px 3px 6px #8b8b8b;
+  cursor: pointer;
+}
+
+#leaderboard {
+  position: absolute;
+  top: 480px;
+  left: 50px;
+}
+
+#leaderboard .content {
+  padding: 5px;
+  width: 745px;
+  max-height: 285px;
+  overflow: auto;
+}
+
+#leaderboard .content table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+}
+
+#leaderboard .content table thead th {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  width: 20%;
+  font-size: 16px;
+}
+
+#leaderboard .content table td {
+  text-align: center;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#leaderboard .content table td:first-child {
+  text-align: left;
+}
+
+#current-queue {
+  position: absolute;
+  top: 85px;
+  left: 50px;
+}
+
+#current-queue .queue-content {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  -webkit-box-pack: space-evenly;
-      -ms-flex-pack: space-evenly;
-          justify-content: space-evenly;
 }
 
-main section {
-  background-color: #444;
+#current-queue .queue-content .card-content {
+  height: 250px;
+}
+
+#current-queue .queue-content .card-content select {
+  width: 100%;
+  height: 90%;
+  border: none;
+  overflow: hidden;
+}
+
+#current-queue .queue-content .card-content select option {
+  padding: 9px 0;
+}
+
+#current-queue .queue-content .shift-btns {
+  -ms-flex-item-align: center;
+      -ms-grid-row-align: center;
+      align-self: center;
+}
+
+#current-queue .queue-content .shift-btns button {
+  font-size: 26px;
+  display: block;
+  text-align: center;
+  margin: 5px 10px;
+  padding: 3px 7px;
+}
+
+#active-matches {
+  position: absolute;
+  top: 85px;
+  left: 650px;
+}
+
+#active-matches .card-content {
+  height: 250px;
+}
+
+#active-matches .matches-content {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+#active-matches .card:not(:first-child) {
+  margin: 0 10px;
+}
+
+#config {
+  position: absolute;
+  top: 480px;
+  left: 900px;
+}
+
+#config .config-header {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+#config .config-content {
+  width: 380px;
+}
+
+#config .config-content label {
+  font-size: 16px;
+  margin-left: 5px;
+}
+
+#config .config-content input {
+  width: 97%;
+  padding: 5px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: 1px solid black;
+  margin-top: 3px;
+}
+
+#config .config-content button {
+  width: 100%;
+  background-color: #4AAAE9;
+  color: white;
+  border: none;
   border-radius: 4px;
-  -webkit-box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.034), 0 6.7px 5.3px rgba(0, 0, 0, 0.048), 0 12.5px 10px rgba(0, 0, 0, 0.06), 0 22.3px 17.9px rgba(0, 0, 0, 0.072), 0 41.8px 33.4px rgba(0, 0, 0, 0.086), 0 100px 80px rgba(0, 0, 0, 0.12);
-          box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.034), 0 6.7px 5.3px rgba(0, 0, 0, 0.048), 0 12.5px 10px rgba(0, 0, 0, 0.06), 0 22.3px 17.9px rgba(0, 0, 0, 0.072), 0 41.8px 33.4px rgba(0, 0, 0, 0.086), 0 100px 80px rgba(0, 0, 0, 0.12);
-  padding: 10px;
-  -webkit-box-flex: 1;
-      -ms-flex-positive: 1;
-          flex-grow: 1;
-  margin: 10px;
+  padding: 6px;
+  font-size: 16px;
 }
 
-main section hr {
-  margin: 5px 0px 10px 0px;
-}
-
-main section h2, main section p {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-main section p {
-  margin: 5px;
+#config .config-content div:not(:first-child) {
+  margin: 30px 0;
 }
 /*# sourceMappingURL=styles.css.map */

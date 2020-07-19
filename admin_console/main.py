@@ -37,4 +37,4 @@ def getConfig():
     return config
 
 
-eel.start("index.html", size=(1000, 600))
+eel.start("index.html", size=(1356, 900))
