@@ -9,7 +9,7 @@ html {
   background-color: #ececec;
 }
 
-.card .card-content, #leaderboard .content, #config .config-content {
+.card .card-content, #leaderboard .content, #config .config-content, .modal .dialog-container {
   background-color: white;
   border: 1px solid rgba(0, 0, 0, 0.2);
   padding: 15px;
@@ -20,6 +20,24 @@ h2 {
   font-size: 26px;
   margin-left: 10px;
   margin-bottom: 5px;
+}
+
+.card button {
+  margin-top: 10px;
+  border: none;
+  border-radius: 4px;
+  padding: 6px;
+  font-size: 16px;
+}
+
+.card button:first-child {
+  background-color: #52dd98;
+  color: black;
+}
+
+.card button:not(:first-child) {
+  background-color: #e94a7a;
+  color: white;
 }
 
 .card .card-content {
@@ -94,19 +112,23 @@ h2 {
   display: -ms-grid;
   display: grid;
       grid-template-areas: "input player";
-  -ms-grid-columns: fit-content 1fr;
-      grid-template-columns: -webkit-fit-content 1fr;
-      grid-template-columns: fit-content 1fr;
+  -ms-grid-columns: min-content 1fr;
+      grid-template-columns: -webkit-min-content 1fr;
+      grid-template-columns: min-content 1fr;
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
-  -webkit-column-gap: 5px;
-          column-gap: 5px;
+  -webkit-column-gap: 10px;
+          column-gap: 10px;
+}
+
+.card .card-content .reserve-player:not(:first-child) {
+  margin: 15px 0;
 }
 
 .card .card-content .reserve-player label {
   font-size: 14px;
-  text-align: center;
+  text-align: left;
   -ms-grid-row: 1;
   -ms-grid-column: 2;
   grid-area: player;
@@ -268,6 +290,63 @@ h2 {
 }
 
 #config .config-content div:not(:first-child) {
+  margin: 30px 0;
+}
+
+.modal {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  position: absolute;
+  z-index: 10;
+}
+
+.modal .closeBtn {
+  z-index: 11;
+  position: absolute;
+  left: 460px;
+  top: 280px;
+  background-color: #e94a7a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 16px;
+}
+
+.modal .dialog-container {
+  z-index: 10;
+  width: 380px;
+  position: absolute;
+  left: 488px;
+  top: 300px;
+}
+
+.modal .dialog-container label {
+  font-size: 16px;
+  margin-left: 5px;
+}
+
+.modal .dialog-container input {
+  width: 97%;
+  padding: 5px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: 1px solid black;
+  margin-top: 3px;
+}
+
+.modal .dialog-container button {
+  width: 100%;
+  background-color: #4AAAE9;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px;
+  font-size: 16px;
+}
+
+.modal .dialog-container div:not(:first-child) {
   margin: 30px 0;
 }
 /*# sourceMappingURL=styles.css.map */

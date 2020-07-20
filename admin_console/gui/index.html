@@ -23,16 +23,16 @@
           <h2>Current Queue</h2>
           <div id="curr-queue-content" class="card-content"></div>
           <div>
-            <button>Clear Queue</button>
             <button onclick="removePlayersFromQueue()">Remove Selected</button>
+            <button onclick="clearCurrentQueue()">Clear Queue</button>
           </div>
         </div>
         <div class="card">
           <h2>Reserve Players</h2>
           <div id="reserve-players" class="card-content"></div>
           <div>
-            <button>Add Selected</button>
-            <button>Add New Reserve</button>
+            <button onclick="addReservesToQueue()">Add Selected</button>
+            <button onclick="showNewReserveModal()">Add New Reserve</button>
           </div>
         </div>
       </div>
@@ -92,6 +92,22 @@
     </section>
   </main>
 
+  <div id="addReserveModal" class="modal" style="display: none;">
+    <button onclick="closeNewReserveModal()" class="closeBtn">&#10006;</button>
+    <div class="dialog-container">
+      <form id="new-reserve-form">
+        <div>
+          <label for="playerId">Player ID</label>
+          <input type="text" id="playerId" name="playerId">
+        </div>
+        <div>
+          <label for="playerName">Player Name</label>
+          <input type="text" id="playerName" name="playerName">
+        </div>
+        <button type="submit">Add Reserve</button>
+      </form>
+    </div>
+  </div>
 </body>
 
 </html>

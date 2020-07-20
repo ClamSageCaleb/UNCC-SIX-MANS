@@ -25,6 +25,22 @@ h2 {
 }
 
 .card {
+
+  button {
+    &:first-child {
+      background-color: #52dd98;
+      color: black;
+    }
+    &:not(:first-child) {
+      background-color: #e94a7a;
+      color: white;
+    }
+    margin-top: 10px;
+    border: none;
+    border-radius: 4px;
+    padding: 6px;
+    font-size: 16px;
+  }
   
   .card-content {
     @extend %basic-container;
@@ -81,13 +97,17 @@ h2 {
     .reserve-player {
       display: grid;
       grid-template-areas: "input player";
-      grid-template-columns: fit-content 1fr;
+      grid-template-columns: min-content 1fr;
       align-items: center;
-      column-gap: 5px;
+      column-gap: 10px;
+      
+      &:not(:first-child){
+        margin: 15px 0;
+      }
 
       label {
         font-size: 14px;
-        text-align: center;
+        text-align: left;
         grid-area: player;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -210,6 +230,64 @@ h2 {
   .config-content {
     @extend %basic-container;
     width: 380px;
+  
+    label {
+      font-size: 16px;
+      margin-left: 5px;
+    }
+  
+    input {
+      width: 97%;
+      padding: 5px;
+      font-size: 12px;
+      border-radius: 6px;
+      border: 1px solid black;
+      margin-top: 3px;
+    }
+  
+    button {
+      width: 100%;
+      background-color: #4AAAE9;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 6px;
+      font-size: 16px;
+    }
+  
+    div:not(:first-child) {
+      margin: 30px 0;
+    }
+  }
+}
+
+.modal {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  position: absolute;
+  z-index: 10;
+
+  .closeBtn {
+    z-index: 11;
+    position: absolute;
+    left: 460px;
+    top: 280px;
+    background-color: #e94a7a;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 16px;
+  }
+
+  .dialog-container {
+    z-index: 10;
+    @extend %basic-container;
+    width: 380px;
+    position: absolute;
+    left: 488px;
+    top: 300px;
   
     label {
       font-size: 16px;

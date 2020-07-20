@@ -4,6 +4,7 @@ function documnetLoad() {
   getAllData();
   document.getElementById("plainText").onchange = handleConfigCheckChange;
   document.getElementById("config-form").onsubmit = saveConfigChanges;
+  document.getElementById("new-reserve-form").onsubmit = addNewReserve;
 }
 
 function getAllData() {
@@ -203,7 +204,7 @@ function removePlayersFromQueue() {
           }
         });
       }
-    })
+    });
 
     eel.setCurrentQueue(newQueue)(ret => console.log(ret));
 
@@ -218,4 +219,104 @@ function removePlayersFromQueue() {
       });
     });
   })
+}
+
+function clearCurrentQueue() {
+  eel.getCurrentQueue()((currQueue) => {
+    let removedPlayers = [];
+    const newQueue = {
+      "timeReset": 0,
+      "queue": [],
+      "orangeCap": "",
+      "blueCap": "",
+      "orangeTeam": [],
+      "blueTeam": []
+    };
+
+    eel.getReserves()(reserves => {
+      let newReserves = Array.from(reserves);
+
+      const queueLists = ["queue", "blueTeam", "orangeTeam"];
+      queueLists.forEach(key => {
+        currQueue[key].forEach(player => {
+          newReserves.push(player);
+        });
+      });
+
+      eel.setCurrentQueue(newQueue)(ret => console.log(ret));
+
+      eel.setReserves(newReserves)(ret => {
+        console.log(ret);
+        getQueue();
+        getReserves();
+      });
+    });
+  })
+}
+
+
+function addReservesToQueue() {
+  const reservedPlayers = Array.from(document.getElementById("reserve-players").getElementsByClassName("player-select"));
+  let playersToAdd = [];
+
+  eel.getReserves()(reserves => {
+    const newReserves = Array.from(reserves);
+
+    reservedPlayers.forEach((player) => {
+      if (player.checked) {
+        const playerName = player.id.split("-")[2];
+        const foundIndex = newReserves.findIndex(p => p["name"] === playerName);
+        playersToAdd.push(newReserves.splice(foundIndex, 1)[0]);
+      }
+    });
+
+    eel.setReserves(newReserves)(ret => console.log(ret));
+
+    eel.getCurrentQueue()(currQueue => {
+      let newQueue = { ...currQueue };
+      playersToAdd.forEach(player => {
+        newQueue["queue"].push(player);
+      });
+
+      eel.setCurrentQueue(newQueue)(ret => {
+        console.log(ret);
+        getQueue();
+        getReserves();
+      });
+
+    });
+
+  });
+}
+
+function closeNewReserveModal() {
+  const modal = document.getElementById("addReserveModal");
+  modal.style.display = "none";
+}
+
+function showNewReserveModal() {
+  const modal = document.getElementById("addReserveModal");
+  modal.style.display = "block";
+}
+
+function addNewReserve(e) {
+  e.preventDefault();
+  const newPlayerId = document.getElementById("playerId").value;
+  const newPlayerName = document.getElementById("playerName").value;
+  console.log(newPlayerId, newPlayerName);
+
+  eel.getReserves()(reserves => {
+    const newReserves = Array.from(reserves);
+
+    newReserves.push({
+      "name": newPlayerName,
+      "id": newPlayerId,
+    });
+
+    eel.setReserves(newReserves)(ret => {
+      console.log(ret);
+      getReserves();
+      closeNewReserveModal();
+    });
+  });
 }
