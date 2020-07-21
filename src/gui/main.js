@@ -1,10 +1,21 @@
 document.addEventListener('DOMContentLoaded', documnetLoad);
+document.addEventListener('beforeunload', documentClose)
 
 function documnetLoad() {
   getAllData();
   document.getElementById("plainText").onchange = handleConfigCheckChange;
   document.getElementById("config-form").onsubmit = saveConfigChanges;
   document.getElementById("new-reserve-form").onsubmit = addNewReserve;
+  window.setInterval(function () {
+    getAllData();
+  }, 10000);
+}
+
+// TODO does not work
+function documentClose(e) {
+  console.log("run shutdown")
+  e.preventDefault()
+  eel.shutdown()
 }
 
 function getAllData() {
@@ -13,6 +24,7 @@ function getAllData() {
   getActiveMatches();
   getLeaderboard();
   getConfig();
+  checkNormStatus();
 }
 
 function getQueue() {
@@ -318,5 +330,29 @@ function addNewReserve(e) {
       getReserves();
       closeNewReserveModal();
     });
+  });
+}
+
+function shutdownNorm() {
+  eel.putNormToSleep()(() => {
+    checkNormStatus();
+  });
+}
+
+function startNorm() {
+  eel.startNorm()(() => {
+    checkNormStatus();
+  });
+}
+
+function checkNormStatus() {
+  const normStatusArea = document.getElementById("normStatus");
+  eel.checkNormStatus()((status) => {
+    normStatusArea.innerHTML =
+      `Norm is 
+      <span style="color: ${status ? "green" : "red"}; font-weight: bold;">
+        ${status ? "running" : "down"}
+      </span>
+      <button class="normBtn ${status ? "normOn" : "normOff"}" onclick=${status ? "shutdownNorm()" : "startNorm()"}>${status ? "Shutdown Norm" : "Start Norm"}</button>`;
   });
 }

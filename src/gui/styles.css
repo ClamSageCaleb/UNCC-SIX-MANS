@@ -349,4 +349,31 @@ h2 {
 .modal .dialog-container div:not(:first-child) {
   margin: 30px 0;
 }
+
+#normStatus {
+  position: absolute;
+  left: 50px;
+  top: 25px;
+}
+
+.normBtn {
+  width: 125px;
+  background-color: #3caa58;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px;
+  margin-left: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.normOff {
+  background-color: #3caa58;
+}
+
+.normOn {
+  background-color: #e94a7a;
+  width: 150px;
+}
 /*# sourceMappingURL=styles.css.map */

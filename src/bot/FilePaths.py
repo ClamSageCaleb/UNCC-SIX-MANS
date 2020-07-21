@@ -11,7 +11,7 @@ tokenPath = path.join(basePath, "config.json")
 queueFilePath = path.join(dataBasePath, "queue.json")
 activeMatchPath = path.join(dataBasePath, "activeMatches.json")
 leaderboardPath = path.join(dataBasePath, "Leaderboard.json")
-reservesPath = "reserves.json"
+reservesPath = "./src/reserves.json"  # this is one is for the GUI
 
 
 def checkProgramFiles():

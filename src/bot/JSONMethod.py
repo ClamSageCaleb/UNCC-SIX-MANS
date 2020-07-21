@@ -1,4 +1,4 @@
-from FilePaths import queueFilePath, tokenPath
+from bot.FilePaths import queueFilePath, tokenPath
 import json
 import random
 

@@ -1,6 +1,6 @@
-from FilePaths import activeMatchPath, leaderboardPath
+from bot.FilePaths import activeMatchPath, leaderboardPath
 import json
-import AWSHelper as AWS
+import bot.AWSHelper as AWS
 
 
 def readActiveMatches() -> list:

@@ -6,16 +6,12 @@ __version__ = "4.2.1"
 __maintainer__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __email__ = "caleb.benjamin9799@gmail.com"
 
-
+from bot import AWSHelper as AWS, CheckForUpdates, JSONMethod as Jason, Leaderboard
 import asyncio
-import AWSHelper as AWS
-import CheckForUpdates
 import discord
 from discord.ext.commands import Bot, CommandNotFound
-from EmbedHelper import ErrorEmbed, QueueUpdateEmbed, AdminEmbed, InfoEmbed
-from FilePaths import checkProgramFiles
-import JSONMethod as Jason
-import Leaderboard
+from bot.EmbedHelper import ErrorEmbed, QueueUpdateEmbed, AdminEmbed, InfoEmbed
+from bot.FilePaths import checkProgramFiles
 import os
 from pathlib import Path
 import random

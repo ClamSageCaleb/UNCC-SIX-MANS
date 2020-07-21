@@ -1,8 +1,12 @@
 import eel
-from FilePaths import queueFilePath, tokenPath, activeMatchPath, leaderboardPath, reservesPath
+from bot.FilePaths import queueFilePath, tokenPath, activeMatchPath, leaderboardPath, reservesPath
 import json
+from multiprocessing import Process
+from bot.bot import main
 
-eel.init("gui")
+
+NormProcess = None
+eel.init("./src/gui")
 
 
 @eel.expose
@@ -82,6 +86,39 @@ def setConfig(newConfig):
         return e
 
     return "Config successfully updated."
+
+
+@eel.expose
+def putNormToSleep():
+    global NormProcess
+
+    if (NormProcess and NormProcess.is_alive()):
+        NormProcess.kill()
+
+        while (NormProcess.is_alive()):
+            pass
+
+        NormProcess.close()
+        NormProcess = None
+
+
+@eel.expose
+def startNorm():
+    global NormProcess
+
+    putNormToSleep()
+    NormProcess = Process(target=main)
+    NormProcess.start()
+
+
+@eel.expose
+def checkNormStatus():
+    global NormProcess
+
+    if (NormProcess):
+        return NormProcess.is_alive()
+    else:
+        return False
 
 
 eel.start("index.html", size=(1356, 900))

@@ -2,7 +2,7 @@ import boto3
 import json
 from os import path
 from sys import argv
-from FilePaths import leaderboardPath, tokenPath
+from bot.FilePaths import leaderboardPath, tokenPath
 
 
 aws_id = ""
