@@ -6,16 +6,18 @@ __version__ = "4.2.1"
 __maintainer__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __email__ = "caleb.benjamin9799@gmail.com"
 
-from bot import AWSHelper as AWS, CheckForUpdates, JSONMethod as Jason, Leaderboard
+
 import asyncio
 import discord
 from discord.ext.commands import Bot, CommandNotFound
+import random
+
+import bot.AWSHelper as AWS
+import bot.CheckForUpdates as CheckForUpdates
+import bot.JSONMethod as Jason
+import bot.Leaderboard as Leaderboard
 from bot.EmbedHelper import ErrorEmbed, QueueUpdateEmbed, AdminEmbed, InfoEmbed
 from bot.FilePaths import checkProgramFiles
-import os
-from pathlib import Path
-import random
-import time
 
 # Bot prefix and Discord Bot token
 BOT_PREFIX = ("!")
@@ -48,6 +50,7 @@ async def on_message(message):
 
 @client.event
 async def on_command_error(ctx, error):
+    print(error)
     if isinstance(error, CommandNotFound):
         return
 
@@ -976,30 +979,7 @@ async def help(ctx):
 def main():
     checkProgramFiles()
     client.loop.create_task(list_servers())
-    token = Jason.getDiscordToken()
-
-    if (token == ""):
-        token = Jason.updateDiscordToken(
-            input("No Discord Bot token found. Paste your Discord Bot token below and hit ENTER.\ntoken: ")
-        )
-
-    # clear screen to hide token
-    if os.name == 'nt':
-        _ = os.system('cls')
-    else:
-        _ = os.system('clear')
-
-    try:
-        client.run(token)
-    except discord.errors.LoginFailure:
-        print(
-            "! There was an error with the token you provided. Please verify your bot token and try again.\n"
-            "If you need help locating the token for your bot, visit https://www.writebots.com/discord-bot-token/"
-        )
-        os.remove("{0}/SixMans/config.json".format(Path.home()))
-        time.sleep(5)
-    except Exception:
-        pass
+    client.run(Jason.getDiscordToken())
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 import eel
-from bot.FilePaths import queueFilePath, tokenPath, activeMatchPath, leaderboardPath, reservesPath
+from bot.FilePaths import queueFilePath, tokenPath, activeMatchPath, leaderboardPath, reservesPath, checkProgramFiles
 import json
 from multiprocessing import Process
 from bot.bot import main
@@ -7,6 +7,7 @@ from bot.bot import main
 
 NormProcess = None
 eel.init("./src/gui")
+checkProgramFiles()
 
 
 @eel.expose
