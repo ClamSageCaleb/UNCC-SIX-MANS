@@ -1,5 +1,7 @@
 {
   "python.linting.flake8Enabled": true,
   "python.linting.enabled": true,
-  "python.pythonPath": "/home/mattw/anaconda3/envs/six-mans/bin/python",
+  "python.pythonPath": "C:\\Users\\mattw\\AppData\\Local\\Programs\\Python\\Python37-32\\python.exe",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true
 }

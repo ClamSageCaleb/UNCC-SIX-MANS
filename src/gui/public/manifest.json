@@ -1,0 +1,20 @@
+{
+  "short_name": "Norm Admin Console",
+  "name": "Admin Console for Norm the 6 mans bot",
+  "icons": [
+    {
+      "src": "SixMansLogo.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "SixMansLogo.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#e8e8e8"
+}

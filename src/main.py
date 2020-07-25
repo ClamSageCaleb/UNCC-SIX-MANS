@@ -6,7 +6,7 @@ from bot.bot import main
 
 
 NormProcess = None
-eel.init("./src/gui")
+eel.init("./src/gui/src", ['.tsx', '.ts', '.jsx', '.js', '.html'])
 checkProgramFiles()
 
 
@@ -122,4 +122,10 @@ def checkNormStatus():
         return False
 
 
-eel.start("index.html", size=(1356, 900))
+eel_kwargs = dict(
+    host='localhost',
+    port=8080,
+    size=(1356, 900),
+)
+
+eel.start(page={'port': 3000}, app=None, **eel_kwargs)
