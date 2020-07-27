@@ -2,7 +2,6 @@ import React from "react";
 import { IRankedPlayer } from "../../types";
 import { eel } from "../../App";
 import { Table, Card } from "antd";
-import "./Leaderboard.scss";
 
 export default function Leaderboard() {
   const [leaderboard, setLeaderboard] = React.useState<Array<IRankedPlayer>>();
@@ -40,8 +39,15 @@ export default function Leaderboard() {
   ]
 
   return (
-    <Card title="Leaderboard" className="leaderboard-container">
-      <Table rowKey={(item) => item.Name} dataSource={leaderboard} columns={columns} />
+    <Card title="Leaderboard">
+      <Table
+        size="small"
+        rowKey={(item) => item.Name}
+        dataSource={leaderboard}
+        columns={columns}
+        pagination={false}
+        scroll={{y: 300}} 
+      />
     </Card>
   )
 }

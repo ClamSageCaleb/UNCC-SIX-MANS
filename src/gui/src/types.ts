@@ -1,3 +1,5 @@
+export type Team = "Blue" | "Orange" | "N/A";
+
 export interface IBallChaser {
   name: string;
   id: string;
@@ -15,7 +17,7 @@ export interface IQueue {
 export interface IActiveMatch {
   reportedWinner: {
     player: string;
-    winningTeam: "blue" | "orange";
+    winningTeam: Team;
   };
   blueTeam: Array<string>;
   orangeTeam: Array<string>;
