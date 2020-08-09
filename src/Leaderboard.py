@@ -180,6 +180,9 @@ def reportMatch(player, whoWon):
                     }
                     leaderboard.append(new_player)
                 else:
+                    if (leaderboard[player_index]["Name"] != teamMember.name):
+                        leaderboard[player_index]["Name"] = teamMember.name
+
                     leaderboard[player_index]["Wins"] += win
                     leaderboard[player_index]["Losses"] += loss
                     leaderboard[player_index]["Matches Played"] += 1

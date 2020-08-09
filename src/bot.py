@@ -54,6 +54,7 @@ async def on_message(message):
 async def on_command_error(ctx, error):
     if isinstance(error, CommandNotFound):
         return
+    print(error)
 
 
 @client.event
@@ -73,8 +74,8 @@ async def on_ready():
             title="Norm Started",
             desc="Current version: v{0}".format(__version__)
         ))
-    except Exception:
-        print("! Norm does not have access to post in the queue channel.")
+    except Exception as e:
+        print("! Norm does not have access to post in the queue channel.", e)
 
 
 async def list_servers():
@@ -92,8 +93,8 @@ async def list_servers():
                     title="Stale Queue Reset",
                     desc="The queue has been inactive for 1 hr and has now been reset."
                 ))
-            except Exception:
-                print("! Norm does not have access to post in the queue channel.")
+            except Exception as e:
+                print("! Norm does not have access to post in the queue channel.", e)
                 return
 
         elif (Jason.getQueueTime() != 0):
@@ -106,8 +107,8 @@ async def list_servers():
                         title="Stale Queue Update",
                         desc="Inactive for " + str(timeSpent) + " min. Queue will clear in " + str(timeLeft) + " min."
                     ))
-                except Exception:
-                    print("! Norm does not have access to post in the queue channel.")
+                except Exception as e:
+                    print("! Norm does not have access to post in the queue channel.", e)
                     return
 
         if (Jason.getQueueLength() != 0):
@@ -599,8 +600,8 @@ async def reportMatch(ctx, *arg):
             try:
                 # if match was reported successfully, update leaderboard channel
                 await updateLeaderboardChannel()
-            except Exception:
-                print("! Norm does not have access to update the leaderboard.")
+            except Exception as e:
+                print("! Norm does not have access to update the leaderboard.", e)
         else:
             embed = InfoEmbed(
                 title="Match Reported, Needs Confirmation",
@@ -661,8 +662,7 @@ async def showLeaderboard(ctx, *arg):
 async def updateLeaderboardChannel():
     """Deletes the old leaderboard and posts the updated one."""
     channel = client.get_channel(LEADERBOARD_CH_ID)
-    prev_msg = await channel.fetch_message(channel.last_message_id)
-    await channel.delete_messages([prev_msg])
+    await channel.purge()
     embed = InfoEmbed(
         title="UNCC 6 Mans | Full Leaderboard",
         desc=Leaderboard.showLeaderboard()
