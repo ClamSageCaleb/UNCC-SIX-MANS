@@ -570,7 +570,7 @@ async def pick(ctx):
 
 @client.command(name="report", pass_contex=True)
 async def reportMatch(ctx, *arg):
-    player_reporting = str(ctx.message.author)
+    player_reporting = Jason.BallChaser(name=str(ctx.message.author), id=ctx.message.author.id)
 
     if (
         ctx.message.channel.id != MATCH_REPORT_CH_ID
@@ -579,9 +579,7 @@ async def reportMatch(ctx, *arg):
     ):
         embed = ErrorEmbed(
             title="Can't Do That Here",
-            desc="You can only report matches in the <#{0}> and <#{1}> channels.".format(
-                MATCH_REPORT_CH_ID, QUEUE_CH_ID
-            )
+            desc="You can only report matches in the <#{0}> channel.".format(MATCH_REPORT_CH_ID)
         )
 
     elif (len(arg) == 1 and (str(arg[0]).lower() == "blue" or str(arg[0]).lower() == "orange")):
@@ -627,14 +625,14 @@ async def showLeaderboard(ctx, *arg):
     if (playerMentioned or selfRank):
 
         if (playerMentioned):
-            player_name = str(ctx.message.mentions[0])
+            player = Jason.BallChaser(str(ctx.message.mentions[0]), ctx.message.mentions[0].id)
         else:
-            player_name = str(ctx.message.author)
-        players_rank = Leaderboard.showLeaderboard(player_name)
+            player = Jason.BallChaser(str(ctx.message.author), ctx.message.author.id)
+        players_rank = Leaderboard.showLeaderboard(player)
 
         if (type(players_rank) == str):
             embed = InfoEmbed(
-                title="Leaderboard Placement for {0}".format(player_name),
+                title="Leaderboard Placement for {0}".format(player.name),
                 desc=players_rank
             )
         else:
