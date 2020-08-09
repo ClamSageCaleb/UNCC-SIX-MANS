@@ -1,26 +1,29 @@
 import boto3
 import json
-from os import path
-from sys import argv
 from FilePaths import leaderboardPath, tokenPath
 
 
 aws_id = ""
 aws_secret = ""
+aws_object = ""
 s3 = None
 
-# Set prod/dev status based on file extension
-_, file_extension = path.splitext(argv[0])
-status = "prod" if file_extension == ".exe" else "dev"
-leaderboardFile = "Leaderboard.json" if status == "prod" else "Test_Leaderboard.json"
-
-if (aws_id == "" or aws_secret == ""):
+if (
+    aws_id == ""
+    or aws_secret == ""
+    or aws_object == ""
+):
     with open(tokenPath, "r") as config:
         configData = json.load(config)
         aws_id = configData["aws_access_key_id"]
         aws_secret = configData["aws_secret_access_key"]
+        aws_object = configData["aws_object_name"]
 
-if (s3 is None):
+if (
+    aws_id != ""
+    and aws_secret != ""
+    and s3 is None
+):
     s3 = boto3.resource(
         "s3",
         aws_access_key_id=aws_id,
@@ -29,12 +32,24 @@ if (s3 is None):
 
 
 def readRemoteLeaderboard():
-    leaderboard = s3.Object("uncc-six-mans", leaderboardFile)
-    leaderboard = json.loads(leaderboard.get()["Body"].read().decode("utf-8"))
-    with open(leaderboardPath, "w") as ldrbrd:
-        json.dump(leaderboard, ldrbrd)
+    if (
+        aws_id != ""
+        and aws_secret != ""
+        and aws_object != ""
+        and s3 is not None
+    ):
+        leaderboard = s3.Object("uncc-six-mans", aws_object)
+        leaderboard = json.loads(leaderboard.get()["Body"].read().decode("utf-8"))
+        with open(leaderboardPath, "w") as ldrbrd:
+            json.dump(leaderboard, ldrbrd)
 
 
 def writeRemoteLeaderboard():
-    with open(leaderboardPath, "rb") as leaderboard:
-        s3.Bucket("uncc-six-mans").put_object(ACL="public-read", Key=leaderboardFile, Body=leaderboard)
+    if (
+        aws_id != ""
+        and aws_secret != ""
+        and aws_object != ""
+        and s3 is not None
+    ):
+        with open(leaderboardPath, "rb") as leaderboard:
+            s3.Bucket("uncc-six-mans").put_object(ACL="public-read", Key=aws_object, Body=leaderboard)

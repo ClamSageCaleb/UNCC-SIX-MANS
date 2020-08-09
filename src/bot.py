@@ -2,7 +2,7 @@ __author__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __copyright__ = "Copyright 2019, MIT License"
 __credits__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __license__ = "MIT"
-__version__ = "4.2.2"
+__version__ = "4.2.3"
 __maintainer__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __email__ = "caleb.benjamin9799@gmail.com"
 
@@ -64,6 +64,7 @@ async def on_ready():
 
     try:
         AWS.readRemoteLeaderboard()
+        await updateLeaderboardChannel()  # update leaderboard channel when remote leaderboard pulls
     except Exception as e:
         # this should only throw an exception if the Leaderboard file does not exist or the credentials are invalid
         print(e)
