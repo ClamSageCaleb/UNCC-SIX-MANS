@@ -23,6 +23,9 @@ def checkProgramFiles():
     if (not path.exists(tokenPath)):
         with open(tokenPath, "w") as config:
             blankConfigFile = {
+                "aws_access_key_id": "",
+                "aws_secret_access_key": "",
+                "aws_object_name": "",
                 "token": ""
             }
             json.dump(blankConfigFile, config)

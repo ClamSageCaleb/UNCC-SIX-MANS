@@ -2,7 +2,7 @@ __author__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __copyright__ = "Copyright 2019, MIT License"
 __credits__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __license__ = "MIT"
-__version__ = "4.2.2"
+__version__ = "4.2.3"
 __maintainer__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __email__ = "caleb.benjamin9799@gmail.com"
 
@@ -54,6 +54,7 @@ async def on_message(message):
 async def on_command_error(ctx, error):
     if isinstance(error, CommandNotFound):
         return
+    print(error)
 
 
 @client.event
@@ -63,6 +64,7 @@ async def on_ready():
 
     try:
         AWS.readRemoteLeaderboard()
+        await updateLeaderboardChannel()  # update leaderboard channel when remote leaderboard pulls
     except Exception as e:
         # this should only throw an exception if the Leaderboard file does not exist or the credentials are invalid
         print(e)
@@ -73,8 +75,8 @@ async def on_ready():
             title="Norm Started",
             desc="Current version: v{0}".format(__version__)
         ))
-    except Exception:
-        print("! Norm does not have access to post in the queue channel.")
+    except Exception as e:
+        print("! Norm does not have access to post in the queue channel.", e)
 
 
 async def list_servers():
@@ -92,8 +94,8 @@ async def list_servers():
                     title="Stale Queue Reset",
                     desc="The queue has been inactive for 1 hr and has now been reset."
                 ))
-            except Exception:
-                print("! Norm does not have access to post in the queue channel.")
+            except Exception as e:
+                print("! Norm does not have access to post in the queue channel.", e)
                 return
 
         elif (Jason.getQueueTime() != 0):
@@ -106,8 +108,8 @@ async def list_servers():
                         title="Stale Queue Update",
                         desc="Inactive for " + str(timeSpent) + " min. Queue will clear in " + str(timeLeft) + " min."
                     ))
-                except Exception:
-                    print("! Norm does not have access to post in the queue channel.")
+                except Exception as e:
+                    print("! Norm does not have access to post in the queue channel.", e)
                     return
 
         if (Jason.getQueueLength() != 0):
@@ -570,7 +572,7 @@ async def pick(ctx):
 
 @client.command(name="report", pass_contex=True)
 async def reportMatch(ctx, *arg):
-    player_reporting = str(ctx.message.author)
+    player_reporting = Jason.BallChaser(name=str(ctx.message.author), id=ctx.message.author.id)
 
     if (
         ctx.message.channel.id != MATCH_REPORT_CH_ID
@@ -579,9 +581,7 @@ async def reportMatch(ctx, *arg):
     ):
         embed = ErrorEmbed(
             title="Can't Do That Here",
-            desc="You can only report matches in the <#{0}> and <#{1}> channels.".format(
-                MATCH_REPORT_CH_ID, QUEUE_CH_ID
-            )
+            desc="You can only report matches in the <#{0}> channel.".format(MATCH_REPORT_CH_ID)
         )
 
     elif (len(arg) == 1 and (str(arg[0]).lower() == "blue" or str(arg[0]).lower() == "orange")):
@@ -601,8 +601,8 @@ async def reportMatch(ctx, *arg):
             try:
                 # if match was reported successfully, update leaderboard channel
                 await updateLeaderboardChannel()
-            except Exception:
-                print("! Norm does not have access to update the leaderboard.")
+            except Exception as e:
+                print("! Norm does not have access to update the leaderboard.", e)
         else:
             embed = InfoEmbed(
                 title="Match Reported, Needs Confirmation",
@@ -627,14 +627,14 @@ async def showLeaderboard(ctx, *arg):
     if (playerMentioned or selfRank):
 
         if (playerMentioned):
-            player_name = str(ctx.message.mentions[0])
+            player = Jason.BallChaser(str(ctx.message.mentions[0]), ctx.message.mentions[0].id)
         else:
-            player_name = str(ctx.message.author)
-        players_rank = Leaderboard.showLeaderboard(player_name)
+            player = Jason.BallChaser(str(ctx.message.author), ctx.message.author.id)
+        players_rank = Leaderboard.showLeaderboard(player)
 
         if (type(players_rank) == str):
             embed = InfoEmbed(
-                title="Leaderboard Placement for {0}".format(player_name),
+                title="Leaderboard Placement for {0}".format(player.name),
                 desc=players_rank
             )
         else:
@@ -663,8 +663,7 @@ async def showLeaderboard(ctx, *arg):
 async def updateLeaderboardChannel():
     """Deletes the old leaderboard and posts the updated one."""
     channel = client.get_channel(LEADERBOARD_CH_ID)
-    prev_msg = await channel.fetch_message(channel.last_message_id)
-    await channel.delete_messages([prev_msg])
+    await channel.purge()
     embed = InfoEmbed(
         title="UNCC 6 Mans | Full Leaderboard",
         desc=Leaderboard.showLeaderboard()

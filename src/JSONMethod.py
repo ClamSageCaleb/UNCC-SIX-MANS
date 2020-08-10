@@ -24,6 +24,12 @@ class BallChaser:
             "id": self.id
         }
 
+    def isPlayerInList(self, listOfBallChasers: list):
+        for i, chaser in enumerate(listOfBallChasers):
+            if (self.id == chaser.id):
+                return i
+        return -1
+
 
 '''
     File IO Helpers
