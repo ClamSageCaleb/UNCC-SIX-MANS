@@ -29,17 +29,28 @@ This repository contains the code for the official 6 mans Discord bot for the UN
 Norm is a Python based Discord bot that is compiled into a single executable. This makes it easy for anyone who is interested in adopting Norm to get started rather quickly.
 
 ## Running the Executable
-1. Go to the latest release [here](https://github.com/ClamSageCaleb/UNCC-SIX-MANS/releases/tag/v4.2.1) and download `Norm_the_6_Mans_Bot_v#.#.#.exe`.
-2. Double click the file to start Norm. Windows may warn you that Norm is unsafe since he is an executable. You can select `More Info` and then `Run anyway` to run Norm normally.
-3. A window should appear. This is the Admin Console for Norm. Here you can edit the current queue, edit active matches, view the leaderboard, and edit Norm's configuration settings.
-4. For this next step you will need a valid Discord Bot Token. 
+1. Go to the latest release [here](https://github.com/ClamSageCaleb/UNCC-SIX-MANS/releases/latest) and download `Norm_the_6_Mans_Bot_v#.#.#.exe`.
+2. For this next step you will need a valid Discord Bot Token. 
    1. Head to the [Discord Developer Portal](https://discord.com/developers/applications) and create your bot application.
       - This includes adding your new bot to the server you wish to use this application in.
    2. Click on `Bot` on the left side of the page. 
    3. Click on `Copy` underneath where it says `Token`. 
    4. Paste this token into the `Discord Bot Token` field under the `Config` section in the Norm Admin Console. 
    5. Click Save Changes.
-5. Click the `Start Norm` button in the top left corner of the Admin Console.
+3. Double click the file to start Norm. Windows may warn you that Norm is unsafe since he is an executable. You can select `More Info` and then `Run anyway` to run Norm normally. A console window will appear and it will say something to the effect of `! There was an error with the token you provided. Please verify your bot token and try again.`. This is expected. You can close the console window and proceed to the next step.
+4. The purpose of executing Norm was to automatically create all of the necessary data files needed for Norm to work correctly. Now that these files have been created, locate the `config.json` file in your home path under the `SixMans` directory.
+  - Here's an example path to the config file: `C:\Users\your_username\SixMans\config.json`
+5. Open the config file in your favorite text editor. Your config file should look something like this:
+```
+{
+  "aws_access_key_id": "",
+  "aws_secret_access_key": "",
+  "aws_object_name": "",
+  "token": ""
+}
+```
+The only required field is the `token` option. Copy and paste your Discord API token from step 2 between the two quotation marks next to the `token` field.
+6. Once the token field is set, you should be ready to run Norm. Locate the Norm executable and double click to run. The console window should reappear and print the version of the application running.
 
 ## Running the Source Code
 1. Clone the repository (```git clone https://github.com/clamsagecaleb/UNCC-SIX-MANS.git```)
@@ -53,8 +64,6 @@ Norm uses the [Discord.py](https://pypi.org/project/discord.py/) wrapper for the
 Current queue, active matches, the leaderboard, and the config are kept in the user's home path under a folder named `SixMans`. This folder and associated files are created automatically when Norm runs for the first time. Each file is stored in `JSON` format.
 
 Norm uses AWS to backup the leaderboard remotely with versioning in case the leaderboard ever becomes corrupt. The remote leaderboard is read every time Norm starts, and replaces the remote leaderboard with every newly reported match.
-
-The Admin Console is built using [Eel](https://pypi.org/project/Eel/). All source code is packaged using `pyinstaller` which is installed along with Eel.
 
 ### To see what commands Norm understands and more, visit our [official webpage](https://clamsagecaleb.github.io/UNCC-SIX-MANS/).
 ---
