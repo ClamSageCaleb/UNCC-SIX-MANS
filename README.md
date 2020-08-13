@@ -17,7 +17,7 @@ This repository contains the code for the official 6 mans Discord bot for the UN
 ### Norm is responsible for:
  - Keeping track of who is in the queue
  - Clearing the queue when it has not been active for over an hour
- - Assigning players to teams when the queue is full (reachers 6 players)
+ - Assigning players to teams when the queue is full (reaches 6 players)
    - Teams are assigned either randomly or chosen by randomly selected captains
  - Recording which team won the match as reported by the players
  - Recording the result for each individual player to the leaderboard in terms of:
@@ -41,8 +41,7 @@ Norm is a Python based Discord bot that is compiled into a single executable. Th
    This is expected. You can close the console window and proceed to the next step.
 
 
-4. The purpose of executing Norm was to automatically create all of the necessary data files needed for Norm to work correctly. Now that these files have been created, locate the `config.json` file in your home path under the `SixMans` directory.
-  - Here's an example path to the config file: `C:\Users\your_username\SixMans\config.json`
+4. The purpose of executing Norm was to automatically create all of the necessary data files needed for Norm to work correctly. Now that these files have been created, locate the `config.json` file in your home path under the `SixMans` directory. Here's an example path to the config file: `C:\Users\your_username\SixMans\config.json`
 5. Open the config file in your favorite text editor. Your config file should look something like this:
    ```
    {
@@ -52,14 +51,17 @@ Norm is a Python based Discord bot that is compiled into a single executable. Th
      "token": ""
    }
    ```
-   The only required field is the `token` option. Copy and paste your Discord API token from step 2 between the two quotation marks next to the `token` field.
+   The only required field is the `token` option. Copy and paste your Discord API token from step 1 between the two quotation marks next to the `token` field.
 
-6. Once the token field is set, you should be ready to run Norm. Locate the Norm executable and double click to run. The console window should reappear and print the version of the application running.
+6. Once the token field is set, Norm is ready for operation. Locate the Norm executable and double click to run. The console window should reappear and print the version of the application running.
+
+### Troubleshooting
+If the console windows closes suddenly when running the executable, there was likely an exception. To figure out what the exception was, open a Powershell window and navigate to the Norm executable. Run the command `./Norm_the_6_Mans_Bot_v#.#.#.exe`. The exception should then print in the Powershell window. If there is an issue, you do not know how to resolve you can create an issue [here](https://github.com/ClamSageCaleb/UNCC-SIX-MANS/issues) and we will get back to you when possible.
 
 ## Running the Source Code
 1. Clone the repository (```git clone https://github.com/clamsagecaleb/UNCC-SIX-MANS.git```)
 2. Install requirements (```pip install -r requirements.txt```)
-3. Run `src/main.py` in the root directory of the project.
+3. Run `src/bot.py` in the root directory of the project.
 4. Follow steps 3-5 in *Running the Norm Executable*.
 
 ## How it All Works
