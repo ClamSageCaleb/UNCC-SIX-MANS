@@ -62,7 +62,7 @@ If the console windows closes suddenly when running the executable, there was li
 1. Clone the repository (```git clone https://github.com/clamsagecaleb/UNCC-SIX-MANS.git```)
 2. Install requirements (```pip install -r requirements.txt```)
 3. Run `src/bot.py` in the root directory of the project.
-4. Follow steps 3-5 in *Running the Norm Executable*.
+4. Follow steps 3-5 in *Running the Executable*.
 
 ## How it All Works
 Norm uses the [Discord.py](https://pypi.org/project/discord.py/) wrapper for the official [Discord Bot API](https://discordbots.org/api/docs) to read and send messages sent in the designated Discord server.
