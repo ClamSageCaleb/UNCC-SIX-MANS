@@ -2,7 +2,7 @@ __author__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __copyright__ = "Copyright 2019, MIT License"
 __credits__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __license__ = "MIT"
-__version__ = "5.0.0"
+__version__ = "5.0.1"
 __maintainer__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __email__ = "caleb.benjamin9799@gmail.com"
 
@@ -139,7 +139,7 @@ async def q(ctx, quiet=False):
             desc="You are already in the queue, dummy.",
         )
 
-    elif (Leaderboard.isPlayerInActiveMatch(str(player))):
+    elif (Leaderboard.isPlayerInActiveMatch(player)):
         embed = ErrorEmbed(
             title="Match Still Active",
             desc="Your previous match has not been reported yet."

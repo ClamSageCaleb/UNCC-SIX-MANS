@@ -92,6 +92,7 @@ def brokenQueue(player):
 
 def isPlayerInActiveMatch(player):
     curr_matches = readActiveMatches()
+    player = BallChaser(player.name, player.id)
 
     for match in curr_matches:
         if (player.isPlayerInList(match["blueTeam"] + match["orangeTeam"]) != -1):
