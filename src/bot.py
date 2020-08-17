@@ -673,8 +673,7 @@ async def updateLeaderboardChannel():
 
 @client.command(name="brokenq", aliases=["requeue", "re-q"], pass_contex=True)
 async def removeLastPoppedQueue(ctx):
-    player = str(ctx.message.author)
-    msg = Leaderboard.brokenQueue(player)
+    msg = Leaderboard.brokenQueue(ctx.message.author)
 
     if (":white_check_mark:" in msg):
         embed = QueueUpdateEmbed(

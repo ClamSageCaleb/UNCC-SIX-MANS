@@ -83,7 +83,8 @@ def brokenQueue(player):
     if (match["reportedWinner"]["winningTeam"] != ""):
         return "You cannot report a broken queue once someone reports the match."
 
-    if (player in (match["blueTeam"] + match["orangeTeam"])):
+    player = BallChaser(player.name, player.id)
+    if (player.isPlayerInList(match["blueTeam"] + match["orangeTeam"]) != -1):
         writeActiveMatches(curr_matches)
         return ":white_check_mark: Previous queue removed."
 
