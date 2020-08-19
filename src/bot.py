@@ -317,10 +317,15 @@ async def rnd(ctx):
             title="Captains Already Chosen",
             desc="You cannot change your mind once you pick captains."
         )
-    elif(Jason.getQueueLength() != 6):
+    elif (Jason.getQueueLength() != 6):
         embed = ErrorEmbed(
             title="Queue is Not Full",
             desc="You cannot pop a queue until is full."
+        )
+    elif (not Jason.isPlayerInQueue(ctx.message.author)):
+        embed = ErrorEmbed(
+            title="Not in Queue",
+            desc="You are not in the queue, therefore you cannot pop the queue."
         )
     else:
         blueTeam, orangeTeam = Jason.randomPop()
@@ -385,6 +390,11 @@ async def captains(ctx):
         embed = ErrorEmbed(
             title="Queue is Not Full",
             desc="You cannot pop a queue until is full."
+        )
+    elif (not Jason.isPlayerInQueue(ctx.message.author)):
+        embed = ErrorEmbed(
+            title="Not in Queue",
+            desc="You are not in the queue, therefore you cannot pop the queue."
         )
     else:
         blueCap, orangeCap = Jason.captainsPop()
@@ -977,6 +987,7 @@ async def help(ctx):
 
 def main():
     checkProgramFiles()
+    AWS.init()
     client.loop.create_task(list_servers())
     token = Jason.getDiscordToken()
 
