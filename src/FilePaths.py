@@ -32,7 +32,6 @@ def checkProgramFiles():
 
     if not path.exists(queueFilePath):
         default = {
-            "timeReset": 0,
             "queue": [],
             "orangeCap": "",
             "blueCap": "",
