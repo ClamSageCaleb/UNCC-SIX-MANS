@@ -52,8 +52,16 @@
 
         <h3>General Commands</h3>
         <ul>
-          <li><span>!q</span>: adds you to the queue</li>
-          <li><span>!qq</span>: adds you to the queue without pinging everyone</li>
+          <li><span>!q</span>: adds you to the queue for 60 minutes</li>
+          <li>
+            <span>!q 30</span>: adds you to the queue for 30 minutes
+            <ul>
+              <li>Queue times are intervals of 10 with a minimum of 10 minutes and a maximum of 60 minutes.</li>
+              <li>At 5 minutes left, a warning message is sent.</li>
+              <li>Another message is sent when the player is removed.</li>
+            </ul>
+          </li>
+          <li><span>!qq</span>: adds you to the queue for 60 minutes without pinging everyone</li>
           <li><span>!leave</span>: removes you from the queue</li>
           <li><span>!flip</span>: 50/50 chance of joining or leaving the queue</li>
           <li><span>!list</span>: lists the players currently in the queue</li>
@@ -86,8 +94,8 @@
 
         <h3>The Leaderboard</h3>
         <ul>
-          <li><span>!leaderboard</span>: shows the top 5 on the leaderboard</li>
           <li>
+            <span>!leaderboard</span>: shows the top 5 on the leaderboard
             <ul>
               <li><span>!leaderboard me</span>: shows your rank on the leaderboard</li>
               <li><span>!leaderboard [mention player]</span>: shows mentioned player's rank on the leaderboard</li>
@@ -95,12 +103,6 @@
           </li>
         </ul>
         <em>You must play 5 series before being added to the leaderboard.</em>
-
-        <h3>Stale Queue Clear</h3>
-        <p>
-          After 1 hour of no one joining the queue, Norm will remove everyone from the queue, and you will need to
-          re-queue.
-        </p>
       </section>
 
       <hr />
