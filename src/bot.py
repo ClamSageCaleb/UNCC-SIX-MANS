@@ -91,30 +91,33 @@ async def stale_queue_timer():
             warn_players, removed_players = Jason.checkQueueTimes()
 
             if (len(warn_players) > 0 or len(removed_players) > 0):
+                embeds = []
+
                 if (len(warn_players) > 0):
                     warn_str = ",".join([player.mention for player in warn_players])
-                    embed = InfoEmbed(
+                    embeds.append(InfoEmbed(
                         title="Stale Player Queue Warning",
                         desc=warn_str + " will be removed from the queue in 5 minutes.\n\n"
                         "To stay in the queue, type **!q**"
-                    )
+                    ))
                 if (len(removed_players) > 0):
                     rem_str = ",".join([player.mention for player in removed_players])
                     playerList = Jason.getQueueList()
                     if(Jason.getQueueLength() != 0):
-                        embed = QueueUpdateEmbed(
+                        embeds.append(QueueUpdateEmbed(
                             title="Queue Stale Players Removed",
                             desc=rem_str + " have been removed from the queue.\n\n" +
                             "Queue size: " + str(Jason.getQueueLength()) + "/6\n\n"
                             "Remaining players:\n" + playerList
-                        )
+                        ))
                     else:
-                        embed = QueueUpdateEmbed(
+                        embeds.append(QueueUpdateEmbed(
                             title="Queue Stale Players Removed",
                             desc=rem_str + " have been removed from the queue.\n\n" + "Queue is now empty."
-                        )
+                        ))
                 try:
-                    await channel.send(embed=embed)
+                    for embed in embeds:
+                        await channel.send(embed=embed)
                 except Exception as e:
                     print("! Norm does not have access to post in the queue channel.", e)
                     return
