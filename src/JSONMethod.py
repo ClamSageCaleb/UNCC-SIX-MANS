@@ -1,9 +1,10 @@
 from FilePaths import queueFilePath, tokenPath
 import json
 import random
+from datetime import datetime, timedelta
+from math import ceil
 
 default = {
-    "timeReset": 0,
     "queue": [],
     "orangeCap": "",
     "blueCap": "",
@@ -13,15 +14,17 @@ default = {
 
 
 class BallChaser:
-    def __init__(self, name, id):
+    def __init__(self, name, id, queueTime=datetime.now()):
         self.name = name
         self.id = id
         self.mention = "<@{0}>".format(self.id)
+        self.queueTime = queueTime
 
     def toJSON(self):
         return {
+            "id": self.id,
             "name": self.name,
-            "id": self.id
+            "queueTime": self.queueTime.isoformat(),
         }
 
     def isPlayerInList(self, listOfBallChasers: list):
@@ -46,10 +49,20 @@ def readQueue():
         if (type(curr_queue[key]) == list):
             tempChasers = []
             for player in curr_queue[key]:
-                tempChasers.append(BallChaser(player["name"], player["id"]))
+                tempChasers.append(
+                    BallChaser(
+                        player["name"],
+                        player["id"],
+                        datetime.strptime(player["queueTime"], "%Y-%m-%dT%H:%M:%S.%f")
+                    )
+                )
 
         elif (type(curr_queue[key]) == dict):
-            tempChasers = BallChaser(curr_queue[key]["name"], curr_queue[key]["id"])
+            tempChasers = BallChaser(
+                curr_queue[key]["name"],
+                curr_queue[key]["id"],
+                datetime.strptime(curr_queue[key]["queueTime"], "%Y-%m-%dT%H:%M:%S.%f")
+            )
 
         else:
             tempChasers = curr_queue[key]
@@ -117,17 +130,6 @@ def isPlayerInQueue(player):
     return indexOfPlayer(player) != -1
 
 
-def getQueueTime():
-    curr_queue = readQueue()
-    return curr_queue["timeReset"]
-
-
-def incrementTimer():
-    curr_queue = readQueue()
-    curr_queue["timeReset"] += 1
-    writeQueue(curr_queue)
-
-
 def clearQueue():
     writeQueue(default)
 
@@ -164,15 +166,22 @@ def getTeamList():
     return curr_queue["blueTeam"], curr_queue["orangeTeam"]
 
 
+def getQueueTimeRemaining(player: BallChaser) -> int:
+    return ceil((player.queueTime - datetime.now()).seconds / 60)
+
+
 '''
     Commands
 '''
 
 
-def addToQueue(player):
+def addToQueue(player, mins_to_queue_for=60):
     curr_queue = readQueue()
-    curr_queue["timeReset"] = 0
-    new_player = BallChaser(str(player), player.id)
+    new_player = BallChaser(
+        str(player),
+        player.id,
+        queueTime=(datetime.now() + timedelta(minutes=mins_to_queue_for))
+    )
     curr_queue["queue"].append(new_player)
     writeQueue(curr_queue)
 
@@ -184,13 +193,15 @@ def removeFromQueue(player):
     if (index != -1):
         curr_queue["queue"].pop(index)
 
-        if (len(curr_queue["queue"]) == 0):
-            curr_queue["timeReset"] = 0
-
         writeQueue(curr_queue)
 
 
-def getQueueList(mentionPlayers: bool = False):
+def resetPlayerQueueTime(player, mins_to_queue_for=60):
+    removeFromQueue(player)
+    addToQueue(player, mins_to_queue_for)
+
+
+def getQueueList(mentionPlayers: bool = False, includeTimes: bool = True):
     curr_queue = readQueue()
     playerList = []
 
@@ -198,7 +209,11 @@ def getQueueList(mentionPlayers: bool = False):
         if (mentionPlayers):
             playerList.append(player.mention)
         else:
-            playerList.append(player.name.split("#")[0])
+            player_name = player.name.split("#")[0]
+            if (includeTimes):
+                minutes_diff = getQueueTimeRemaining(player)
+                player_name += " (" + str(minutes_diff) + " mins)"
+            playerList.append(player_name)
 
     return ", ".join(playerList)
 
@@ -268,3 +283,19 @@ def pick(player_picked, player_picked_2=None):
 
     writeQueue(curr_queue)
     return ""
+
+
+def checkQueueTimes():
+    curr_queue = readQueue()
+    warn_players = []
+    remove_players = []
+
+    for player in curr_queue["queue"]:
+        minutes_diff = getQueueTimeRemaining(player)
+        if (minutes_diff == 5):  # 5 minute warning
+            warn_players.append(player)
+        elif (minutes_diff > 60):  # There is no negative time, it just overflows to like 1430
+            removeFromQueue(player)
+            remove_players.append(player)
+
+    return warn_players, remove_players

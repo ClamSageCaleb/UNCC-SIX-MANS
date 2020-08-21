@@ -2,12 +2,12 @@ __author__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __copyright__ = "Copyright 2019, MIT License"
 __credits__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __license__ = "MIT"
-__version__ = "5.0.2"
+__version__ = "5.1.0"
 __maintainer__ = "Caleb Smith / Twan / Matt Wells (Tux)"
-__email__ = "caleb.benjamin9799@gmail.com"
+__email__ = "caleb.benjamin9799@gmail.com / unavailable / mattwells878@gmail.com"
 
 
-import asyncio
+from asyncio import sleep as asyncsleep
 import AWSHelper as AWS
 import CheckForUpdates
 import discord
@@ -18,8 +18,9 @@ import JSONMethod as Jason
 import Leaderboard
 import os
 from pathlib import Path
-import random
-import time
+from random import choice, randint
+from time import sleep
+from math import ceil
 
 # Bot prefix and Discord Bot token
 BOT_PREFIX = ("!")
@@ -79,43 +80,49 @@ async def on_ready():
         print("! Norm does not have access to post in the queue channel.", e)
 
 
-async def list_servers():
+async def stale_queue_timer():
 
     await client.wait_until_ready()
     channel = client.get_channel(QUEUE_CH_ID)
 
     while True:
 
-        if (Jason.getQueueTime() >= 6 and Jason.getQueueLength() != 0):
-            Jason.clearQueue()
+        if (Jason.getQueueLength() > 0 and not Jason.queueAlreadyPopped()):
+            warn_players, removed_players = Jason.checkQueueTimes()
 
-            try:
-                await channel.send(embed=InfoEmbed(
-                    title="Stale Queue Reset",
-                    desc="The queue has been inactive for 1 hr and has now been reset."
-                ))
-            except Exception as e:
-                print("! Norm does not have access to post in the queue channel.", e)
-                return
+            if (len(warn_players) > 0 or len(removed_players) > 0):
+                embeds = []
 
-        elif (Jason.getQueueTime() != 0):
-            timeSpent = Jason.getQueueTime() * 10
-            timeLeft = 60 - timeSpent
-
-            if(timeLeft == 30 or timeLeft == 10):
-                try:
-                    await channel.send(embed=InfoEmbed(
-                        title="Stale Queue Update",
-                        desc="Inactive for " + str(timeSpent) + " min. Queue will clear in " + str(timeLeft) + " min."
+                if (len(warn_players) > 0):
+                    warn_str = ",".join([player.mention for player in warn_players])
+                    embeds.append(InfoEmbed(
+                        title="Stale Player Queue Warning",
+                        desc=warn_str + " will be removed from the queue in 5 minutes.\n\n"
+                        "To stay in the queue, type **!q**"
                     ))
+                if (len(removed_players) > 0):
+                    rem_str = ",".join([player.mention for player in removed_players])
+                    playerList = Jason.getQueueList()
+                    if(Jason.getQueueLength() != 0):
+                        embeds.append(QueueUpdateEmbed(
+                            title="Queue Stale Players Removed",
+                            desc=rem_str + " have been removed from the queue.\n\n" +
+                            "Queue size: " + str(Jason.getQueueLength()) + "/6\n\n"
+                            "Remaining players:\n" + playerList
+                        ))
+                    else:
+                        embeds.append(QueueUpdateEmbed(
+                            title="Queue Stale Players Removed",
+                            desc=rem_str + " have been removed from the queue.\n\n" + "Queue is now empty."
+                        ))
+                try:
+                    for embed in embeds:
+                        await channel.send(embed=embed)
                 except Exception as e:
                     print("! Norm does not have access to post in the queue channel.", e)
                     return
 
-        if (Jason.getQueueLength() != 0):
-            Jason.incrementTimer()
-
-        await asyncio.sleep(600)
+        await asyncsleep(60)  # check queue times every minute
 
 '''
     Discord Commands - Queue Commands
@@ -123,9 +130,24 @@ async def list_servers():
 
 
 @client.command(name='q', aliases=['addmepapanorm', 'Q', 'addmebitch', 'queue', 'join'], pass_context=True)
-async def q(ctx, quiet=False):
+async def q(ctx, *arg, quiet=False):
     queue_length = Jason.getQueueLength()
     player = ctx.message.author
+
+    try:
+        queueTime = int(arg[0]) if len(arg) > 0 else 60
+    except ValueError:  # if someone doesn't input a number we default to 60 minutes
+        queueTime = 60
+
+    # this converts the input to the next highest value of 10
+    # ex: 14 -> 20, 9 -> 10, -5 -> 10, 3 -> 10
+    queueTime = int(ceil(queueTime / 10)) * 10
+
+    # minimum queue time of 10 minutes and maximum of 60 minutes
+    if (queueTime < 10):
+        queueTime = 10
+    elif (queueTime > 60):
+        queueTime = 60
 
     if (Jason.queueAlreadyPopped()):
         embed = ErrorEmbed(
@@ -134,9 +156,10 @@ async def q(ctx, quiet=False):
         )
 
     elif(Jason.isPlayerInQueue(player)):
-        embed = ErrorEmbed(
-            title="Already in Queue",
-            desc="You are already in the queue, dummy.",
+        Jason.resetPlayerQueueTime(player, queueTime)
+        embed = QueueUpdateEmbed(
+            title="Already in Queue, Queue Time Reset",
+            desc="You're already in the queue, but your queue time has been reset to {0} minutes.".format(queueTime),
         )
 
     elif (Leaderboard.isPlayerInActiveMatch(player)):
@@ -147,18 +170,20 @@ async def q(ctx, quiet=False):
         )
 
     elif(queue_length == 0):
-        Jason.addToQueue(player)
+        Jason.addToQueue(player, queueTime)
 
         if (quiet):
             embed = QueueUpdateEmbed(
                 title="Queue has Started :shushing_face:",
-                desc="{0} wants to queue!\n\nType **!q** to join".format(player.mention),
+                desc="{0} wants to queue!\n\nQueued for {1} minutes.\n\n"
+                "Type **!q** to join".format(player.mention, queueTime),
             )
         else:
             await ctx.send("@here Queue has started!")
             embed = QueueUpdateEmbed(
                 title="Queue Started",
-                desc="{0} wants to queue!\n\nType **!q** to join".format(player.mention),
+                desc="{0} wants to queue!\n\nQueued for {1} minutes.\n\n"
+                "Type **!q** to join".format(player.mention, queueTime),
             )
 
     elif(queue_length >= 6):
@@ -173,7 +198,7 @@ async def q(ctx, quiet=False):
 
         await ctx.send(embed=QueueUpdateEmbed(
             title="Queue Popped!",
-            desc=player.mention + " added to the queue!" + "\n\n"
+            desc=player.mention + " has been added to the queue for " + str(queueTime) + " minutes.\n\n"
             "**Queue is now full!** \n\n"
             "Type !random for random teams.\n"
             "Type !captains to get picked last."
@@ -187,7 +212,7 @@ async def q(ctx, quiet=False):
 
         embed = QueueUpdateEmbed(
             title="Player Added to Queue",
-            desc=player.mention + " has been added to the queue!\n\n"
+            desc=player.mention + " has been added to the queue for " + str(queueTime) + " minutes.\n\n"
             "Queue size: " + str(queue_length + 1) + "/6\n\n"
             "Current queue:\n" + playerList
         )
@@ -196,8 +221,8 @@ async def q(ctx, quiet=False):
 
 
 @client.command(name='qq', aliases=['quietq', 'QQ', 'quietqueue', 'shh', 'dontping'], pass_context=True)
-async def qq(ctx):
-    await q(ctx, quiet=True)
+async def qq(ctx, *arg):
+    await q(ctx, *arg, quiet=True)
 
 
 @client.command(name='leave', aliases=['yoink', 'gtfo', 'getmethefuckouttahere'], pass_context=True)
@@ -284,7 +309,7 @@ async def kick(ctx):
 
 @client.command(name='flip', aliases=['coinflip', 'chance', 'coin'], pass_context=True)
 async def coinFlip(ctx):
-    if (random.randint(1, 2) == 1):
+    if (randint(1, 2) == 1):
         await q(ctx, quiet=False)
     else:
         await leave(ctx)
@@ -317,10 +342,15 @@ async def rnd(ctx):
             title="Captains Already Chosen",
             desc="You cannot change your mind once you pick captains."
         )
-    elif(Jason.getQueueLength() != 6):
+    elif (Jason.getQueueLength() != 6):
         embed = ErrorEmbed(
             title="Queue is Not Full",
             desc="You cannot pop a queue until is full."
+        )
+    elif (not Jason.isPlayerInQueue(ctx.message.author)):
+        embed = ErrorEmbed(
+            title="Not in Queue",
+            desc="You are not in the queue, therefore you cannot pop the queue."
         )
     else:
         blueTeam, orangeTeam = Jason.randomPop()
@@ -346,7 +376,7 @@ async def rnd(ctx):
 async def captains(ctx):
     if (Jason.queueAlreadyPopped()):
         blueCap, orangeCap = Jason.captainsPop()
-        playerList = Jason.getQueueList()
+        playerList = Jason.getQueueList(includeTimes=False)
         blueTeam, _ = Jason.getTeamList()
 
         embed = InfoEmbed(
@@ -386,9 +416,14 @@ async def captains(ctx):
             title="Queue is Not Full",
             desc="You cannot pop a queue until is full."
         )
+    elif (not Jason.isPlayerInQueue(ctx.message.author)):
+        embed = ErrorEmbed(
+            title="Not in Queue",
+            desc="You are not in the queue, therefore you cannot pop the queue."
+        )
     else:
         blueCap, orangeCap = Jason.captainsPop()
-        playerList = Jason.getQueueList()
+        playerList = Jason.getQueueList(includeTimes=False)
 
         embed = QueueUpdateEmbed(
             title="Captains",
@@ -441,7 +476,7 @@ def blueTeamPick(ctx):
         errorMsg = Jason.pick(ctx.message.mentions[0])
 
         if (errorMsg == ""):
-            playerList = Jason.getQueueList()
+            playerList = Jason.getQueueList(includeTimes=False)
 
             embed = QueueUpdateEmbed(
                 title="Player Added to Team",
@@ -770,7 +805,7 @@ async def smh(ctx):
     randNum = [1, 4, 5, 7, 9, 13, 22, 10, 1, 20, 4, 3, 5, 60,
                7, 8, 90, 2, 1, 2, 3, 1, 5, 4, 3, 2, 3, 1, 2, 3, 4, 5]
     output = "smh"
-    output = output + (random.choice(randNum) * " my head")
+    output = output + (choice(randNum) * " my head")
     await ctx.send(output)
 
 
@@ -826,12 +861,12 @@ async def normq(ctx):
     elif (len(playerList) == 0):
         embed = QueueUpdateEmbed(
             title="Norm has Started the Queue!",
-            desc="<@629502587963572225> wants to queue!\n\nType **!q** to join",
+            desc="<@629502587963572225> wants to queue!\n\nQueued for 0 minutes.\n\nType **!q** to join",
         )
     else:
         embed = QueueUpdateEmbed(
             title="Norm Added to Queue",
-            desc="<@629502587963572225> has been added to the queue!\n\n"
+            desc="<@629502587963572225> has been added to the queue for 0 minutes.\n\n"
             "Queue size: " + str(queueSize + 1) + "/6\n\n"
             "Current queue:\nNorm" + (" " if len(playerList) == 0 else ", ") + playerList
         )
@@ -890,7 +925,7 @@ async def eight_ball(ctx):
         'no',
         'Absolutely not',
     ]
-    await ctx.send(random.choice(possible_responses) + ", " + ctx.message.author.mention)
+    await ctx.send(choice(possible_responses) + ", " + ctx.message.author.mention)
 
 
 @client.command(name='fuck', aliases=['f', 'frick'], pass_context=True)
@@ -977,7 +1012,8 @@ async def help(ctx):
 
 def main():
     checkProgramFiles()
-    client.loop.create_task(list_servers())
+    AWS.init()
+    client.loop.create_task(stale_queue_timer())
     token = Jason.getDiscordToken()
 
     if (token == ""):
@@ -999,7 +1035,7 @@ def main():
             "If you need help locating the token for your bot, visit https://www.writebots.com/discord-bot-token/"
         )
         os.remove("{0}/SixMans/config.json".format(Path.home()))
-        time.sleep(5)
+        sleep(5)
     except Exception:
         pass
 
