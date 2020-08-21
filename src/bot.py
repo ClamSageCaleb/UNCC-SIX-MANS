@@ -93,7 +93,7 @@ async def stale_queue_timer():
             if (len(warn_players) > 0 or len(removed_players) > 0):
                 if (len(warn_players) > 0):
                     warn_str = ",".join([player.mention for player in warn_players])
-                    embed = QueueUpdateEmbed(
+                    embed = InfoEmbed(
                         title="Stale Player Queue Warning",
                         desc=warn_str + " will be removed from the queue in 5 minutes.\n\n"
                         "To stay in the queue, type **!q**"
@@ -138,10 +138,10 @@ async def q(ctx, *arg, quiet=False):
 
     # this converts the input to the next highest value of 10
     # ex: 14 -> 20, 9 -> 10, -5 -> 10, 3 -> 10
-    queueTime = abs(int(ceil(queueTime / 10)) * 10)
+    queueTime = int(ceil(queueTime / 10)) * 10
 
     # minimum queue time of 10 minutes and maximum of 60 minutes
-    if (queueTime == 0):
+    if (queueTime < 10):
         queueTime = 10
     elif (queueTime > 60):
         queueTime = 60
@@ -373,7 +373,7 @@ async def rnd(ctx):
 async def captains(ctx):
     if (Jason.queueAlreadyPopped()):
         blueCap, orangeCap = Jason.captainsPop()
-        playerList = Jason.getQueueList()
+        playerList = Jason.getQueueList(includeTimes=False)
         blueTeam, _ = Jason.getTeamList()
 
         embed = InfoEmbed(
@@ -420,7 +420,7 @@ async def captains(ctx):
         )
     else:
         blueCap, orangeCap = Jason.captainsPop()
-        playerList = Jason.getQueueList()
+        playerList = Jason.getQueueList(includeTimes=False)
 
         embed = QueueUpdateEmbed(
             title="Captains",
@@ -473,7 +473,7 @@ def blueTeamPick(ctx):
         errorMsg = Jason.pick(ctx.message.mentions[0])
 
         if (errorMsg == ""):
-            playerList = Jason.getQueueList()
+            playerList = Jason.getQueueList(includeTimes=False)
 
             embed = QueueUpdateEmbed(
                 title="Player Added to Team",
@@ -858,12 +858,12 @@ async def normq(ctx):
     elif (len(playerList) == 0):
         embed = QueueUpdateEmbed(
             title="Norm has Started the Queue!",
-            desc="<@629502587963572225> wants to queue!\n\nType **!q** to join",
+            desc="<@629502587963572225> wants to queue!\n\nQueued for 0 minutes.\n\nType **!q** to join",
         )
     else:
         embed = QueueUpdateEmbed(
             title="Norm Added to Queue",
-            desc="<@629502587963572225> has been added to the queue!\n\n"
+            desc="<@629502587963572225> has been added to the queue for 0 minutes.\n\n"
             "Queue size: " + str(queueSize + 1) + "/6\n\n"
             "Current queue:\nNorm" + (" " if len(playerList) == 0 else ", ") + playerList
         )

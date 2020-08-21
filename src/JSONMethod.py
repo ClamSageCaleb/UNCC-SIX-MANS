@@ -201,7 +201,7 @@ def resetPlayerQueueTime(player, mins_to_queue_for=60):
     addToQueue(player, mins_to_queue_for)
 
 
-def getQueueList(mentionPlayers: bool = False):
+def getQueueList(mentionPlayers: bool = False, includeTimes: bool = True):
     curr_queue = readQueue()
     playerList = []
 
@@ -209,8 +209,11 @@ def getQueueList(mentionPlayers: bool = False):
         if (mentionPlayers):
             playerList.append(player.mention)
         else:
-            minutes_diff = getQueueTimeRemaining(player)
-            playerList.append(player.name.split("#")[0] + " (" + str(minutes_diff) + " mins)")
+            player_name = player.name.split("#")[0]
+            if (includeTimes):
+                minutes_diff = getQueueTimeRemaining(player)
+                player_name += " (" + str(minutes_diff) + " mins)"
+            playerList.append(player_name)
 
     return ", ".join(playerList)
 
