@@ -2,9 +2,9 @@ __author__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __copyright__ = "Copyright 2019, MIT License"
 __credits__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __license__ = "MIT"
-__version__ = "5.0.2"
+__version__ = "5.1.0"
 __maintainer__ = "Caleb Smith / Twan / Matt Wells (Tux)"
-__email__ = "caleb.benjamin9799@gmail.com"
+__email__ = "caleb.benjamin9799@gmail.com / unavailable / mattwells878@gmail.com"
 
 
 from asyncio import sleep as asyncsleep
@@ -80,14 +80,14 @@ async def on_ready():
         print("! Norm does not have access to post in the queue channel.", e)
 
 
-async def list_servers():
+async def stale_queue_timer():
 
     await client.wait_until_ready()
     channel = client.get_channel(QUEUE_CH_ID)
 
     while True:
 
-        if (Jason.getQueueLength() > 0):
+        if (Jason.getQueueLength() > 0 and not Jason.queueAlreadyPopped()):
             warn_players, removed_players = Jason.checkQueueTimes()
 
             if (len(warn_players) > 0 or len(removed_players) > 0):
@@ -114,12 +114,12 @@ async def list_servers():
                             desc=rem_str + " have been removed from the queue.\n\n" + "Queue is now empty."
                         )
                 try:
-                    await channel.send(embed)
+                    await channel.send(embed=embed)
                 except Exception as e:
                     print("! Norm does not have access to post in the queue channel.", e)
                     return
 
-        await asyncsleep(300)  # check queue times every 5 minutes = 300 seconds
+        await asyncsleep(60)  # check queue times every minute
 
 '''
     Discord Commands - Queue Commands
@@ -172,13 +172,15 @@ async def q(ctx, *arg, quiet=False):
         if (quiet):
             embed = QueueUpdateEmbed(
                 title="Queue has Started :shushing_face:",
-                desc="{0} wants to queue!\n\nType **!q** to join".format(player.mention),
+                desc="{0} wants to queue!\n\nQueued for {1} minutes.\n\n"
+                "Type **!q** to join".format(player.mention, queueTime),
             )
         else:
             await ctx.send("@here Queue has started!")
             embed = QueueUpdateEmbed(
                 title="Queue Started",
-                desc="{0} wants to queue!\n\nType **!q** to join".format(player.mention),
+                desc="{0} wants to queue!\n\nQueued for {1} minutes.\n\n"
+                "Type **!q** to join".format(player.mention, queueTime),
             )
 
     elif(queue_length >= 6):
@@ -193,7 +195,7 @@ async def q(ctx, *arg, quiet=False):
 
         await ctx.send(embed=QueueUpdateEmbed(
             title="Queue Popped!",
-            desc=player.mention + " added to the queue!" + "\n\n"
+            desc=player.mention + " has been added to the queue for " + str(queueTime) + " minutes.\n\n"
             "**Queue is now full!** \n\n"
             "Type !random for random teams.\n"
             "Type !captains to get picked last."
@@ -207,7 +209,7 @@ async def q(ctx, *arg, quiet=False):
 
         embed = QueueUpdateEmbed(
             title="Player Added to Queue",
-            desc=player.mention + " has been added to the queue!\n\n"
+            desc=player.mention + " has been added to the queue for " + str(queueTime) + " minutes.\n\n"
             "Queue size: " + str(queue_length + 1) + "/6\n\n"
             "Current queue:\n" + playerList
         )
@@ -1008,7 +1010,7 @@ async def help(ctx):
 def main():
     checkProgramFiles()
     AWS.init()
-    client.loop.create_task(list_servers())
+    client.loop.create_task(stale_queue_timer())
     token = Jason.getDiscordToken()
 
     if (token == ""):

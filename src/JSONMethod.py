@@ -2,6 +2,7 @@ from FilePaths import queueFilePath, tokenPath
 import json
 import random
 from datetime import datetime, timedelta
+from math import ceil
 
 default = {
     "queue": [],
@@ -165,6 +166,10 @@ def getTeamList():
     return curr_queue["blueTeam"], curr_queue["orangeTeam"]
 
 
+def getQueueTimeRemaining(player: BallChaser) -> int:
+    return ceil((player.queueTime - datetime.now()).seconds / 60)
+
+
 '''
     Commands
 '''
@@ -204,7 +209,8 @@ def getQueueList(mentionPlayers: bool = False):
         if (mentionPlayers):
             playerList.append(player.mention)
         else:
-            playerList.append(player.name.split("#")[0])
+            minutes_diff = getQueueTimeRemaining(player)
+            playerList.append(player.name.split("#")[0] + " (" + str(minutes_diff) + " mins)")
 
     return ", ".join(playerList)
 
@@ -282,10 +288,10 @@ def checkQueueTimes():
     remove_players = []
 
     for player in curr_queue["queue"]:
-        minutes_diff = (player.queueTime - datetime.now()).seconds / 60
-        if (minutes_diff < 5):
+        minutes_diff = getQueueTimeRemaining(player)
+        if (minutes_diff == 5):  # 5 minute warning
             warn_players.append(player)
-        elif (minutes_diff > 60):
+        elif (minutes_diff > 60):  # There is no negative time, it just overflows to like 1430
             removeFromQueue(player)
             remove_players.append(player)
 
