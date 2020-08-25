@@ -193,7 +193,7 @@ async def q(ctx, *arg, quiet=False):
         )
 
     elif(queue_length == 5):
-        Jason.addToQueue(player)
+        Jason.addToQueue(player, queueTime)
         mentionedPlayerList = Jason.getQueueList(mentionPlayers=True)
 
         await ctx.send(embed=QueueUpdateEmbed(
@@ -207,7 +207,7 @@ async def q(ctx, *arg, quiet=False):
         return
 
     else:
-        Jason.addToQueue(player)
+        Jason.addToQueue(player, queueTime)
         playerList = Jason.getQueueList()
 
         embed = QueueUpdateEmbed(
