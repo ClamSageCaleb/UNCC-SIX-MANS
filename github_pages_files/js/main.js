@@ -25,7 +25,7 @@ function populateTable(ballChasers) {
                     <td headers="wins">${ballChaser["Wins"]}</td>
                     <td headers="losses">${ballChaser["Losses"]}</td>
                     <td headers="matches-played">${ballChaser["Matches Played"]}</td>
-                    <td headers="win-perc">${parseInt(ballChaser["Win Perc"] * 100)}</td>
+                    <td headers="win-perc">${parseInt(ballChaser["Win Perc"] * 100)}%</td>
                 </tr>`
             )
         }
