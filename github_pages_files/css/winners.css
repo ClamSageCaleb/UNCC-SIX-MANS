@@ -1,0 +1,36 @@
+#accordion {
+  max-width: 1000px;
+  margin: auto;
+}
+
+.ui-icon.accordionClosed {
+  background:url("../icons/caret-right.svg") no-repeat;
+}
+
+.ui-icon.accordionOpen {
+  background:url("../icons/caret-down.svg") no-repeat;
+}
+
+#accordion h3 {
+  background-color: #259963;
+  padding: 6px;
+  margin-bottom: 0px;
+  border-radius: 4px;
+  position: relative;
+}
+
+#accordion span {
+  background-color: transparent;
+  width: 20px;
+  height: 10px;
+  display: inline-block;
+  border-radius: 0px;
+  margin: 0px;
+}
+
+#accordion div {
+  padding: 1rem;
+  margin-top: -5px;
+  background-color: #444;
+  border-radius: 0px 0px 4px 4px;
+}

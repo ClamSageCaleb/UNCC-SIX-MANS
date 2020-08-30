@@ -128,10 +128,6 @@ header img {
   vertical-align: middle;
 }
 
-header a:first-of-type {
-  padding: 2px 5px;
-}
-
 header a:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
