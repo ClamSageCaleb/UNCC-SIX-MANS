@@ -2,7 +2,7 @@ __author__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __copyright__ = "Copyright 2019, MIT License"
 __credits__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __license__ = "MIT"
-__version__ = "5.1.1"
+__version__ = "5.2.0"
 __maintainer__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __email__ = "caleb.benjamin9799@gmail.com / unavailable / mattwells878@gmail.com"
 
@@ -653,7 +653,7 @@ async def reportMatch(ctx, *arg):
     await ctx.send(embed=embed)
 
 
-@client.command(name="leaderboard", aliases=["standings", "rank", "rankings", "stonks"], pass_contex=True)
+@client.command(name="leaderboard", aliases=["lb", "standings", "rank", "rankings", "stonks"], pass_contex=True)
 async def showLeaderboard(ctx, *arg):
 
     playerMentioned: bool = len(ctx.message.mentions) == 1
@@ -665,6 +665,7 @@ async def showLeaderboard(ctx, *arg):
             player = Jason.BallChaser(str(ctx.message.mentions[0]), ctx.message.mentions[0].id)
         else:
             player = Jason.BallChaser(str(ctx.message.author), ctx.message.author.id)
+
         players_rank = Leaderboard.showLeaderboard(player)
 
         if (type(players_rank) == str):
@@ -674,9 +675,8 @@ async def showLeaderboard(ctx, *arg):
             )
         else:
             embed = ErrorEmbed(
-                title="Not Enough Matches Played",
-                desc="{0} has played {1}/5 matches needed to be"
-                " on the leaderboard.".format(players_rank[0], players_rank[1])
+                title="No Matches Played",
+                desc="{0} hasn't played any matches and won't show up on the leaderboard.".format(players_rank.mention)
             )
 
     elif (len(arg) == 0 and len(ctx.message.mentions) == 0):

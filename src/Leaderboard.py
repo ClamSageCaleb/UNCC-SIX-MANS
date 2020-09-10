@@ -43,7 +43,7 @@ def readLeaderboard():
 
 
 def saveLeaderboard(new_leaderboard):
-    sorted_ldrbrd = sorted(new_leaderboard, key=lambda x: (x["Win Perc"], x["Wins"]), reverse=True)
+    sorted_ldrbrd = sorted(new_leaderboard, key=lambda x: (x["Wins"], x["Win Perc"]), reverse=True)
     with open(leaderboardPath, "w") as ldrbrd:
         json.dump(sorted_ldrbrd, ldrbrd)
     AWS.writeRemoteLeaderboard()
@@ -252,25 +252,16 @@ def showLeaderboard(player=None, limit=None):
         player_index = getPlayerIndex(player)
         player_data = curr_leaderboard[player_index]
 
-        if (player_data["Matches Played"] < 5):
-            return (player_data["Name"], player_data["Matches Played"])
+        if (player_index == -1):
+            return player
 
-        index = 0
-        for i, p in enumerate(curr_leaderboard):
-            if (i == player_index):
-                break
-            elif (p["Matches Played"] >= 5):
-                index += 1
-
-        return "```" + makePretty(index, player_data) + "\n```"
+        return "```" + makePretty(player_index, player_data) + "\n```"
 
     else:
         msg = "```\n"
 
-        index = 0
-        for player_data in curr_leaderboard:
-            if ((not limit or index < limit) and player_data["Matches Played"] >= 5):
-                msg += makePretty(index, player_data) + "\n"
-                index += 1
+        for i, player_data in enumerate(curr_leaderboard):
+            if (not limit or i < limit):
+                msg += makePretty(i, player_data) + "\n"
 
         return msg + "\n```"
