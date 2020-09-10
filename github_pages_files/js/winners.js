@@ -24,7 +24,7 @@ async function getWinners(winnerData, tableId) {
     const data = await fetch(`https://discordapp.com/api/users/${winnerDetails.id}`, {
       method: "GET",
       headers: {
-        "Authorization": "Bot NzE2MzU4MzkxMzI4NDA3NjEy.XtKmvQ.BZ4lzBbU82xu6GBs7dJmSYgUGxI"
+        "Authorization": "Bot [token here]"
       }
     }).then(res => res.json());
     populateWinners(data, winnerData[index], index + 1, tableId);
