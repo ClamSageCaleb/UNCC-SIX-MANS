@@ -20,7 +20,7 @@ function populateTable(ballChasers) {
             rank += 1;
             $("#leaderboard-table > tbody").append(
                 `<tr>
-                    <td headers="name">${rank}</td>
+                    <td headers="rank">${rank}</td>
                     <td headers="name">${ballChaser["Name"]}</td>
                     <td headers="wins">${ballChaser["Wins"]}</td>
                     <td headers="losses">${ballChaser["Losses"]}</td>
