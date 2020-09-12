@@ -16,6 +16,7 @@ from EmbedHelper import ErrorEmbed, QueueUpdateEmbed, AdminEmbed, InfoEmbed
 from FilePaths import checkProgramFiles
 import JSONMethod as Jason
 import Leaderboard
+import TestHelper
 import os
 from pathlib import Path
 from random import choice, randint
@@ -37,6 +38,7 @@ TEST_QUEUE_CH_ID = 629502331259584559
 MATCH_REPORT_CH_ID = 622786720328581133
 LEADERBOARD_CH_ID = 718998601790914591
 TUX_TEST_SERVER_CH_ID = 716358749912039429
+TEST_NORM_USER_ID = 716358391328407612
 
 '''
     Discord Events
@@ -731,6 +733,74 @@ async def clear(ctx):
         embed = AdminEmbed(
             title="Queue Cleared",
             desc="The queue has been cleared by an admin.  <:UNCCfeelsgood:538182514091491338>"
+        )
+    else:
+        embed = ErrorEmbed(
+            title="Permission Denied",
+            desc="You do not have permission to clear the queue."
+        )
+
+    await ctx.send(embed=embed)
+
+
+@client.command(name="fill", pass_context=True)
+async def fill(ctx):
+    if(Jason.isBotAdmin(ctx.message.author.roles) and ctx.bot.user.id == TEST_NORM_USER_ID):
+        TestHelper.fillQueue()
+        embed = AdminEmbed(
+            title="Queue Filled",
+            desc="Queue has been filled with fake/real players"
+        )
+    else:
+        embed = ErrorEmbed(
+            title="Permission Denied",
+            desc="You do not have permission to clear the queue."
+        )
+
+    await ctx.send(embed=embed)
+
+
+@client.command(name="fillCap", pass_context=True)
+async def fillCap(ctx):
+    if(Jason.isBotAdmin(ctx.message.author.roles) and ctx.bot.user.id == TEST_NORM_USER_ID):
+        TestHelper.fillWithCaptains()
+        embed = AdminEmbed(
+            title="Queue Filled w/ Captains",
+            desc="Queue has been filled with fake/real players"
+        )
+    else:
+        embed = ErrorEmbed(
+            title="Permission Denied",
+            desc="You do not have permission to clear the queue."
+        )
+
+    await ctx.send(embed=embed)
+
+
+@client.command(name="flipCap", pass_context=True)
+async def flipCap(ctx):
+    if(Jason.isBotAdmin(ctx.message.author.roles) and ctx.bot.user.id == TEST_NORM_USER_ID):
+        TestHelper.flipCaptains()
+        embed = AdminEmbed(
+            title="Captains Flipped",
+            desc="Captains have been flipped."
+        )
+    else:
+        embed = ErrorEmbed(
+            title="Permission Denied",
+            desc="You do not have permission to clear the queue."
+        )
+
+    await ctx.send(embed=embed)
+
+
+@client.command(name="flipReport", pass_context=True)
+async def flipReport(ctx):
+    if(Jason.isBotAdmin(ctx.message.author.roles) and ctx.bot.user.id == TEST_NORM_USER_ID):
+        TestHelper.swapReportedPlayer()
+        embed = AdminEmbed(
+            title="Reported Player Swapped",
+            desc="The player who reported has been swapped out."
         )
     else:
         embed = ErrorEmbed(
