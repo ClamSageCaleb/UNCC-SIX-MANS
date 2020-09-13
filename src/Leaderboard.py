@@ -1,7 +1,10 @@
-from FilePaths import activeMatchPath, leaderboardPath
+from FilePaths import activeMatchPath, leaderboardPath, tindyDbLbPath
 from JSONMethod import BallChaser
 import json
 import AWSHelper as AWS
+from tinydb import TinyDB, Query
+
+leaderboard = TinyDB(tindyDbLbPath)
 
 
 def readActiveMatches() -> list:
