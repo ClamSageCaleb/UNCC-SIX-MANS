@@ -1,4 +1,4 @@
-from JSONMethod import clearQueue, readQueue, writeQueue, BallChaser
+from Queue import clearQueue, readQueue, writeQueue, BallChaser
 from datetime import datetime, timedelta
 
 

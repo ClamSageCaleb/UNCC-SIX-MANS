@@ -1,6 +1,7 @@
 import boto3
 import json
 from FilePaths import tokenPath
+from Leaderboard import resetFromRemote
 
 aws_id = ""
 aws_secret = ""
@@ -43,10 +44,9 @@ def readRemoteLeaderboard():
         and aws_object != ""
         and s3 is not None
     ):
-        leaderboard = s3.Object("uncc-six-mans", aws_object)
-        leaderboard = json.loads(leaderboard.get()["Body"].read().decode("utf-8"))
-        # with open(leaderboardPath, "w") as ldrbrd:
-        #     json.dump(leaderboard, ldrbrd)
+        remote_leaderboard = s3.Object("uncc-six-mans", aws_object)
+        remote_leaderboard_data = json.loads(remote_leaderboard.get()["Body"].read().decode("utf-8"))
+        resetFromRemote(remote_leaderboard_data)
 
 
 def writeRemoteLeaderboard(leaderboardData):

@@ -1,5 +1,5 @@
 from FilePaths import tinyDbPath
-from JSONMethod import BallChaser
+from Queue import BallChaser
 import AWSHelper as AWS
 from tinydb import TinyDB, where
 from json import dumps
@@ -31,10 +31,7 @@ def brokenQueue(player):
         return "There are no currently active matches."
 
     player = BallChaser(player.name, player.id)
-    match = activeMatches.get(
-        where("blueTeam").any(where("id") == player.id) |
-        where("orangeTeam").any(where("id") == player.id)
-    )
+    match = getActiveMatch(player)
 
     if (not match):
         return "You are not in the queue; therefore you cannot report a broken queue."
@@ -48,7 +45,9 @@ def brokenQueue(player):
 
 
 def getActiveMatch(player):
-    player = BallChaser(player.name, player.id)
+    if (not isinstance(player, BallChaser)):
+        player = BallChaser(player.name, player.id)
+
     return activeMatches.get(
         where("blueTeam").any(where("id") == player.id) |
         where("orangeTeam").any(where("id") == player.id)
@@ -134,9 +133,8 @@ def reportMatch(player, whoWon):
             leaderboard.update(updated_player, doc_ids=[player.doc_id])
 
     activeMatches.remove(doc_ids=[match.doc_id])
-    sorted_lb = None
-    #  FIXME
-    # AWS.writeRemoteLeaderboard(dumps(leaderboard.storage.read()["leaderboard"]))
+    sorted_lb = sorted(leaderboard.all(), key=lambda x: (x["Wins"], x["Win Perc"]), reverse=True)
+    AWS.writeRemoteLeaderboard(dumps(sorted_lb))
 
     return ":white_check_mark: Match has been reported successfully."
 
@@ -176,3 +174,8 @@ def showLeaderboard(player=None, limit=None):
                 msg += makePretty(i, player_data) + "\n"
 
         return msg + "\n```"
+
+
+def resetFromRemote(remoteData):
+    leaderboard.truncate()
+    leaderboard.insert_multiple(remoteData)
