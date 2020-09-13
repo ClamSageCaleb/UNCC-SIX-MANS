@@ -1,67 +1,19 @@
-from FilePaths import activeMatchPath, leaderboardPath, tindyDbLbPath
+from FilePaths import tinyDbPath
 from JSONMethod import BallChaser
-import json
 import AWSHelper as AWS
-from tinydb import TinyDB, Query
-
-leaderboard = TinyDB(tindyDbLbPath)
-
-
-def readActiveMatches() -> list:
-    fileToRead = open(activeMatchPath, "r")
-    curr_matches = matches = json.load(fileToRead)
-    fileToRead.close()
-
-    for i, match in enumerate(matches):
-        blue = []
-        orange = []
-
-        for player in match["blueTeam"]:
-            blue.append(BallChaser(player["name"], player["id"]))
-        for player in match["orangeTeam"]:
-            orange.append(BallChaser(player["name"], player["id"]))
-
-        curr_matches[i]["blueTeam"] = blue
-        curr_matches[i]["orangeTeam"] = orange
-
-        reported_player = curr_matches[i]["reportedWinner"]["player"]["ballChaser"]
-        if (reported_player != ""):
-            curr_matches[i]["reportedWinner"]["player"]["ballChaser"] = BallChaser(
-                reported_player["name"], reported_player["id"]
-            )
-
-    return curr_matches
+from tinydb import TinyDB, where
+from json import dumps
 
 
-def writeActiveMatches(new_match_list):
-    with open(activeMatchPath, "w") as activeMatches:
-        json.dump(new_match_list, activeMatches)
+db = TinyDB(tinyDbPath)
+leaderboard = db.table("leaderboard")
+activeMatches = db.table("activeMatches")
 
-
-def readLeaderboard():
-    fileToRead = open(leaderboardPath, "r")
-    ldrbrd = json.load(fileToRead)
-    fileToRead.close()
-    return ldrbrd
-
-
-def saveLeaderboard(new_leaderboard):
-    sorted_ldrbrd = sorted(new_leaderboard, key=lambda x: (x["Wins"], x["Win Perc"]), reverse=True)
-    with open(leaderboardPath, "w") as ldrbrd:
-        json.dump(sorted_ldrbrd, ldrbrd)
-    AWS.writeRemoteLeaderboard()
+sorted_lb = None
 
 
 def startMatch(blueTeam, orangeTeam):
-    curr_matches = readActiveMatches()
-    blue = []
-    orange = []
-
-    for i in range(len(blueTeam)):
-        blue.append(blueTeam[i].toJSON())
-        orange.append(orangeTeam[i].toJSON())
-
-    curr_matches.append({
+    activeMatches.insert({
         "reportedWinner": {
             "player": {
                 "ballChaser": "",
@@ -69,80 +21,62 @@ def startMatch(blueTeam, orangeTeam):
             },
             "winningTeam": "",
         },
-        "blueTeam": blue,
-        "orangeTeam": orange
+        "blueTeam": [p.toJSON() for p in blueTeam],
+        "orangeTeam": [p.toJSON() for p in orangeTeam]
     })
-    writeActiveMatches(curr_matches)
 
 
 def brokenQueue(player):
-    curr_matches = readActiveMatches()
-
-    if (len(curr_matches) == 0):
+    if (activeMatches.count(where("reportedWinner").exists()) == 0):
         return "There are no currently active matches."
 
-    match = curr_matches.pop()
+    player = BallChaser(player.name, player.id)
+    match = activeMatches.get(
+        where("blueTeam").any(where("id") == player.id) |
+        where("orangeTeam").any(where("id") == player.id)
+    )
+
+    if (not match):
+        return "You are not in the queue; therefore you cannot report a broken queue."
 
     if (match["reportedWinner"]["winningTeam"] != ""):
         return "You cannot report a broken queue once someone reports the match."
 
-    player = BallChaser(player.name, player.id)
     if (player.isPlayerInList(match["blueTeam"] + match["orangeTeam"]) != -1):
-        writeActiveMatches(curr_matches)
+        activeMatches.remove(doc_ids=[match.doc_id])
         return ":white_check_mark: Previous queue removed."
 
-    return "You are not in the queue; therefore you cannot report a broken queue."
 
-
-def isPlayerInActiveMatch(player):
-    curr_matches = readActiveMatches()
+def getActiveMatch(player):
     player = BallChaser(player.name, player.id)
-
-    for match in curr_matches:
-        if (player.isPlayerInList(match["blueTeam"] + match["orangeTeam"]) != -1):
-            return True
-
-    return False
+    return activeMatches.get(
+        where("blueTeam").any(where("id") == player.id) |
+        where("orangeTeam").any(where("id") == player.id)
+    )
 
 
-def getPlayerIndex(player):
-    curr_ldrbrd = readLeaderboard()
+def reportConfirm(player: BallChaser, match, whoWon):
+    reportingPlayersTeam = "blue" if (player.isPlayerInList(match["blueTeam"]) != -1) else "orange"
 
-    for i, row in enumerate(curr_ldrbrd):
-        if (row["id"] == player.id):
-            return i
-
-    return -1
-
-
-def reportConfirm(player, match, curr_matches, match_index, whoWon):
     # If first responder or a winning team disagreement, we update the report
     if (
         match["reportedWinner"]["winningTeam"] == "" or
         match["reportedWinner"]["winningTeam"] != whoWon
     ):
-        match["reportedWinner"]["winningTeam"] = whoWon
-        match["reportedWinner"]["player"]["ballChaser"] = player.toJSON()
 
-        if (player.isPlayerInList(match["blueTeam"]) != -1):
-            match["reportedWinner"]["player"]["team"] = "blue"
-        else:
-            match["reportedWinner"]["player"]["team"] = "orange"
+        activeMatches.update({
+            "reportedWinner": {
+                "winningTeam": whoWon,
+                "player": {
+                    "ballChaser": player.toJSON(),
+                    "team": reportingPlayersTeam
+                }
+            }
+        }, doc_ids=[match.doc_id])
 
-        blue = []
-        orange = []
-        for i in range(3):
-            blue.append(match["blueTeam"][i].toJSON())
-            orange.append(match["orangeTeam"][i].toJSON())
-        match["blueTeam"] = blue
-        match["orangeTeam"] = orange
-
-        curr_matches[match_index] = match
-        writeActiveMatches(curr_matches)
         return "Match reported, awaiting confirmation from other team."
 
     # Make sure second reported is on the other team
-    reportingPlayersTeam = "blue" if player.isPlayerInList(match["blueTeam"]) != -1 else "orange"
     if (reportingPlayersTeam == match["reportedWinner"]["player"]["team"]):
         return (
             ":x: Your team has already reported the match."
@@ -153,88 +87,58 @@ def reportConfirm(player, match, curr_matches, match_index, whoWon):
 
 
 def reportMatch(player, whoWon):
-    curr_matches = readActiveMatches()
+    global sorted_lb
+    match = getActiveMatch(player)
 
-    for i, match in enumerate(curr_matches):
-        if (player.isPlayerInList(match["blueTeam"] + match["orangeTeam"]) != -1):
+    if (not match):
+        return ":x: Match not found"
 
-            msg = reportConfirm(player, match, curr_matches, i, whoWon)
-            if (msg != ""):
-                return msg
+    msg = reportConfirm(player, match, whoWon)
+    if (msg != ""):
+        return msg
 
-            leaderboard = readLeaderboard()
+    for teamMember in (match["blueTeam"] + match["orangeTeam"]):
+        if (
+            (whoWon == "blue" and teamMember in match["blueTeam"]) or
+            (whoWon == "orange" and teamMember in match["orangeTeam"])
+        ):
+            win = 1
+            loss = 0
+        else:
+            win = 0
+            loss = 1
 
-            for teamMember in match["blueTeam"]:
+        player = leaderboard.get(where("id") == teamMember["id"])
+        if (not player):
+            leaderboard.insert({
+                "id": teamMember["id"],
+                "Name": teamMember["name"],
+                "Wins": win,
+                "Losses": loss,
+                "Matches Played": 1,
+                "Win Perc": float(win),
+            })
+        else:
+            updated_player = {
+                "Name": teamMember["name"],
+                "Wins": player["Wins"] + win,
+                "Losses": player["Losses"] + loss,
+                "Matches Played": player["Matches Played"] + 1,
+                "Win Perc": player["Win Perc"],
+            }
 
-                if (whoWon == "blue"):
-                    win = 1
-                    loss = 0
-                else:
-                    win = 0
-                    loss = 1
+            total_wins = int(updated_player["Wins"])
+            total_matches = int(updated_player["Matches Played"])
+            updated_player["Win Perc"] = float("{:.2f}".format(total_wins / total_matches))
 
-                player_index = getPlayerIndex(teamMember)
-                if (player_index == -1):
-                    new_player = {
-                        "id": teamMember.id,
-                        "Name": teamMember.name,
-                        "Wins": win,
-                        "Losses": loss,
-                        "Matches Played": 1,
-                        "Win Perc": float(win),
-                    }
-                    leaderboard.append(new_player)
-                else:
-                    if (leaderboard[player_index]["Name"] != teamMember.name):
-                        leaderboard[player_index]["Name"] = teamMember.name
+            leaderboard.update(updated_player, doc_ids=[player.doc_id])
 
-                    leaderboard[player_index]["Wins"] += win
-                    leaderboard[player_index]["Losses"] += loss
-                    leaderboard[player_index]["Matches Played"] += 1
+    activeMatches.remove(doc_ids=[match.doc_id])
+    sorted_lb = None
+    #  FIXME
+    # AWS.writeRemoteLeaderboard(dumps(leaderboard.storage.read()["leaderboard"]))
 
-                    total_wins = int(leaderboard[player_index]["Wins"])
-                    total_matches = int(leaderboard[player_index]["Matches Played"])
-                    leaderboard[player_index]["Win Perc"] = float("{:.2f}".format(total_wins / total_matches))
-
-            for teamMember in match["orangeTeam"]:
-
-                if (whoWon == "orange"):
-                    win = 1
-                    loss = 0
-                else:
-                    win = 0
-                    loss = 1
-
-                player_index = getPlayerIndex(teamMember)
-                if (player_index == -1):
-                    new_player = {
-                        "id": teamMember.id,
-                        "Name": teamMember.name,
-                        "Wins": win,
-                        "Losses": loss,
-                        "Matches Played": 1,
-                        "Win Perc": float(win),
-                    }
-                    leaderboard.append(new_player)
-                else:
-                    if (leaderboard[player_index]["Name"] != teamMember.name):
-                        leaderboard[player_index]["Name"] = teamMember.name
-
-                    leaderboard[player_index]["Wins"] += win
-                    leaderboard[player_index]["Losses"] += loss
-                    leaderboard[player_index]["Matches Played"] += 1
-
-                    total_wins = int(leaderboard[player_index]["Wins"])
-                    total_matches = int(leaderboard[player_index]["Matches Played"])
-                    leaderboard[player_index]["Win Perc"] = float("{:.2f}".format(total_wins / total_matches))
-
-            saveLeaderboard(leaderboard)
-            curr_matches.remove(match)
-            writeActiveMatches(curr_matches)
-
-            return ":white_check_mark: Match has been reported successfully."
-
-    return ":x: Match not found"
+    return ":white_check_mark: Match has been reported successfully."
 
 
 def makePretty(player_index, player):
@@ -249,21 +153,25 @@ def makePretty(player_index, player):
 
 
 def showLeaderboard(player=None, limit=None):
-    curr_leaderboard = readLeaderboard()
+    global sorted_lb
+    if (not sorted_lb):
+        sorted_lb = sorted(leaderboard.all(), key=lambda x: (x["Wins"], x["Win Perc"]), reverse=True)
 
     if (player):
-        player_index = getPlayerIndex(player)
-        player_data = curr_leaderboard[player_index]
+        player_data = leaderboard.get(where("id") == player.id)
 
-        if (player_index == -1):
+        if (not player_data):
             return player
+
+        # returns the index in the sorted leaderboard where the IDs match
+        player_index = next((i for i, p in enumerate(sorted_lb) if p['id'] == player_data['id']))
 
         return "```" + makePretty(player_index, player_data) + "\n```"
 
     else:
         msg = "```\n"
 
-        for i, player_data in enumerate(curr_leaderboard):
+        for i, player_data in enumerate(sorted_lb):
             if (not limit or i < limit):
                 msg += makePretty(i, player_data) + "\n"
 

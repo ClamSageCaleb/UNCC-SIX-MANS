@@ -1,5 +1,4 @@
 from JSONMethod import clearQueue, readQueue, writeQueue, BallChaser
-from Leaderboard import readActiveMatches, writeActiveMatches
 from datetime import datetime, timedelta
 
 
@@ -110,16 +109,18 @@ def flipCaptains():
     writeQueue(curr_queue)
 
 
+# FIXME - Convert to new active matches format
 def swapReportedPlayer():
-    active = readActiveMatches()[0]
-    player_reported = active["reportedWinner"]["player"]["ballChaser"]
-    active["reportedWinner"]["player"]["ballChaser"] = active["blueTeam"][0]
-    active["blueTeam"][0] = player_reported
-    active["orangeTeam"][0] = active["reportedWinner"]["player"]["ballChaser"]
+    return True
+    # active = readActiveMatches()[0]
+    # player_reported = active["reportedWinner"]["player"]["ballChaser"]
+    # active["reportedWinner"]["player"]["ballChaser"] = active["blueTeam"][0]
+    # active["blueTeam"][0] = player_reported
+    # active["orangeTeam"][0] = active["reportedWinner"]["player"]["ballChaser"]
 
-    active["reportedWinner"]["player"]["ballChaser"] = active["reportedWinner"]["player"]["ballChaser"].toJSON()
-    for i in range(len(active["blueTeam"])):
-        active["blueTeam"][i] = active["blueTeam"][i].toJSON()
-        active["orangeTeam"][i] = active["orangeTeam"][i].toJSON()
+    # active["reportedWinner"]["player"]["ballChaser"] = active["reportedWinner"]["player"]["ballChaser"].toJSON()
+    # for i in range(len(active["blueTeam"])):
+    #     active["blueTeam"][i] = active["blueTeam"][i].toJSON()
+    #     active["orangeTeam"][i] = active["orangeTeam"][i].toJSON()
 
-    writeActiveMatches([active])
+    # writeActiveMatches([active])

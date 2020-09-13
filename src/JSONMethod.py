@@ -29,7 +29,7 @@ class BallChaser:
 
     def isPlayerInList(self, listOfBallChasers: list):
         for i, chaser in enumerate(listOfBallChasers):
-            if (self.id == chaser.id):
+            if (self.id == chaser["id"]):
                 return i
         return -1
 

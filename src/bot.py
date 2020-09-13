@@ -53,11 +53,12 @@ async def on_message(message):
         await client.process_commands(message)
 
 
-@client.event
-async def on_command_error(ctx, error):
-    if isinstance(error, CommandNotFound):
-        return
-    print(error)
+# FIXME - Uncomment before merging into main
+# @client.event
+# async def on_command_error(ctx, error):
+#     if isinstance(error, CommandNotFound):
+#         return
+#     print(error)
 
 
 @client.event

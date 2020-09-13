@@ -11,7 +11,7 @@ tokenPath = path.join(basePath, "config.json")
 queueFilePath = path.join(dataBasePath, "queue.json")
 activeMatchPath = path.join(dataBasePath, "activeMatches.json")
 leaderboardPath = path.join(dataBasePath, "Leaderboard.json")
-tindyDbLbPath = path.join(dataBasePath, "TinyDbLeaderboard.json")
+tinyDbPath = path.join(dataBasePath, "TinyDb.json")
 
 
 def checkProgramFiles():
