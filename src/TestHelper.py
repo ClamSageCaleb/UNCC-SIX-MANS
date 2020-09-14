@@ -84,8 +84,8 @@ def fillWithCaptains():
 
 
 def flipCaptains():
-    blueCap = currQueue.get((where("team") == "blue") & (where("isCap") == True))
-    orangeCap = currQueue.get((where("team") == "orange") & (where("isCap") == True))
+    blueCap = currQueue.get((where("team") == "blue") & (where("isCap").one_of([True])))
+    orangeCap = currQueue.get((where("team") == "orange") & (where("isCap").one_of([True])))
 
     currQueue.update({"team": "orange"}, doc_ids=[blueCap.doc_id])
     currQueue.update({"team": "blue"}, doc_ids=[orangeCap.doc_id])
