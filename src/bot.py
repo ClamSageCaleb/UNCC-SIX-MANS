@@ -2,7 +2,7 @@ __author__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __copyright__ = "Copyright 2019, MIT License"
 __credits__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __license__ = "MIT"
-__version__ = "5.2.0"
+__version__ = "6.0.0"
 __maintainer__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __email__ = "caleb.benjamin9799@gmail.com / unavailable / mattwells878@gmail.com"
 
@@ -13,7 +13,6 @@ import CheckForUpdates
 import discord
 from discord.ext.commands import Bot, CommandNotFound
 from EmbedHelper import ErrorEmbed, QueueUpdateEmbed, AdminEmbed, InfoEmbed
-from FilePaths import checkProgramFiles
 import Queue
 import Leaderboard
 import TestHelper
@@ -167,7 +166,7 @@ async def q(ctx, *arg, quiet=False):
             desc="You're already in the queue, but your queue time has been reset to {0} minutes.".format(queueTime),
         )
 
-    elif (Leaderboard.isPlayerInActiveMatch(player)):
+    elif (Leaderboard.getActiveMatch(player) is not None):
         embed = ErrorEmbed(
             title="Match Still Active",
             desc="Your previous match has not been reported yet."
@@ -612,8 +611,6 @@ async def pick(ctx):
 
 @client.command(name="report", pass_contex=True)
 async def reportMatch(ctx, *arg):
-    player_reporting = Queue.BallChaser(name=str(ctx.message.author), id=ctx.message.author.id)
-
     if (
         ctx.message.channel.id != MATCH_REPORT_CH_ID
         and ctx.message.channel.id != QUEUE_CH_ID
@@ -625,7 +622,7 @@ async def reportMatch(ctx, *arg):
         )
 
     elif (len(arg) == 1 and (str(arg[0]).lower() == "blue" or str(arg[0]).lower() == "orange")):
-        msg = Leaderboard.reportMatch(player_reporting, arg[0])
+        msg = Leaderboard.reportMatch(ctx.message.author, arg[0])
 
         if (":x:" in msg):
             embed = ErrorEmbed(
@@ -1085,7 +1082,6 @@ async def help(ctx):
 
 
 def main():
-    checkProgramFiles()
     AWS.init()
     client.loop.create_task(stale_queue_timer())
     token = Queue.getDiscordToken()

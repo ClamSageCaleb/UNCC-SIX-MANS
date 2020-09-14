@@ -1,96 +1,45 @@
-from FilePaths import queueFilePath, tokenPath
+from FilePaths import tokenPath, currQueue
 import json
 import random
 from datetime import datetime, timedelta
 from math import ceil
-
-default = {
-    "queue": [],
-    "orangeCap": "",
-    "blueCap": "",
-    "orangeTeam": [],
-    "blueTeam": []
-}
+from tinydb import where
 
 
 class BallChaser:
-    def __init__(self, name, id, queueTime=datetime.now()):
+    def __init__(self, name: str, id: int, isCap: bool = False, team=None, queueTime=datetime.now()):
         self.name = name
         self.id = id
         self.mention = "<@{0}>".format(self.id)
+        self.isCap = isCap
+        self.team = team
         self.queueTime = queueTime
 
-    def toJSON(self):
+    @classmethod
+    def fromDocument(cls, document):
+        return cls(
+            id=document["id"],
+            name=document["name"],
+            isCap=document["isCap"],
+            team=document["team"],
+            queueTime=datetime.strptime(document["queueTime"], "%Y-%m-%dT%H:%M:%S.%f")
+        )
+
+    def toJSON(self, short: bool = False):
         return {
             "id": self.id,
             "name": self.name,
+            "isCap": self.isCap,
+            "team": self.team,
             "queueTime": self.queueTime.isoformat(),
+        } if not short else {
+            "id": self.id,
+            "name": self.name,
+            "team": self.team
         }
 
-    def isPlayerInList(self, listOfBallChasers: list):
-        for i, chaser in enumerate(listOfBallChasers):
-            if (self.id == chaser["id"]):
-                return i
-        return -1
-
-
-'''
-    File IO Helpers
-'''
-
-
-def readQueue():
-    fileToRead = open(queueFilePath, "r")
-    curr_queue = json.load(fileToRead)
-    fileToRead.close()
-
-    for key in curr_queue:
-
-        if (type(curr_queue[key]) == list):
-            tempChasers = []
-            for player in curr_queue[key]:
-                tempChasers.append(
-                    BallChaser(
-                        player["name"],
-                        player["id"],
-                        datetime.strptime(player["queueTime"], "%Y-%m-%dT%H:%M:%S.%f")
-                    )
-                )
-
-        elif (type(curr_queue[key]) == dict):
-            tempChasers = BallChaser(
-                curr_queue[key]["name"],
-                curr_queue[key]["id"],
-                datetime.strptime(curr_queue[key]["queueTime"], "%Y-%m-%dT%H:%M:%S.%f")
-            )
-
-        else:
-            tempChasers = curr_queue[key]
-
-        curr_queue[key] = tempChasers
-
-    return curr_queue
-
-
-def writeQueue(new_queue):
-
-    for key in new_queue:
-
-        if (type(new_queue[key]) == list):
-            tempChasers = []
-            for player in new_queue[key]:
-                tempChasers.append(player.toJSON())
-
-        elif (type(new_queue[key]) == BallChaser):
-            tempChasers = new_queue[key].toJSON()
-
-        else:
-            tempChasers = new_queue[key]
-
-        new_queue[key] = tempChasers
-
-    with open(queueFilePath, "w") as queue:
-        json.dump(new_queue, queue)
+    def isPlayerInList(self, listOfBallChasers: list) -> bool:
+        return any(self.id == chaser["id"] for chaser in listOfBallChasers)
 
 
 '''
@@ -99,39 +48,23 @@ def writeQueue(new_queue):
 
 
 def isBotAdmin(roles):
-    for role in roles:
-        if (role.name == "Bot Admin"):
-            return True
-    return False
-
-
-def indexOfPlayer(player, curr_queue=None):
-    if (not curr_queue):
-        curr_queue = readQueue()
-
-    for i, ballchaser in enumerate(curr_queue["queue"]):
-        if (ballchaser.id == player.id):
-            return i
-
-    return -1
+    return any(role.name == "Bot Admin" for role in roles)
 
 
 def queueAlreadyPopped():
-    curr_queue = readQueue()
-    return (curr_queue["orangeCap"] != "" or curr_queue["blueCap"] != "")
+    return currQueue.contains(where("isCap").one_of([True]))
 
 
 def getQueueLength():
-    curr_queue = readQueue()
-    return len(curr_queue["queue"])
+    return currQueue.count(where("id").exists())
 
 
 def isPlayerInQueue(player):
-    return indexOfPlayer(player) != -1
+    return currQueue.contains(where("id") == player.id)
 
 
 def clearQueue():
-    writeQueue(default)
+    currQueue.truncate()
 
 
 def getDiscordToken():
@@ -151,19 +84,28 @@ def updateDiscordToken(newToken):
     return newToken
 
 
-def validateOrangePick(player):
-    curr_queue = readQueue()
-    return (len(curr_queue["blueTeam"]) == 2 and player.id == curr_queue["orangeCap"].id)
+def validateOrangePick(player: BallChaser):
+    player = currQueue.get(where("id") == player.id)
+    return (
+        currQueue.count(where("team") == "blue") == 2 and
+        player["isCap"] and
+        player["team"] == "orange"
+    )
 
 
 def validateBluePick(player):
-    curr_queue = readQueue()
-    return (len(curr_queue["blueTeam"]) == 1 and player.id == curr_queue["blueCap"].id)
+    player = currQueue.get(where("id") == player.id)
+    return (
+        currQueue.count(where("team") == "blue") == 1 and
+        player["isCap"] and
+        player["team"] == "blue"
+    )
 
 
 def getTeamList():
-    curr_queue = readQueue()
-    return curr_queue["blueTeam"], curr_queue["orangeTeam"]
+    orangeTeam = currQueue.search(where("team") == "orange")
+    blueTeam = currQueue.search(where("team") == "blue")
+    return [BallChaser.fromDocument(p) for p in blueTeam], [BallChaser.fromDocument(p) for p in orangeTeam]
 
 
 def getQueueTimeRemaining(player: BallChaser) -> int:
@@ -176,24 +118,16 @@ def getQueueTimeRemaining(player: BallChaser) -> int:
 
 
 def addToQueue(player, mins_to_queue_for=60):
-    curr_queue = readQueue()
     new_player = BallChaser(
         str(player),
         player.id,
         queueTime=(datetime.now() + timedelta(minutes=mins_to_queue_for))
     )
-    curr_queue["queue"].append(new_player)
-    writeQueue(curr_queue)
+    currQueue.insert(new_player.toJSON())
 
 
 def removeFromQueue(player):
-    curr_queue = readQueue()
-    index = indexOfPlayer(player)
-
-    if (index != -1):
-        curr_queue["queue"].pop(index)
-
-        writeQueue(curr_queue)
+    currQueue.remove(where("id") == player.id)
 
 
 def resetPlayerQueueTime(player, mins_to_queue_for=60):
@@ -202,10 +136,10 @@ def resetPlayerQueueTime(player, mins_to_queue_for=60):
 
 
 def getQueueList(mentionPlayers: bool = False, includeTimes: bool = True):
-    curr_queue = readQueue()
     playerList = []
 
-    for player in curr_queue["queue"]:
+    for player in currQueue.search(where("team").one_of([None])):
+        player = BallChaser.fromDocument(player)
         if (mentionPlayers):
             playerList.append(player.mention)
         else:
@@ -219,78 +153,73 @@ def getQueueList(mentionPlayers: bool = False, includeTimes: bool = True):
 
 
 def randomPop():
-    curr_queue = readQueue()
+    players = [BallChaser.fromDocument(p) for p in currQueue.all()]
+    orangeTeam = random.sample(players, 3)
 
-    curr_queue["orangeTeam"] = random.sample(curr_queue["queue"], 3)
+    for player in orangeTeam:
+        player.team = "orange"
+        players.remove(player)
 
-    for player in curr_queue["orangeTeam"]:
-        curr_queue["queue"].remove(player)
+    blueTeam = players[:]
+    currQueue.truncate()
 
-    curr_queue["blueTeam"] = curr_queue["queue"][:]
+    for player in blueTeam:
+        player.team = "blue"
 
-    writeQueue(default)
-
-    return curr_queue["blueTeam"], curr_queue["orangeTeam"]
+    return blueTeam, orangeTeam
 
 
 def captainsPop():
-    curr_queue = readQueue()
-
     if (not queueAlreadyPopped()):
-        orangeCap = curr_queue["orangeCap"] = random.sample(curr_queue["queue"], 1)[0]
-        curr_queue["queue"].remove(curr_queue["orangeCap"])
-        curr_queue["orangeTeam"].append(curr_queue["orangeCap"])
+        orangeCapDoc = random.sample(currQueue.all(), 1)[0]
+        orangeCap = BallChaser.fromDocument(orangeCapDoc)
+        currQueue.update({"isCap": True, "team": "orange"}, doc_ids=[orangeCapDoc.doc_id])
 
-        blueCap = curr_queue["blueCap"] = random.sample(curr_queue["queue"], 1)[0]
-        curr_queue["queue"].remove(curr_queue["blueCap"])
-        curr_queue["blueTeam"].append(curr_queue["blueCap"])
-
-        writeQueue(curr_queue)
+        blueCapDoc = random.sample(currQueue.search(where("isCap").one_of([False])), 1)[0]
+        blueCap = BallChaser.fromDocument(blueCapDoc)
+        currQueue.update({"isCap": True, "team": "blue"}, doc_ids=[blueCapDoc.doc_id])
     else:
-        orangeCap = curr_queue["orangeCap"]
-        blueCap = curr_queue["blueCap"]
+        orangeCap = BallChaser.fromDocument(
+            currQueue.get((where("team") == "orange") & (where("isCap").one_of([True])))
+        )
+        blueCap = BallChaser.fromDocument(
+            currQueue.get((where("team") == "blue") & (where("isCap").one_of([True])))
+        )
 
     return blueCap, orangeCap
 
 
 # Returns a string if there is an error. Otherwise returns an empty string
 def pick(player_picked, player_picked_2=None):
-    curr_queue = readQueue()
+    player_picked = currQueue.get(where("id") == player_picked.id)
 
-    player_picked = BallChaser(str(player_picked), player_picked.id)
-
-    if (isPlayerInQueue(player_picked)):
-        curr_queue["queue"].pop(indexOfPlayer(player_picked))
-
+    if (player_picked is not None):
         if (player_picked_2):
-            curr_queue["orangeTeam"].append(player_picked)
+            currQueue.update({"team": "orange"}, doc_ids=[player_picked.doc_id])
         else:
-            curr_queue["blueTeam"].append(player_picked)
+            currQueue.update({"team": "blue"}, doc_ids=[player_picked.doc_id])
     else:
         return "Player not in queue, dummy. Try again."
 
-    if (player_picked_2):
+    if (player_picked_2 is not None):
+        player_picked_2 = currQueue.get(where("id") == player_picked_2.id)
 
-        player_picked_2 = BallChaser(str(player_picked_2), player_picked_2.id)
+        if (player_picked_2):
+            currQueue.update({"team": "orange"}, doc_ids=[player_picked_2.doc_id])
 
-        if (isPlayerInQueue(player_picked_2)):
-            curr_queue["queue"].pop(indexOfPlayer(player_picked_2, curr_queue))
-            curr_queue["orangeTeam"].append(player_picked_2)
-
-            curr_queue["blueTeam"].append(curr_queue["queue"].pop(0))
+            currQueue.update({"team": "blue"}, where("team").one_of([None]))
         else:
             return "{0} is not in the queue. Try again.".format(player_picked_2.name)
 
-    writeQueue(curr_queue)
     return ""
 
 
 def checkQueueTimes():
-    curr_queue = readQueue()
     warn_players = []
     remove_players = []
 
-    for player in curr_queue["queue"]:
+    for player in currQueue.all():
+        player = BallChaser.fromDocument(player)
         minutes_diff = getQueueTimeRemaining(player)
         if (minutes_diff == 5):  # 5 minute warning
             warn_players.append(player)

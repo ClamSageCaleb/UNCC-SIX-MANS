@@ -1,28 +1,21 @@
-from FilePaths import tinyDbPath
+from FilePaths import leaderboard, activeMatches
 from Queue import BallChaser
 import AWSHelper as AWS
-from tinydb import TinyDB, where
+from tinydb import where
 from json import dumps
 
-
-db = TinyDB(tinyDbPath)
-leaderboard = db.table("leaderboard")
-activeMatches = db.table("activeMatches")
 
 sorted_lb = None
 
 
 def startMatch(blueTeam, orangeTeam):
+    allPlayers = blueTeam + orangeTeam
     activeMatches.insert({
         "reportedWinner": {
-            "player": {
-                "ballChaser": "",
-                "team": ""
-            },
-            "winningTeam": "",
+            "ballChaser": {},
+            "winningTeam": None,
         },
-        "blueTeam": [p.toJSON() for p in blueTeam],
-        "orangeTeam": [p.toJSON() for p in orangeTeam]
+        "players": [p.toJSON(short=True) for p in allPlayers]
     })
 
 
@@ -36,10 +29,10 @@ def brokenQueue(player):
     if (not match):
         return "You are not in the queue; therefore you cannot report a broken queue."
 
-    if (match["reportedWinner"]["winningTeam"] != ""):
+    if (match["reportedWinner"]["winningTeam"] is not None):
         return "You cannot report a broken queue once someone reports the match."
 
-    if (player.isPlayerInList(match["blueTeam"] + match["orangeTeam"]) != -1):
+    if (player.isPlayerInList(match["players"])):
         activeMatches.remove(doc_ids=[match.doc_id])
         return ":white_check_mark: Previous queue removed."
 
@@ -49,14 +42,11 @@ def getActiveMatch(player):
         player = BallChaser(player.name, player.id)
 
     return activeMatches.get(
-        where("blueTeam").any(where("id") == player.id) |
-        where("orangeTeam").any(where("id") == player.id)
+        where("players").any(where("id") == player.id)
     )
 
 
 def reportConfirm(player: BallChaser, match, whoWon):
-    reportingPlayersTeam = "blue" if (player.isPlayerInList(match["blueTeam"]) != -1) else "orange"
-
     # If first responder or a winning team disagreement, we update the report
     if (
         match["reportedWinner"]["winningTeam"] == "" or
@@ -66,17 +56,14 @@ def reportConfirm(player: BallChaser, match, whoWon):
         activeMatches.update({
             "reportedWinner": {
                 "winningTeam": whoWon,
-                "player": {
-                    "ballChaser": player.toJSON(),
-                    "team": reportingPlayersTeam
-                }
+                "ballChaser": player.toJSON(short=True)
             }
         }, doc_ids=[match.doc_id])
 
         return "Match reported, awaiting confirmation from other team."
 
     # Make sure second reported is on the other team
-    if (reportingPlayersTeam == match["reportedWinner"]["player"]["team"]):
+    if (player.team == match["reportedWinner"]["ballChaser"]["team"]):
         return (
             ":x: Your team has already reported the match."
             " One person from the other team must now confirm."
@@ -92,14 +79,20 @@ def reportMatch(player, whoWon):
     if (not match):
         return ":x: Match not found"
 
+    foundPlayer = next((x for x in match["players"] if x["id"] == player.id))
+    player = BallChaser(
+        name=foundPlayer["name"],
+        id=foundPlayer["id"],
+        team=foundPlayer["team"]
+    )
     msg = reportConfirm(player, match, whoWon)
     if (msg != ""):
         return msg
 
-    for teamMember in (match["blueTeam"] + match["orangeTeam"]):
+    for teamMember in match["players"]:
         if (
-            (whoWon == "blue" and teamMember in match["blueTeam"]) or
-            (whoWon == "orange" and teamMember in match["orangeTeam"])
+            (whoWon == "blue" and teamMember["team"] == "blue") or
+            (whoWon == "orange" and teamMember["team"] == "orange")
         ):
             win = 1
             loss = 0
