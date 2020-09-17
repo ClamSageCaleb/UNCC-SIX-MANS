@@ -258,10 +258,26 @@ def showLeaderboard(player=None, limit=None):
         return "```" + makePretty(player_index, player_data) + "\n```"
 
     else:
+        max_players_per_msg = 10
+        msgs = []
+
+        if (limit is None):
+            limit = len(curr_leaderboard)
+
+        # start first message
         msg = "```\n"
 
-        for i, player_data in enumerate(curr_leaderboard):
-            if (not limit or i < limit):
-                msg += makePretty(i, player_data) + "\n"
+        for i in range(limit):
 
-        return msg + "\n```"
+            # if we reach our player limit, end and start a new message
+            if (i % max_players_per_msg == 0 and i != 0):
+                msgs.append(msg + "\n```")
+                msg = "```\n"
+
+            msg += makePretty(i, curr_leaderboard[i]) + "\n"
+
+        # add the last message that didn't hit the if check
+        msgs.append(msg + "\n```")
+
+        # return list of messages or just the one string if msgs only has one message
+        return msgs if len(msgs) > 1 else msgs[0]
