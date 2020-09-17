@@ -279,5 +279,5 @@ def showLeaderboard(player=None, limit=None):
         # add the last message that didn't hit the if check
         msgs.append(msg + "\n```")
 
-        # # return list of messages or just the one string if msgs only has one message
+        # return list of messages or just the one string if msgs only has one message
         return msgs if len(msgs) > 1 else msgs[0]
