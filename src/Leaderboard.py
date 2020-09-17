@@ -2,7 +2,6 @@ from FilePaths import activeMatchPath, leaderboardPath
 from JSONMethod import BallChaser
 import json
 import AWSHelper as AWS
-from math import ceil
 
 
 def readActiveMatches() -> list:
@@ -259,27 +258,26 @@ def showLeaderboard(player=None, limit=None):
         return "```" + makePretty(player_index, player_data) + "\n```"
 
     else:
-        players_per_msg = 10
-        num_of_msgs = ceil(len(curr_leaderboard) / players_per_msg) if limit is None else ceil(limit / players_per_msg)
+        max_players_per_msg = 10
         msgs = []
 
-        # start at 0, count by 10, up to the number of messages needed * 10
-        for n in range(0, num_of_msgs * players_per_msg, players_per_msg):
+        if (limit is None):
+            limit = len(curr_leaderboard)
 
-            msg = "```\n"
+        # start first message
+        msg = "```\n"
 
-            # starting at n, get the next 10 players
-            i = n
-            while (i < (n + players_per_msg) and i < len(curr_leaderboard)):
-                msg += makePretty(i, curr_leaderboard[i]) + "\n"
-                i += 1
+        for i in range(limit):
 
-                #  if there is a limit and we've reached it, stop looping
-                if (limit is not None and i >= limit):
-                    break
+            # if we reach our player limit, end and start a new message
+            if (i % max_players_per_msg == 0 and i != 0):
+                msgs.append(msg + "\n```")
+                msg = "```\n"
 
-            # add new msg to msg list
-            msgs.append(msg + "\n```")
+            msg += makePretty(i, curr_leaderboard[i]) + "\n"
 
-        # return list of messages or just the one string if msgs only has one message
+        # add the last message that didn't hit the if check
+        msgs.append(msg + "\n```")
+
+        # # return list of messages or just the one string if msgs only has one message
         return msgs if len(msgs) > 1 else msgs[0]

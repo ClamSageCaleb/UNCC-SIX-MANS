@@ -37,7 +37,7 @@ QUEUE_CH_ID = 538166641226416162
 TEST_QUEUE_CH_ID = 629502331259584559
 MATCH_REPORT_CH_ID = 622786720328581133
 LEADERBOARD_CH_ID = 718998601790914591
-TUX_TEST_LEADERBOARD_CH_ID = 754817563526955029
+TUX_TEST_LEADERBOARD_CH_ID = 755960373936652358
 TUX_TEST_SERVER_CH_ID = 716358749912039429
 TEST_NORM_USER_ID = 716358391328407612
 
@@ -704,10 +704,16 @@ async def updateLeaderboardChannel(channel_id):
     channel = client.get_channel(channel_id)
     await channel.purge()
     lb = Leaderboard.showLeaderboard()
-    for i, msg in enumerate(lb):
+    if (isinstance(lb, list)):
+        for i, msg in enumerate(lb):
+            await channel.send(embed=InfoEmbed(
+                title="UNCC 6 Mans | Full Leaderboard ({0}/{1})".format(i+1, len(lb)),
+                desc=msg,
+            ))
+    else:
         await channel.send(embed=InfoEmbed(
-            title="UNCC 6 Mans | Full Leaderboard ({0}/{1})".format(i+1, len(lb)),
-            desc=msg,
+            title="UNCC 6 Mans | Full Leaderboard",
+            desc=lb,
         ))
 
 
