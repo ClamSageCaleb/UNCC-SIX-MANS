@@ -1,6 +1,6 @@
 from Queue import clearQueue, BallChaser
 from datetime import datetime, timedelta
-from FilePaths import currQueue, activeMatches
+from DataFiles import currQueue, activeMatches
 from tinydb import where
 from Leaderboard import getActiveMatch
 

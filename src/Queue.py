@@ -1,4 +1,4 @@
-from FilePaths import tokenPath, currQueue
+from DataFiles import tokenPath, currQueue
 import json
 import random
 from datetime import datetime, timedelta

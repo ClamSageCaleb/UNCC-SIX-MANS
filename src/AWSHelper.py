@@ -1,6 +1,6 @@
 import boto3
 import json
-from FilePaths import tokenPath
+from DataFiles import tokenPath
 from Leaderboard import resetFromRemote
 
 aws_id = ""

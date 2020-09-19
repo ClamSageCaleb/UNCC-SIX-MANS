@@ -1,4 +1,4 @@
-from FilePaths import leaderboard, activeMatches
+from DataFiles import leaderboard, activeMatches
 from Queue import BallChaser
 import AWSHelper as AWS
 from tinydb import where
@@ -10,13 +10,13 @@ sorted_lb = None
 
 def startMatch(blueTeam, orangeTeam):
     allPlayers = blueTeam + orangeTeam
-    activeMatches.insert({
-        "reportedWinner": {
-            "ballChaser": {},
-            "winningTeam": None,
-        },
-        "players": [p.toJSON(short=True) for p in allPlayers]
-    })
+    newActiveMatch = {p.id: p.toJSON(short=True) for p in allPlayers}
+
+    newActiveMatch["reportedWinner"] = {
+        "ballChaser": None,
+        "winningTeam": None,
+    }
+    activeMatches.insert(newActiveMatch)
 
 
 def brokenQueue(player):
@@ -32,24 +32,18 @@ def brokenQueue(player):
     if (match["reportedWinner"]["winningTeam"] is not None):
         return "You cannot report a broken queue once someone reports the match."
 
-    if (player.isPlayerInList(match["players"])):
-        activeMatches.remove(doc_ids=[match.doc_id])
-        return ":white_check_mark: Previous queue removed."
+    activeMatches.remove(doc_ids=[match.doc_id])
+    return ":white_check_mark: Previous queue removed."
 
 
 def getActiveMatch(player):
-    if (not isinstance(player, BallChaser)):
-        player = BallChaser(player.name, player.id)
-
-    return activeMatches.get(
-        where("players").any(where("id") == player.id)
-    )
+    return activeMatches.get(where(str(player.id)).exists())
 
 
 def reportConfirm(player: BallChaser, match, whoWon):
     # If first responder or a winning team disagreement, we update the report
     if (
-        match["reportedWinner"]["winningTeam"] == "" or
+        match["reportedWinner"]["winningTeam"] is None or
         match["reportedWinner"]["winningTeam"] != whoWon
     ):
 
@@ -79,7 +73,7 @@ def reportMatch(player, whoWon):
     if (not match):
         return ":x: Match not found"
 
-    foundPlayer = next((x for x in match["players"] if x["id"] == player.id))
+    foundPlayer = match[str(player.id)]
     player = BallChaser(
         name=foundPlayer["name"],
         id=foundPlayer["id"],
@@ -89,41 +83,43 @@ def reportMatch(player, whoWon):
     if (msg != ""):
         return msg
 
-    for teamMember in match["players"]:
-        if (
-            (whoWon == "blue" and teamMember["team"] == "blue") or
-            (whoWon == "orange" and teamMember["team"] == "orange")
-        ):
-            win = 1
-            loss = 0
-        else:
-            win = 0
-            loss = 1
+    for key in match:
+        if (key != "reportedWinner"):
+            teamMember = match[key]
+            if (
+                (whoWon == "blue" and teamMember["team"] == "blue") or
+                (whoWon == "orange" and teamMember["team"] == "orange")
+            ):
+                win = 1
+                loss = 0
+            else:
+                win = 0
+                loss = 1
 
-        player = leaderboard.get(where("id") == teamMember["id"])
-        if (not player):
-            leaderboard.insert({
-                "id": teamMember["id"],
-                "Name": teamMember["name"],
-                "Wins": win,
-                "Losses": loss,
-                "Matches Played": 1,
-                "Win Perc": float(win),
-            })
-        else:
-            updated_player = {
-                "Name": teamMember["name"],
-                "Wins": player["Wins"] + win,
-                "Losses": player["Losses"] + loss,
-                "Matches Played": player["Matches Played"] + 1,
-                "Win Perc": player["Win Perc"],
-            }
+            player = leaderboard.get(where("id") == teamMember["id"])
+            if (not player):
+                leaderboard.insert({
+                    "id": teamMember["id"],
+                    "Name": teamMember["name"],
+                    "Wins": win,
+                    "Losses": loss,
+                    "Matches Played": 1,
+                    "Win Perc": float(win),
+                })
+            else:
+                updated_player = {
+                    "Name": teamMember["name"],
+                    "Wins": player["Wins"] + win,
+                    "Losses": player["Losses"] + loss,
+                    "Matches Played": player["Matches Played"] + 1,
+                    "Win Perc": player["Win Perc"],
+                }
 
-            total_wins = int(updated_player["Wins"])
-            total_matches = int(updated_player["Matches Played"])
-            updated_player["Win Perc"] = float("{:.2f}".format(total_wins / total_matches))
+                total_wins = int(updated_player["Wins"])
+                total_matches = int(updated_player["Matches Played"])
+                updated_player["Win Perc"] = float("{:.2f}".format(total_wins / total_matches))
 
-            leaderboard.update(updated_player, doc_ids=[player.doc_id])
+                leaderboard.update(updated_player, doc_ids=[player.doc_id])
 
     activeMatches.remove(doc_ids=[match.doc_id])
     sorted_lb = sorted(leaderboard.all(), key=lambda x: (x["Wins"], x["Win Perc"]), reverse=True)
