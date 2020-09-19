@@ -1,63 +1,65 @@
-from DataFiles import leaderboard, activeMatches
-from Queue import BallChaser
 import AWSHelper as AWS
-from tinydb import where
+from DataFiles import leaderboard, activeMatches
+from Types import BallChaser, Team, MatchKey, LbKey
+from discord import Member
 from json import dumps
+from tinydb import where
+from tinydb.table import Document
+from typing import List
 
 
 sorted_lb = None
 
 
-def startMatch(blueTeam, orangeTeam):
+def startMatch(blueTeam: List[BallChaser], orangeTeam: List[BallChaser]) -> None:
     allPlayers = blueTeam + orangeTeam
     newActiveMatch = {p.id: p.toJSON(short=True) for p in allPlayers}
 
-    newActiveMatch["reportedWinner"] = {
-        "ballChaser": None,
-        "winningTeam": None,
+    newActiveMatch[MatchKey.REPORTED_WINNER] = {
+        MatchKey.REPORTER: None,
+        MatchKey.WINNING_TEAM: None,
     }
     activeMatches.insert(newActiveMatch)
 
 
-def brokenQueue(player):
-    if (activeMatches.count(where("reportedWinner").exists()) == 0):
+def brokenQueue(player: Member) -> str:
+    if (activeMatches.count(where(MatchKey.REPORTED_WINNER).exists()) == 0):
         return "There are no currently active matches."
 
-    player = BallChaser(player.name, player.id)
     match = getActiveMatch(player)
 
     if (not match):
         return "You are not in the queue; therefore you cannot report a broken queue."
 
-    if (match["reportedWinner"]["winningTeam"] is not None):
+    if (match[MatchKey.REPORTED_WINNER][MatchKey.WINNING_TEAM] is not None):
         return "You cannot report a broken queue once someone reports the match."
 
     activeMatches.remove(doc_ids=[match.doc_id])
     return ":white_check_mark: Previous queue removed."
 
 
-def getActiveMatch(player):
+def getActiveMatch(player: Member) -> Document or None:
     return activeMatches.get(where(str(player.id)).exists())
 
 
-def reportConfirm(player: BallChaser, match, whoWon):
+def reportConfirm(player: BallChaser, match: Document, whoWon: Team) -> str:
     # If first responder or a winning team disagreement, we update the report
     if (
-        match["reportedWinner"]["winningTeam"] is None or
-        match["reportedWinner"]["winningTeam"] != whoWon
+        match[MatchKey.REPORTED_WINNER][MatchKey.WINNING_TEAM] is None or
+        match[MatchKey.REPORTED_WINNER][MatchKey.WINNING_TEAM] != whoWon
     ):
 
         activeMatches.update({
-            "reportedWinner": {
-                "winningTeam": whoWon,
-                "ballChaser": player.toJSON(short=True)
+            MatchKey.REPORTED_WINNER: {
+                MatchKey.WINNING_TEAM: whoWon,
+                MatchKey.REPORTER: player.toJSON(short=True)
             }
         }, doc_ids=[match.doc_id])
 
         return "Match reported, awaiting confirmation from other team."
 
     # Make sure second reported is on the other team
-    if (player.team == match["reportedWinner"]["ballChaser"]["team"]):
+    if (player.team == match[MatchKey.REPORTED_WINNER][MatchKey.REPORTER][MatchKey.TEAM]):
         return (
             ":x: Your team has already reported the match."
             " One person from the other team must now confirm."
@@ -66,7 +68,7 @@ def reportConfirm(player: BallChaser, match, whoWon):
     return ""
 
 
-def reportMatch(player, whoWon):
+def reportMatch(player: Member, whoWon: Team) -> str:
     global sorted_lb
     match = getActiveMatch(player)
 
@@ -75,20 +77,20 @@ def reportMatch(player, whoWon):
 
     foundPlayer = match[str(player.id)]
     player = BallChaser(
-        name=foundPlayer["name"],
-        id=foundPlayer["id"],
-        team=foundPlayer["team"]
+        name=foundPlayer[MatchKey.NAME],
+        id=foundPlayer[MatchKey.ID],
+        team=foundPlayer[MatchKey.TEAM]
     )
     msg = reportConfirm(player, match, whoWon)
     if (msg != ""):
         return msg
 
     for key in match:
-        if (key != "reportedWinner"):
+        if (key != MatchKey.REPORTED_WINNER):
             teamMember = match[key]
             if (
-                (whoWon == "blue" and teamMember["team"] == "blue") or
-                (whoWon == "orange" and teamMember["team"] == "orange")
+                (whoWon == Team.BLUE and teamMember["team"] == Team.BLUE) or
+                (whoWon == Team.ORANGE and teamMember["team"] == Team.ORANGE)
             ):
                 win = 1
                 loss = 0
@@ -96,62 +98,62 @@ def reportMatch(player, whoWon):
                 win = 0
                 loss = 1
 
-            player = leaderboard.get(where("id") == teamMember["id"])
+            player = leaderboard.get(where(LbKey.ID) == teamMember[MatchKey.ID])
             if (not player):
                 leaderboard.insert({
-                    "id": teamMember["id"],
-                    "Name": teamMember["name"],
-                    "Wins": win,
-                    "Losses": loss,
-                    "Matches Played": 1,
-                    "Win Perc": float(win),
+                    LbKey.ID: teamMember[MatchKey.ID],
+                    LbKey.NAME: teamMember[MatchKey.NAME],
+                    LbKey.WINS: win,
+                    LbKey.LOSSES: loss,
+                    LbKey.MATCHES: 1,
+                    LbKey.WIN_PERC: float(win),
                 })
             else:
                 updated_player = {
-                    "Name": teamMember["name"],
-                    "Wins": player["Wins"] + win,
-                    "Losses": player["Losses"] + loss,
-                    "Matches Played": player["Matches Played"] + 1,
-                    "Win Perc": player["Win Perc"],
+                    LbKey.NAME: teamMember[MatchKey.NAME],
+                    LbKey.WINS: player[LbKey.WINS] + win,
+                    LbKey.LOSSES: player[LbKey.LOSSES] + loss,
+                    LbKey.MATCHES: player[LbKey.MATCHES] + 1,
+                    LbKey.WIN_PERC: player[LbKey.WIN_PERC],
                 }
 
-                total_wins = int(updated_player["Wins"])
-                total_matches = int(updated_player["Matches Played"])
-                updated_player["Win Perc"] = float("{:.2f}".format(total_wins / total_matches))
+                total_wins = int(updated_player[LbKey.WINS])
+                total_matches = int(updated_player[LbKey.MATCHES])
+                updated_player[LbKey.WIN_PERC] = float("{:.2f}".format(total_wins / total_matches))
 
                 leaderboard.update(updated_player, doc_ids=[player.doc_id])
 
     activeMatches.remove(doc_ids=[match.doc_id])
-    sorted_lb = sorted(leaderboard.all(), key=lambda x: (x["Wins"], x["Win Perc"]), reverse=True)
+    sorted_lb = sorted(leaderboard.all(), key=lambda x: (x[LbKey.WINS], x[LbKey.WIN_PERC]), reverse=True)
     AWS.writeRemoteLeaderboard(dumps(sorted_lb))
 
     return ":white_check_mark: Match has been reported successfully."
 
 
-def makePretty(player_index, player):
+def makePretty(player_index: int, player: BallChaser) -> str:
     msg = "Rank: {0}\n".format(player_index + 1)
     for key in player:
         if (type(player[key]) == float):
             msg += "\t{0}: {1}%\n".format(key, int(player[key] * 100))
-        elif (key != "id"):
+        elif (key != LbKey.ID):
             msg += "\t{0}: {1}\n".format(key, player[key])
 
     return msg
 
 
-def showLeaderboard(player=None, limit=None):
+def showLeaderboard(player: Member = None, limit: int = None) -> str or List[str]:
     global sorted_lb
     if (not sorted_lb):
-        sorted_lb = sorted(leaderboard.all(), key=lambda x: (x["Wins"], x["Win Perc"]), reverse=True)
+        sorted_lb = sorted(leaderboard.all(), key=lambda x: (x[LbKey.WINS], x[LbKey.WIN_PERC]), reverse=True)
 
     if (player):
-        player_data = leaderboard.get(where("id") == player.id)
+        player_data = leaderboard.get(where(LbKey.ID) == player.id)
 
         if (not player_data):
             return player
 
         # returns the index in the sorted leaderboard where the IDs match
-        player_index = next((i for i, p in enumerate(sorted_lb) if p['id'] == player_data['id']))
+        player_index = next((i for i, p in enumerate(sorted_lb) if p[LbKey.ID] == player_data[LbKey.ID]))
 
         return "```" + makePretty(player_index, player_data) + "\n```"
 
@@ -181,6 +183,6 @@ def showLeaderboard(player=None, limit=None):
         return msgs if len(msgs) > 1 else msgs[0]
 
 
-def resetFromRemote(remoteData):
+def resetFromRemote(remoteData: dict) -> None:
     leaderboard.truncate()
     leaderboard.insert_multiple(remoteData)

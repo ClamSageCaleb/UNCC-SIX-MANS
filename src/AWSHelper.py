@@ -1,7 +1,7 @@
-import boto3
-import json
 from DataFiles import tokenPath
 from Leaderboard import resetFromRemote
+import boto3
+import json
 
 aws_id = ""
 aws_secret = ""
@@ -9,13 +9,13 @@ aws_object = ""
 s3 = None
 
 
-def init():
+def init() -> None:
     global aws_id, aws_secret, aws_object, s3
 
     if (
-        aws_id == ""
-        or aws_secret == ""
-        or aws_object == ""
+        aws_id == "" or
+        aws_secret == "" or
+        aws_object == ""
     ):
         with open(tokenPath, "r") as config:
             configData = json.load(config)
@@ -24,9 +24,9 @@ def init():
             aws_object = configData["aws_object_name"]
 
     if (
-        aws_id != ""
-        and aws_secret != ""
-        and s3 is None
+        aws_id != "" and
+        aws_secret != "" and
+        s3 is None
     ):
         s3 = boto3.resource(
             "s3",
@@ -35,28 +35,28 @@ def init():
         )
 
 
-def readRemoteLeaderboard():
+def readRemoteLeaderboard() -> None:
     global aws_id, aws_secret, aws_object, s3
 
     if (
-        aws_id != ""
-        and aws_secret != ""
-        and aws_object != ""
-        and s3 is not None
+        aws_id != "" and
+        aws_secret != "" and
+        aws_object != "" and
+        s3 is not None
     ):
         remote_leaderboard = s3.Object("uncc-six-mans", aws_object)
         remote_leaderboard_data = json.loads(remote_leaderboard.get()["Body"].read().decode("utf-8"))
         resetFromRemote(remote_leaderboard_data)
 
 
-def writeRemoteLeaderboard(leaderboardData):
+def writeRemoteLeaderboard(leaderboardData: str) -> None:
     global aws_id, aws_secret, aws_object, s3
 
     if (
-        aws_id != ""
-        and aws_secret != ""
-        and aws_object != ""
-        and s3 is not None
+        aws_id != "" and
+        aws_secret != "" and
+        aws_object != "" and
+        s3 is not None
     ):
         leaderboard = bytes(leaderboardData, "utf-8")
         s3.Bucket("uncc-six-mans").put_object(ACL="public-read", Key=aws_object, Body=leaderboard)

@@ -1,8 +1,9 @@
-from Queue import clearQueue, BallChaser
-from datetime import datetime, timedelta
 from DataFiles import currQueue, activeMatches
-from tinydb import where
 from Leaderboard import getActiveMatch
+from Queue import clearQueue, BallChaser
+from Types import Team
+from datetime import datetime, timedelta
+from tinydb import where
 
 
 def fillQueue():
@@ -49,14 +50,14 @@ def fillWithCaptains():
             name="Tux#9267",
             id=346838372649795595,
             isCap=True,
-            team="blue",
+            team=Team.BLUE,
             queueTime=(datetime.now() + timedelta(minutes=60))
         ),
         BallChaser(
             name="Don#1424",
             id=528369347807412227,
             isCap=True,
-            team="orange",
+            team=Team.ORANGE,
             queueTime=(datetime.now() + timedelta(minutes=60))
         ),
         BallChaser(
@@ -84,11 +85,11 @@ def fillWithCaptains():
 
 
 def flipCaptains():
-    blueCap = currQueue.get((where("team") == "blue") & (where("isCap").one_of([True])))
-    orangeCap = currQueue.get((where("team") == "orange") & (where("isCap").one_of([True])))
+    blueCap = currQueue.get((where("team") == Team.BLUE) & (where("isCap") == True))
+    orangeCap = currQueue.get((where("team") == Team.ORANGE) & (where("isCap") == True))
 
-    currQueue.update({"team": "orange"}, doc_ids=[blueCap.doc_id])
-    currQueue.update({"team": "blue"}, doc_ids=[orangeCap.doc_id])
+    currQueue.update({"team": Team.ORANGE}, doc_ids=[blueCap.doc_id])
+    currQueue.update({"team": Team.BLUE}, doc_ids=[orangeCap.doc_id])
 
 
 # FIXME - Convert to new active matches format
@@ -105,7 +106,7 @@ def swapReportedPlayer():
 
     foundPlayer = next((x for x in match["players"] if x["id"] == match["reportedWinner"]["ballChaser"]["id"]))
     player_don.team = foundPlayer["team"]
-    player_tux.team = "orange" if foundPlayer["team"] == "blue" else "blue"
+    player_tux.team = Team.ORANGE if foundPlayer["team"] == Team.BLUE else Team.BLUE
 
     activeMatches.update({
         "reportedWinner": {

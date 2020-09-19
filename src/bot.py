@@ -7,20 +7,22 @@ __maintainer__ = "Caleb Smith / Twan / Matt Wells (Tux)"
 __email__ = "caleb.benjamin9799@gmail.com / unavailable / mattwells878@gmail.com"
 
 
-from asyncio import sleep as asyncsleep
 import AWSHelper as AWS
 import CheckForUpdates
+from DataFiles import getDiscordToken, updateDiscordToken
+from EmbedHelper import ErrorEmbed, QueueUpdateEmbed, AdminEmbed, InfoEmbed
+import Leaderboard
+import Queue
+import TestHelper
+from Types import Team
+from asyncio import sleep as asyncsleep
 import discord
 from discord.ext.commands import Bot, CommandNotFound
-from EmbedHelper import ErrorEmbed, QueueUpdateEmbed, AdminEmbed, InfoEmbed
-import Queue
-import Leaderboard
-import TestHelper
+from math import ceil
 import os
 from pathlib import Path
 from random import choice, randint
 from time import sleep
-from math import ceil
 
 # Bot prefix and Discord Bot token
 BOT_PREFIX = ("!")
@@ -53,12 +55,11 @@ async def on_message(message):
         await client.process_commands(message)
 
 
-# FIXME - Uncomment before merging into main
-# @client.event
-# async def on_command_error(ctx, error):
-#     if isinstance(error, CommandNotFound):
-#         return
-#     print(error)
+@client.event
+async def on_command_error(ctx, error):
+    if isinstance(error, CommandNotFound):
+        return
+    print(error)
 
 
 @client.event
@@ -612,16 +613,16 @@ async def pick(ctx):
 @client.command(name="report", pass_contex=True)
 async def reportMatch(ctx, *arg):
     if (
-        ctx.message.channel.id != MATCH_REPORT_CH_ID
-        and ctx.message.channel.id != QUEUE_CH_ID
-        and not Queue.isBotAdmin(ctx.message.author.roles)
+        ctx.message.channel.id != MATCH_REPORT_CH_ID and
+        ctx.message.channel.id != QUEUE_CH_ID and
+        not Queue.isBotAdmin(ctx.message.author.roles)
     ):
         embed = ErrorEmbed(
             title="Can't Do That Here",
             desc="You can only report matches in the <#{0}> channel.".format(MATCH_REPORT_CH_ID)
         )
 
-    elif (len(arg) == 1 and (str(arg[0]).lower() == "blue" or str(arg[0]).lower() == "orange")):
+    elif (len(arg) == 1 and (str(arg[0]).lower() == Team.BLUE or str(arg[0]).lower() == Team.ORANGE)):
         msg = Leaderboard.reportMatch(ctx.message.author, arg[0])
 
         if (":x:" in msg):
@@ -664,10 +665,7 @@ async def showLeaderboard(ctx, *arg):
 
     if (playerMentioned or selfRank):
 
-        if (playerMentioned):
-            player = Queue.BallChaser(str(ctx.message.mentions[0]), ctx.message.mentions[0].id)
-        else:
-            player = Queue.BallChaser(str(ctx.message.author), ctx.message.author.id)
+        player = ctx.message.mentions[0] if playerMentioned else ctx.message.author
 
         players_rank = Leaderboard.showLeaderboard(player)
 
@@ -706,7 +704,7 @@ async def updateLeaderboardChannel(channel_id):
     if (isinstance(lb, list)):
         for i, msg in enumerate(lb):
             await channel.send(embed=InfoEmbed(
-                title="UNCC 6 Mans | Full Leaderboard ({0}/{1})".format(i+1, len(lb)),
+                title="UNCC 6 Mans | Full Leaderboard ({0}/{1})".format(i + 1, len(lb)),
                 desc=msg,
             ))
     else:
@@ -1091,10 +1089,10 @@ async def help(ctx):
 def main():
     AWS.init()
     client.loop.create_task(stale_queue_timer())
-    token = Queue.getDiscordToken()
+    token = getDiscordToken()
 
     if (token == ""):
-        token = Queue.updateDiscordToken(
+        token = updateDiscordToken(
             input("No Discord Bot token found. Paste your Discord Bot token below and hit ENTER.\ntoken: ")
         )
 
