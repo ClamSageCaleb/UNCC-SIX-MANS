@@ -36,7 +36,7 @@ QUEUE_CH_ID = 538166641226416162
 TEST_QUEUE_CH_ID = 629502331259584559
 MATCH_REPORT_CH_ID = 622786720328581133
 LEADERBOARD_CH_ID = 718998601790914591
-FAKE_LEADERBOARD_CH_ID = 754817563526955029
+TUX_TEST_LEADERBOARD_CH_ID = 755960373936652358
 TUX_TEST_SERVER_CH_ID = 716358749912039429
 TEST_NORM_USER_ID = 716358391328407612
 
@@ -72,7 +72,7 @@ async def on_ready():
     except Exception as e:
         # this should only throw an exception if the Leaderboard file does not exist or the credentials are invalid
         print(e)
-        await updateLeaderboardChannel(FAKE_LEADERBOARD_CH_ID)
+        await updateLeaderboardChannel(TUX_TEST_LEADERBOARD_CH_ID)
 
     try:
         channel = client.get_channel(QUEUE_CH_ID)
@@ -640,7 +640,7 @@ async def reportMatch(ctx, *arg):
                 await updateLeaderboardChannel(LEADERBOARD_CH_ID)
             except Exception as e:
                 print("! Norm does not have access to update the leaderboard.", e)
-                await updateLeaderboardChannel(FAKE_LEADERBOARD_CH_ID)
+                await updateLeaderboardChannel(TUX_TEST_LEADERBOARD_CH_ID)
         else:
             embed = InfoEmbed(
                 title="Match Reported, Needs Confirmation",
@@ -702,11 +702,18 @@ async def updateLeaderboardChannel(channel_id):
     """Deletes the old leaderboard and posts the updated one."""
     channel = client.get_channel(channel_id)
     await channel.purge()
-    embed = InfoEmbed(
-        title="UNCC 6 Mans | Full Leaderboard",
-        desc=Leaderboard.showLeaderboard()
-    )
-    await channel.send(embed=embed)
+    lb = Leaderboard.showLeaderboard()
+    if (isinstance(lb, list)):
+        for i, msg in enumerate(lb):
+            await channel.send(embed=InfoEmbed(
+                title="UNCC 6 Mans | Full Leaderboard ({0}/{1})".format(i+1, len(lb)),
+                desc=msg,
+            ))
+    else:
+        await channel.send(embed=InfoEmbed(
+            title="UNCC 6 Mans | Full Leaderboard",
+            desc=lb,
+        ))
 
 
 @client.command(name="brokenq", aliases=["requeue", "re-q"], pass_contex=True)
