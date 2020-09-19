@@ -1,4 +1,4 @@
-from DataFiles import tokenPath
+from DataFiles import configPath
 from Leaderboard import resetFromRemote
 import boto3
 import json
@@ -17,7 +17,7 @@ def init() -> None:
         aws_secret == "" or
         aws_object == ""
     ):
-        with open(tokenPath, "r") as config:
+        with open(configPath, "r") as config:
             configData = json.load(config)
             aws_id = configData["aws_access_key_id"]
             aws_secret = configData["aws_secret_access_key"]

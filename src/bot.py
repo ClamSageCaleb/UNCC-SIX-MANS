@@ -9,7 +9,7 @@ __email__ = "caleb.benjamin9799@gmail.com / unavailable / mattwells878@gmail.com
 
 import AWSHelper as AWS
 import CheckForUpdates
-from DataFiles import getDiscordToken, updateDiscordToken
+from DataFiles import getDiscordToken, updateDiscordToken, getChannelIds
 from EmbedHelper import ErrorEmbed, QueueUpdateEmbed, AdminEmbed, InfoEmbed
 import Leaderboard
 import Queue
@@ -34,13 +34,17 @@ client.remove_command('help')
 pikaO = 1
 
 # Channel ID's
-QUEUE_CH_ID = 538166641226416162
-TEST_QUEUE_CH_ID = 629502331259584559
-MATCH_REPORT_CH_ID = 622786720328581133
-LEADERBOARD_CH_ID = 718998601790914591
-TUX_TEST_LEADERBOARD_CH_ID = 755960373936652358
-TUX_TEST_SERVER_CH_ID = 716358749912039429
-TEST_NORM_USER_ID = 716358391328407612
+LEADERBOARD_CH_ID = -1
+QUEUE_CH_IDS = []
+REPORT_CH_IDS = []
+
+# QUEUE_CH_ID = 538166641226416162
+# TEST_QUEUE_CH_ID = 629502331259584559
+# MATCH_REPORT_CH_ID = 622786720328581133
+# TUX_TEST_REPORT_CH_ID = 756973264852484249
+# LEADERBOARD_CH_ID = 718998601790914591
+# TUX_TEST_LEADERBOARD_CH_ID = 755960373936652358
+# TUX_TEST_QUEUE_CH_ID = 716358749912039429
 
 '''
     Discord Events
@@ -48,11 +52,25 @@ TEST_NORM_USER_ID = 716358391328407612
 
 
 @client.event
-async def on_message(message):
-    allowedChannels = [QUEUE_CH_ID, TEST_QUEUE_CH_ID, MATCH_REPORT_CH_ID, LEADERBOARD_CH_ID, TUX_TEST_SERVER_CH_ID]
+async def on_message(message: discord.Message):
+    isReport = "report" in message.content.lower()
+    if (message.author != client.user):
 
-    if (message.author != client.user and message.channel.id in allowedChannels):
-        await client.process_commands(message)
+        if (isReport and message.channel.id in QUEUE_CH_IDS and message.channel.id not in REPORT_CH_IDS):
+            channel = client.get_channel(message.channel.id)
+            await channel.send(embed=ErrorEmbed(
+                title="Can't Do That Here",
+                desc="You can only report matches in the <#{0}> channel.".format(REPORT_CH_IDS[0])
+            ))
+
+        elif (not isReport and message.channel.id in REPORT_CH_IDS and message.channel.id not in QUEUE_CH_IDS):
+            channel = client.get_channel(message.channel.id)
+            await channel.send(embed=ErrorEmbed(
+                title="Can't Do That Here",
+                desc="You can only use that command in the <#{0}> channel.".format(QUEUE_CH_IDS[0])
+            ))
+        else:
+            await client.process_commands(message)
 
 
 @client.event
@@ -73,10 +91,9 @@ async def on_ready():
     except Exception as e:
         # this should only throw an exception if the Leaderboard file does not exist or the credentials are invalid
         print(e)
-        await updateLeaderboardChannel(TUX_TEST_LEADERBOARD_CH_ID)
 
     try:
-        channel = client.get_channel(QUEUE_CH_ID)
+        channel = client.get_channel(QUEUE_CH_IDS[0])
         await channel.send(embed=AdminEmbed(
             title="Norm Started",
             desc="Current version: v{0}".format(__version__)
@@ -88,7 +105,7 @@ async def on_ready():
 async def stale_queue_timer():
 
     await client.wait_until_ready()
-    channel = client.get_channel(QUEUE_CH_ID)
+    channel = client.get_channel(QUEUE_CH_IDS[0])
 
     while True:
 
@@ -171,7 +188,7 @@ async def q(ctx, *arg, quiet=False):
         embed = ErrorEmbed(
             title="Match Still Active",
             desc="Your previous match has not been reported yet."
-            " Report your match in <#{0}> and try again.".format(MATCH_REPORT_CH_ID),
+            " Report your match in <#{0}> and try again.".format(REPORT_CH_IDS[0]),
         )
 
     elif(queue_length == 0):
@@ -534,8 +551,6 @@ async def orangeTeamPick(ctx):
             title="Incorrect Format",
             desc="Use format: `!pick @player1 @player2`"
         )
-        # this was where you could just pick one player at a time, but it seemed to break
-        # so I just removed it for now
 
     else:
 
@@ -612,17 +627,7 @@ async def pick(ctx):
 
 @client.command(name="report", pass_contex=True)
 async def reportMatch(ctx, *arg):
-    if (
-        ctx.message.channel.id != MATCH_REPORT_CH_ID and
-        ctx.message.channel.id != QUEUE_CH_ID and
-        not Queue.isBotAdmin(ctx.message.author.roles)
-    ):
-        embed = ErrorEmbed(
-            title="Can't Do That Here",
-            desc="You can only report matches in the <#{0}> channel.".format(MATCH_REPORT_CH_ID)
-        )
-
-    elif (len(arg) == 1 and (str(arg[0]).lower() == Team.BLUE or str(arg[0]).lower() == Team.ORANGE)):
+    if (len(arg) == 1 and (str(arg[0]).lower() == Team.BLUE or str(arg[0]).lower() == Team.ORANGE)):
         msg = Leaderboard.reportMatch(ctx.message.author, arg[0])
 
         if (":x:" in msg):
@@ -641,7 +646,6 @@ async def reportMatch(ctx, *arg):
                 await updateLeaderboardChannel(LEADERBOARD_CH_ID)
             except Exception as e:
                 print("! Norm does not have access to update the leaderboard.", e)
-                await updateLeaderboardChannel(TUX_TEST_LEADERBOARD_CH_ID)
         else:
             embed = InfoEmbed(
                 title="Match Reported, Needs Confirmation",
@@ -751,70 +755,74 @@ async def clear(ctx):
 
 @client.command(name="fill", pass_context=True)
 async def fill(ctx):
-    if(Queue.isBotAdmin(ctx.message.author.roles) and ctx.bot.user.id == TEST_NORM_USER_ID):
-        TestHelper.fillQueue()
-        embed = AdminEmbed(
-            title="Queue Filled",
-            desc="Queue has been filled with fake/real players"
-        )
-    else:
-        embed = ErrorEmbed(
-            title="Permission Denied",
-            desc="You do not have permission to clear the queue."
-        )
+    if (__debug__):
+        if(Queue.isBotAdmin(ctx.message.author.roles)):
+            TestHelper.fillQueue()
+            embed = AdminEmbed(
+                title="Queue Filled",
+                desc="Queue has been filled with fake/real players"
+            )
+        else:
+            embed = ErrorEmbed(
+                title="Permission Denied",
+                desc="You do not have permission to fill the queue."
+            )
 
-    await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
 
 @client.command(name="fillCap", pass_context=True)
 async def fillCap(ctx):
-    if(Queue.isBotAdmin(ctx.message.author.roles) and ctx.bot.user.id == TEST_NORM_USER_ID):
-        TestHelper.fillWithCaptains()
-        embed = AdminEmbed(
-            title="Queue Filled w/ Captains",
-            desc="Queue has been filled with fake/real players"
-        )
-    else:
-        embed = ErrorEmbed(
-            title="Permission Denied",
-            desc="You do not have permission to clear the queue."
-        )
+    if (__debug__):
+        if(Queue.isBotAdmin(ctx.message.author.roles)):
+            TestHelper.fillWithCaptains()
+            embed = AdminEmbed(
+                title="Queue Filled w/ Captains",
+                desc="Queue has been filled with fake/real players"
+            )
+        else:
+            embed = ErrorEmbed(
+                title="Permission Denied",
+                desc="You do not have permission to fill the queue."
+            )
 
-    await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
 
 @client.command(name="flipCap", pass_context=True)
 async def flipCap(ctx):
-    if(Queue.isBotAdmin(ctx.message.author.roles) and ctx.bot.user.id == TEST_NORM_USER_ID):
-        TestHelper.flipCaptains()
-        embed = AdminEmbed(
-            title="Captains Flipped",
-            desc="Captains have been flipped."
-        )
-    else:
-        embed = ErrorEmbed(
-            title="Permission Denied",
-            desc="You do not have permission to clear the queue."
-        )
+    if (__debug__):
+        if(Queue.isBotAdmin(ctx.message.author.roles)):
+            TestHelper.flipCaptains()
+            embed = AdminEmbed(
+                title="Captains Flipped",
+                desc="Captains have been flipped."
+            )
+        else:
+            embed = ErrorEmbed(
+                title="Permission Denied",
+                desc="You do not have permission to clear the queue."
+            )
 
-    await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
 
 @client.command(name="flipReport", pass_context=True)
 async def flipReport(ctx):
-    if(Queue.isBotAdmin(ctx.message.author.roles) and ctx.bot.user.id == TEST_NORM_USER_ID):
-        TestHelper.swapReportedPlayer()
-        embed = AdminEmbed(
-            title="Reported Player Swapped",
-            desc="The player who reported has been swapped out."
-        )
-    else:
-        embed = ErrorEmbed(
-            title="Permission Denied",
-            desc="You do not have permission to clear the queue."
-        )
+    if (__debug__):
+        if(Queue.isBotAdmin(ctx.message.author.roles)):
+            TestHelper.swapReportedPlayer()
+            embed = AdminEmbed(
+                title="Reported Player Swapped",
+                desc="The player who reported has been swapped out."
+            )
+        else:
+            embed = ErrorEmbed(
+                title="Permission Denied",
+                desc="You do not have permission to clear the queue."
+            )
 
-    await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
 
 # Disabling command as it does not work with the new executable.
@@ -1087,6 +1095,7 @@ async def help(ctx):
 
 
 def main():
+    global LEADERBOARD_CH_ID, QUEUE_CH_IDS, REPORT_CH_IDS
     AWS.init()
     client.loop.create_task(stale_queue_timer())
     token = getDiscordToken()
@@ -1095,6 +1104,11 @@ def main():
         token = updateDiscordToken(
             input("No Discord Bot token found. Paste your Discord Bot token below and hit ENTER.\ntoken: ")
         )
+
+    channels = getChannelIds()
+    LEADERBOARD_CH_ID = channels["leaderboard_channel"]
+    QUEUE_CH_IDS = channels["queue_channels"]
+    REPORT_CH_IDS = channels["report_channels"]
 
     # clear screen to hide token
     if os.name == 'nt':

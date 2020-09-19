@@ -5,7 +5,7 @@ from tinydb import TinyDB
 
 
 basePath = path.join(Path.home(), "SixMans")
-tokenPath = path.join(basePath, "config.json")
+configPath = path.join(basePath, "config.json")
 tinyDbPath = path.join(basePath, "TinyDb.json")
 
 db = TinyDB(tinyDbPath, indent=2)
@@ -13,19 +13,42 @@ currQueue = db.table("queue")
 activeMatches = db.table("activeMatches")
 leaderboard = db.table("leaderboard")
 
+if (not path.exists(configPath)):
+    with open(configPath, "w") as config:
+        blankConfigFile = {
+            "aws_access_key_id": "",
+            "aws_secret_access_key": "",
+            "aws_object_name": "",
+            "token": "",
+            "queue_channels": [],
+            "report_channels": [],
+            "leaderboard_channel": -1
+        }
+        json.dump(blankConfigFile, config)
+
 
 def getDiscordToken() -> str:
-    with open(tokenPath, "r") as config:
+    with open(configPath, "r") as config:
         token = json.load(config)["token"]
 
     return token
 
 
 def updateDiscordToken(newToken: str) -> str:
-    with open(tokenPath, "w") as config:
-        configFile = {
-            "token": newToken
-        }
-        json.dump(configFile, config)
+    with open(configPath, "r") as configFile:
+        config = json.load(configFile)
+        config["token"] = newToken
+    with open(configPath, "w") as configFile:
+        json.dump(config, configFile, indent=2)
 
     return newToken
+
+
+def getChannelIds() -> dict:
+    with open(configPath, "r") as configFile:
+        config = json.load(configFile)
+        return {
+            "queue_channels": config["queue_channels"],  # list of int
+            "report_channels": config["report_channels"],  # list of int
+            "leaderboard_channel": config["leaderboard_channel"],  # int
+        }
