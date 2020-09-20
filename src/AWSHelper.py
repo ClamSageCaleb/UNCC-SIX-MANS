@@ -33,6 +33,8 @@ def init() -> None:
             aws_access_key_id=aws_id,
             aws_secret_access_key=aws_secret
         )
+    else:
+        print("No AWS settings provided. Leaderboard remote backup feature disabled.")
 
 
 def readRemoteLeaderboard() -> None:

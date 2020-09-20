@@ -6,9 +6,9 @@ from tinydb import TinyDB
 
 basePath = path.join(Path.home(), "SixMans")
 configPath = path.join(basePath, "config.json")
-tinyDbPath = path.join(basePath, "TinyDb.json")
+dataPath = path.join(basePath, "data.json")
 
-db = TinyDB(tinyDbPath, indent=2)
+db = TinyDB(dataPath, indent=2)
 currQueue = db.table("queue")
 activeMatches = db.table("activeMatches")
 leaderboard = db.table("leaderboard")

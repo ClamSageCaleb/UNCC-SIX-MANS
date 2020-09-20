@@ -139,7 +139,7 @@ def captainsPop() -> Tuple[List[BallChaser], List[BallChaser]]:
 
 
 # Returns a string if there is an error. Otherwise returns an empty string
-def pick(player_picked: Member, player_picked_2: Member) -> str:
+def pick(player_picked: Member, player_picked_2: Member = None) -> str:
     playerPickedDoc = currQueue.get(where(BallChaserKey.ID) == player_picked.id)
 
     if (playerPickedDoc is not None):

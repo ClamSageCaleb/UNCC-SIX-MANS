@@ -1,7 +1,6 @@
 from DataFiles import currQueue, activeMatches
-from Leaderboard import getActiveMatch
 from Queue import clearQueue, BallChaser
-from Types import Team
+from Types import Team, MatchKey, BallChaserKey
 from datetime import datetime, timedelta
 from tinydb import where
 
@@ -85,41 +84,25 @@ def fillWithCaptains():
 
 
 def flipCaptains():
-    blueCap = currQueue.get((where("team") == Team.BLUE) & (where("isCap") == True))
-    orangeCap = currQueue.get((where("team") == Team.ORANGE) & (where("isCap") == True))
+    blueCap = currQueue.get((where(BallChaserKey.TEAM) == Team.BLUE) & (where(BallChaserKey.IS_CAP) == True))
+    orangeCap = currQueue.get((where(BallChaserKey.TEAM) == Team.ORANGE) & (where(BallChaserKey.IS_CAP) == True))
 
-    currQueue.update({"team": Team.ORANGE}, doc_ids=[blueCap.doc_id])
-    currQueue.update({"team": Team.BLUE}, doc_ids=[orangeCap.doc_id])
+    currQueue.update({BallChaserKey.TEAM: Team.ORANGE}, doc_ids=[blueCap.doc_id])
+    currQueue.update({BallChaserKey.TEAM: Team.BLUE}, doc_ids=[orangeCap.doc_id])
 
 
-# FIXME - Convert to new active matches format
 def swapReportedPlayer():
-    player_tux = BallChaser(
-        name="Tux#9267",
-        id=346838372649795595,
-    )
-    player_don = BallChaser(
-        name="Don#1424",
-        id=528369347807412227,
-    )
-    match = getActiveMatch(player_tux)
+    match = activeMatches.get(where(MatchKey.REPORTED_WINNER)[MatchKey.WINNING_TEAM] != None)
+    updated_match = match.copy()
 
-    foundPlayer = next((x for x in match["players"] if x["id"] == match["reportedWinner"]["ballChaser"]["id"]))
-    player_don.team = foundPlayer["team"]
-    player_tux.team = Team.ORANGE if foundPlayer["team"] == Team.BLUE else Team.BLUE
+    originalReporter = match[MatchKey.REPORTED_WINNER][MatchKey.REPORTER]
 
-    activeMatches.update({
-        "reportedWinner": {
-            "winningTeam": match["reportedWinner"]["winningTeam"],
-            "ballChaser": player_don.toJSON(short=True),
-        }
-    }, doc_ids=[match.doc_id])
-    # player_reported = active["reportedWinner"]["player"]["ballChaser"]
-    # active["reportedWinner"]["player"]["ballChaser"] = active["blueTeam"][0]
-    # active["blueTeam"][0] = player_reported
-    # active["orangeTeam"][0] = active["reportedWinner"]["player"]["ballChaser"]
+    otherTeam = Team.BLUE if originalReporter[MatchKey.TEAM] == Team.ORANGE else Team.ORANGE
+    unlucky_id = str(next(key for key in match if match[key][MatchKey.TEAM] == otherTeam))
 
-    # active["reportedWinner"]["player"]["ballChaser"] = active["reportedWinner"]["player"]["ballChaser"].toJSON()
-    # for i in range(len(active["blueTeam"])):
-    #     active["blueTeam"][i] = active["blueTeam"][i].toJSON()
-    #     active["orangeTeam"][i] = active["orangeTeam"][i].toJSON()
+    updated_match[unlucky_id][MatchKey.TEAM] = originalReporter[MatchKey.TEAM]
+    updated_match[str(originalReporter[str(MatchKey.ID)])][MatchKey.TEAM] = otherTeam
+
+    updated_match[MatchKey.REPORTED_WINNER][MatchKey.REPORTER] = match[unlucky_id]
+
+    activeMatches.update(updated_match, doc_ids=[match.doc_id])

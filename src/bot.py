@@ -19,8 +19,7 @@ from asyncio import sleep as asyncsleep
 import discord
 from discord.ext.commands import Bot, CommandNotFound
 from math import ceil
-import os
-from pathlib import Path
+from os import name as osName, system as osSystem
 from random import choice, randint
 from time import sleep
 
@@ -46,9 +45,9 @@ REPORT_CH_IDS = []
 # TUX_TEST_LEADERBOARD_CH_ID = 755960373936652358
 # TUX_TEST_QUEUE_CH_ID = 716358749912039429
 
-'''
+"""
     Discord Events
-'''
+"""
 
 
 @client.event
@@ -56,14 +55,24 @@ async def on_message(message: discord.Message):
     isReport = "report" in message.content.lower()
     if (message.author != client.user):
 
-        if (isReport and message.channel.id in QUEUE_CH_IDS and message.channel.id not in REPORT_CH_IDS):
+        if (
+            isReport and
+            len(QUEUE_CH_IDS) > 0 and
+            message.channel.id in QUEUE_CH_IDS and
+            message.channel.id not in REPORT_CH_IDS
+        ):
             channel = client.get_channel(message.channel.id)
             await channel.send(embed=ErrorEmbed(
                 title="Can't Do That Here",
                 desc="You can only report matches in the <#{0}> channel.".format(REPORT_CH_IDS[0])
             ))
 
-        elif (not isReport and message.channel.id in REPORT_CH_IDS and message.channel.id not in QUEUE_CH_IDS):
+        elif (
+            not isReport and
+            len(REPORT_CH_IDS) > 0 and
+            message.channel.id in REPORT_CH_IDS and
+            message.channel.id not in QUEUE_CH_IDS
+        ):
             channel = client.get_channel(message.channel.id)
             await channel.send(embed=ErrorEmbed(
                 title="Can't Do That Here",
@@ -146,9 +155,9 @@ async def stale_queue_timer():
 
         await asyncsleep(60)  # check queue times every minute
 
-'''
+"""
     Discord Commands - Queue Commands
-'''
+"""
 
 
 @client.command(name='q', aliases=['addmepapanorm', 'Q', 'addmebitch', 'queue', 'join'], pass_context=True)
@@ -702,6 +711,10 @@ async def showLeaderboard(ctx, *arg):
 
 async def updateLeaderboardChannel(channel_id):
     """Deletes the old leaderboard and posts the updated one."""
+    if (LEADERBOARD_CH_ID == -1):
+        print("Leaderboard channel not set in config.")
+        return
+
     channel = client.get_channel(channel_id)
     await channel.purge()
     lb = Leaderboard.showLeaderboard()
@@ -864,9 +877,9 @@ async def update(ctx):
         ))
 
 
-'''
+"""
     Discord Commands - Easter Eggs
-'''
+"""
 
 
 @client.command(name='twan', aliases=['<:twantheswan:540327706076905472>'], pass_context=True)
@@ -1089,32 +1102,37 @@ async def help(ctx):
     await ctx.send(embed=msg)
 
 
-'''
+"""
     Main function
-'''
+"""
 
 
 def main():
     global LEADERBOARD_CH_ID, QUEUE_CH_IDS, REPORT_CH_IDS
-    AWS.init()
-    client.loop.create_task(stale_queue_timer())
-    token = getDiscordToken()
 
+    token = getDiscordToken()
     if (token == ""):
         token = updateDiscordToken(
             input("No Discord Bot token found. Paste your Discord Bot token below and hit ENTER.\ntoken: ")
         )
+
+    # clear screen to hide token
+    if osName == 'nt':
+        _ = osSystem('cls')
+    else:
+        _ = osSystem('clear')
+
+    AWS.init()
 
     channels = getChannelIds()
     LEADERBOARD_CH_ID = channels["leaderboard_channel"]
     QUEUE_CH_IDS = channels["queue_channels"]
     REPORT_CH_IDS = channels["report_channels"]
 
-    # clear screen to hide token
-    if os.name == 'nt':
-        _ = os.system('cls')
+    if (len(QUEUE_CH_IDS) > 0):
+        client.loop.create_task(stale_queue_timer())
     else:
-        _ = os.system('clear')
+        print("Stale queue feature disabled as no queue channel id was specified.")
 
     try:
         client.run(token)
@@ -1123,7 +1141,6 @@ def main():
             "! There was an error with the token you provided. Please verify your bot token and try again.\n"
             "If you need help locating the token for your bot, visit https://www.writebots.com/discord-bot-token/"
         )
-        os.remove("{0}/SixMans/config.json".format(Path.home()))
         sleep(5)
     except Exception:
         pass
