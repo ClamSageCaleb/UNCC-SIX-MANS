@@ -37,14 +37,6 @@ LEADERBOARD_CH_ID = -1
 QUEUE_CH_IDS = []
 REPORT_CH_IDS = []
 
-# QUEUE_CH_ID = 538166641226416162
-# TEST_QUEUE_CH_ID = 629502331259584559
-# MATCH_REPORT_CH_ID = 622786720328581133
-# TUX_TEST_REPORT_CH_ID = 756973264852484249
-# LEADERBOARD_CH_ID = 718998601790914591
-# TUX_TEST_LEADERBOARD_CH_ID = 755960373936652358
-# TUX_TEST_QUEUE_CH_ID = 716358749912039429
-
 """
     Discord Events
 """
@@ -367,7 +359,7 @@ async def listq(ctx):
 
 
 @client.command(name='rnd', aliases=['random', 'idontwanttopickteams', 'fuckcaptains'], pass_context=True)
-async def rnd(ctx):
+async def random(ctx):
     if (Queue.queueAlreadyPopped()):
         embed = ErrorEmbed(
             title="Captains Already Chosen",
@@ -1032,74 +1024,58 @@ async def fuck(ctx):
 
 @client.command(name="help", pass_context=True)
 async def help(ctx):
-    msg = discord.Embed(
-        title='__**Server Commands**__',
-        description="",
-        color=0x38761D
+    await ctx.send(
+        embed=discord.Embed(
+            title="Norm Commands",
+            description="https://clamsagecaleb.github.io/UNCC-SIX-MANS",
+            color=0x38761D
+        ).add_field(
+            name="!q",
+            value="Adds you to the queue",
+            inline=False
+        ).add_field(
+            name="!leave",
+            value="Removes you from the queue",
+            inline=False
+        ).add_field(
+            name="!list",
+            value="Lists the current queue",
+            inline=False
+        ).add_field(
+            name="!random",
+            value="Randomly picks teams (Requires 6 players in queue)",
+            inline=False
+        ).add_field(
+            name="!captains",
+            value="Randomly selects captains (Requires 6 players in queue)."
+            "\nFirst captain picks 1 \nSecond captain picks the next two",
+            inline=False
+        ).add_field(
+            name="!report",
+            value="Reports the result of your queue. Use this command followed by the color of the winning team.",
+            inline=False
+        ).add_field(
+            name="!leaderboard",
+            value="Shows the top 5 players on the leaderboard.",
+            inline=False
+        ).add_field(
+            name="!leaderboard me",
+            value="Shows your rank on the leaderboard.",
+            inline=False
+        ).add_field(
+            name='!norm, !asknorm, or !8ball',
+            value='Will respond to a yes/no question. Good for predictions',
+            inline=False
+        ).add_field(
+            name="!help",
+            value="This command :O",
+            inline=False
+        ).set_thumbnail(
+            url="https://raw.githubusercontent.com/ClamSageCaleb/UNCC-SIX-MANS/master/media/49ers.png"
+        ).set_footer(
+            text="Developed by Twan, Clam, and Tux"
+        )
     )
-    msg.add_field(
-        name="!q",
-        value="Adds you to the queue",
-        inline=False
-    )
-    msg.add_field(
-        name="!qq",
-        value="Same as !q but with no ping :)",
-        inline=False
-    )
-    msg.add_field(
-        name="!leave",
-        value="Removes you from the queue",
-        inline=False
-    )
-    msg.add_field(
-        name="!kick",
-        value="Kicks someone from the queue, will require a vote",
-        inline=False
-    )
-    msg.add_field(
-        name="!list",
-        value="Lists the current queue",
-        inline=False
-    )
-    msg.add_field(
-        name="!random",
-        value="Randomly picks teams",
-        inline=False
-    )
-    msg.add_field(
-        name="!captains",
-        value="Randomly selects captains. \nFirst captain picks 1 \nSecond captain picks the next two",
-        inline=False
-    )
-    msg.add_field(
-        name="!report",
-        value="Reports the result of your queue. Use this command followed by the color of the winning team.",
-        inline=False
-    )
-    msg.add_field(
-        name="!leaderboard",
-        value="Shows the top 5 players on the leaderboard.",
-        inline=False
-    )
-    msg.add_field(
-        name="!leaderboard me",
-        value="Shows your rank on the leaderboard.",
-        inline=False
-    )
-    msg.add_field(
-        name='!norm, !asknorm, or !8ball',
-        value='Will respond to a yes/no question. Good for predictions',
-        inline=False
-    )
-    msg.add_field(
-        name="!help",
-        value="This command :O",
-        inline=False
-    )
-    msg.set_thumbnail(url="https://raw.githubusercontent.com/ClamSageCaleb/UNCC-SIX-MANS/master/media/49ers.png")
-    msg.set_footer(text="Developed by Twan, Clam, and Tux")
-    await ctx.send(embed=msg)
 
 
 """
