@@ -1,5 +1,5 @@
 from discord.ext.commands import context as Context
-from discord import Embed, Member, Role
+from discord import Embed, Member, Role, channel as Channel
 import Queue
 import Leaderboard
 from typing import List
@@ -13,10 +13,11 @@ from EmbedHelper import \
     CaptainsAlreadySetEmbed,\
     CaptainsPopEmbed,\
     PlayersSetEmbed
-from bot import REPORT_CH_IDS
+from bot import REPORT_CH_IDS, LEADERBOARD_CH_ID
+from Commands.Utils import updateLeaderboardChannel, orangeTeamPick, blueTeamPick
 
 
-def playerQueue(ctx: Context, *arg, quiet: bool = False) -> Embed:
+async def playerQueue(ctx: Context, *arg, quiet: bool = False) -> Embed:
     """
         Adds the author to the Queue for the specified amount of time.
 
@@ -303,3 +304,156 @@ def random(player: Member):
     blueTeam, orangeTeam = Queue.randomPop()
     Leaderboard.startMatch(blueTeam, orangeTeam)
     return PlayersSetEmbed(blueTeam, orangeTeam)
+
+
+def brokenQueue(player: Member) -> Embed:
+    """
+        Removes the active match that the author is in.
+
+        Parameters:
+            player: dicord.Member - The author of the message.
+
+        Returns:
+            dicord.Embed - The embedded message to respond with.
+    """
+    msg = Leaderboard.brokenQueue(player)
+
+    if (":white_check_mark:" in msg):
+        return QueueUpdateEmbed(
+            title="Popped Queue Removed",
+            desc="The popped queue has been removed from active matches. You may now re-queue."
+        )
+
+    return ErrorEmbed(
+        title="Could Not Remove Queue",
+        desc=msg
+    )
+
+
+def leaderboard(author: Member, mentions: List[Member], *arg) -> Embed:
+    """
+        Shows the leaderboard. Shows top 5 if no one mentioned. Shows player stats if mentioned or used keyword "me".
+
+        Parameters:
+            author: discord.Member - The author of the message
+            mentions: List[discord.Member] - The mentions in the message.
+            *arg - The rest of the args in the message.
+
+        Returns:
+            dicord.Embed - The embedded message to respond with.
+    """
+    playerMentioned: bool = len(mentions) == 1
+    selfRank: bool = len(arg) == 1 and arg[0] == "me"
+
+    if (playerMentioned or selfRank):
+
+        player = mentions[0] if playerMentioned else author
+
+        players_rank = Leaderboard.showLeaderboard(player)
+
+        if (type(players_rank) == str):
+            return InfoEmbed(
+                title="Leaderboard Placement for {0}".format(player.name),
+                desc=players_rank
+            )
+
+        return ErrorEmbed(
+            title="No Matches Played",
+            desc="{0} hasn't played any matches and won't show up on the leaderboard.".format(players_rank.mention)
+        )
+
+    if (len(arg) == 0 and len(mentions) == 0):
+        return InfoEmbed(
+            title="UNCC 6 Mans | Top 5",
+            desc=Leaderboard.showLeaderboard(limit=5) +
+            "\nTo see the full leaderboard, visit <#{0}>.".format(LEADERBOARD_CH_ID)
+        )
+
+    return ErrorEmbed(
+        title="Leaderboard Command Help",
+        desc="Mention someone to see their rank, use 'me' to see your rank,"
+        " include nothing to see the top 5 on the leaderboard."
+    )
+
+
+async def report(player: Member, lbChannel: Channel, *arg) -> Embed:
+    """
+        Used to report the winning team of the series.
+
+        Parameters:
+            player: discord.Member - The author of the message.
+            lbChannel: discord.Channel - The specified leaderboard channel object
+
+        Returns:
+            dicord.Embed - The embedded message to respond with.
+    """
+    if (len(arg) == 1 and (str(arg[0]).lower() == Team.BLUE or str(arg[0]).lower() == Team.ORANGE)):
+        msg = Leaderboard.reportMatch(player, arg[0])
+
+        if (":x:" in msg):
+            return ErrorEmbed(
+                title="Match Not Found",
+                desc=msg[4:]
+            )
+        if (":white_check_mark:" in msg):
+
+            try:
+                # if match was reported successfully, update leaderboard channel
+                await updateLeaderboardChannel(lbChannel)
+            except Exception as e:
+                print("! Norm does not have access to update the leaderboard.", e)
+
+            return QueueUpdateEmbed(
+                title="Match Reported",
+                desc=msg[19:]
+            )
+
+        return InfoEmbed(
+            title="Match Reported, Needs Confirmation",
+            desc=msg
+        )
+
+    return ErrorEmbed(
+        title="Incorrect Report Format",
+        desc="Report only accepts 'blue' or 'orange' as the winner of the match.\n\n"
+        "Use the format: `!report blue`"
+    )
+
+
+def pick(player: Member, mentions: List[Member]) -> List[Embed]:
+    """
+        Assigns picked players to their respective teams.
+
+        Parameters:
+            player: discord.Member - The author of the message
+            mentions: List[discord.Member] - The mentions in the message. The players picked.
+
+        Returns:
+            List[dicord.Embed] - A list of embedded messages to respond with.
+    """
+    if (not Queue.queueAlreadyPopped()):
+        return ErrorEmbed(
+            title="Captains Not Set",
+            desc="If queue is full, please type **!captains**"
+        )
+
+    if (Queue.validateBluePick(player)):
+        return [blueTeamPick(mentions)]
+
+    if (Queue.validateOrangePick(player)):
+        return orangeTeamPick(mentions)
+
+    blueCap, orangeCap = Queue.captainsPop()
+    blueTeam, _ = Queue.getTeamList()
+    if (len(blueTeam) == 1):
+        return ErrorEmbed(
+            title="Not the Blue Captain",
+            desc="You are not 🔷 BLUE Team Captain 🔷\n\n"
+            "🔷 BLUE Team Captain 🔷 is: " + blueCap.mention
+        )
+
+    return ErrorEmbed(
+        title="Not the Orange Captain",
+        desc="You are not 🔶 ORANGE Team Captain 🔶 \n\n"
+        "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.mention
+    )

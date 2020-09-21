@@ -1,6 +1,6 @@
 from discord import Color, Embed
 from Types import BallChaser, Team
-from Typing import List
+from typing import List
 
 
 def BaseEmbed(title: str, description: str, color: Color) -> Embed:

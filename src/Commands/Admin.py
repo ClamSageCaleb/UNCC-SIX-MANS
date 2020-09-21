@@ -1,5 +1,5 @@
 from CheckForUpdates import updateBot
-from EmbedHelper import AdminEmbed
+from EmbedHelper import AdminEmbed, ErrorEmbed
 from typing import List
 from bot import __version__
 from discord import Role, Embed
@@ -25,7 +25,7 @@ def update(roles: List[Role]) -> Embed:
 
 
 def clear(roles: List[Role]) -> Embed:
-    if(isBotAdmin(ctx.message.author.roles)):
+    if(isBotAdmin(roles)):
         clearQueue()
         return AdminEmbed(
             title="Queue Cleared",

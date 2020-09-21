@@ -8,13 +8,9 @@ __email__ = "caleb.benjamin9799@gmail.com / unavailable / mattwells878@gmail.com
 
 
 import AWSHelper as AWS
-import CheckForUpdates
 from DataFiles import getDiscordToken, updateDiscordToken, getChannelIds
-from EmbedHelper import ErrorEmbed, QueueUpdateEmbed, AdminEmbed, InfoEmbed
-import Leaderboard
+from EmbedHelper import ErrorEmbed, QueueUpdateEmbed, InfoEmbed, AdminEmbed
 import Queue
-import TestHelper
-from Types import Team
 from asyncio import sleep as asyncsleep
 import discord
 from discord.ext.commands import Bot, CommandNotFound
@@ -22,7 +18,7 @@ from os import name as osName, system as osSystem
 from random import choice, randint
 from time import sleep
 
-from Commands import EasterEggs, SixMans, Testing, Admin
+from Commands import EasterEggs, SixMans, Testing, Admin, Utils
 
 # Bot prefix and Discord Bot token
 BOT_PREFIX = ("!")
@@ -37,6 +33,9 @@ pikaO = 1
 LEADERBOARD_CH_ID = -1
 QUEUE_CH_IDS = []
 REPORT_CH_IDS = []
+
+# Leaderboard Channel Object
+LB_CHANNEL: discord.channel = None
 
 """
     Discord Events
@@ -84,12 +83,16 @@ async def on_command_error(ctx, error):
 
 @client.event
 async def on_ready():
+    global LB_CHANNEL
+
     await client.change_presence(activity=discord.Game(name="6 mans"))
     print("Logged in as " + client.user.name + " version " + __version__)
 
     try:
         AWS.readRemoteLeaderboard()
-        await updateLeaderboardChannel(LEADERBOARD_CH_ID)  # update leaderboard channel when remote leaderboard pulls
+        if (LEADERBOARD_CH_ID != -1):
+            LB_CHANNEL = client.get_channel(LEADERBOARD_CH_ID)
+            await Utils.updateLeaderboardChannel(LB_CHANNEL)  # update leaderboard channel when remote leaderboard pulls
     except Exception as e:
         # this should only throw an exception if the Leaderboard file does not exist or the credentials are invalid
         print(e)
@@ -155,12 +158,12 @@ async def stale_queue_timer():
 
 @client.command(name='q', aliases=['addmepapanorm', 'Q', 'addmebitch', 'queue', 'join'], pass_context=True)
 async def q(ctx, *arg):
-    await ctx.send(embed=SixMans.PlayerQueue(ctx, *arg))
+    await ctx.send(embed=await SixMans.playerQueue(ctx, *arg))
 
 
 @client.command(name='qq', aliases=['quietq', 'QQ', 'quietqueue', 'shh', 'dontping'], pass_context=True)
 async def qq(ctx, *arg):
-    await ctx.send(embed=SixMans.PlayerQueue(ctx, *arg, quiet=True))
+    await ctx.send(embed=await SixMans.playerQueue(ctx, *arg, quiet=True))
 
 
 @client.command(name='leave', aliases=['yoink', 'gtfo', 'getmethefuckouttahere'], pass_context=True)
@@ -196,272 +199,26 @@ async def captains(ctx):
     await ctx.send(embed=SixMans.captains(ctx.message.author))
 
 
-def blueTeamPick(ctx):
-    """
-    Helper function for the !pick command when blue team is picking.
-
-    Parameters:
-        ctx (Discord Context): The ctx passed into the !pick command.
-
-    Returns:
-        Discord.Embed: An embedded message to send.
-
-    """
-    if len(ctx.message.mentions) == 0:
-        embed = ErrorEmbed(
-            title="No Mentioned Player",
-            desc="No one was mentioned, please pick an available player."
-        )
-    elif len(ctx.message.mentions) != 1:
-        embed = ErrorEmbed(
-            title="Too Many Mentioned Players",
-            desc="More than one player mentioned, please pick just one player."
-        )
-    else:
-
-        errorMsg = Queue.pick(ctx.message.mentions[0])
-
-        if (errorMsg == ""):
-            playerList = Queue.getQueueList(includeTimes=False)
-
-            embed = QueueUpdateEmbed(
-                title="Player Added to Team",
-                desc=ctx.message.mentions[0].mention + " was added to 🔷 BLUE TEAM 🔷"
-            ).add_field(
-                name="\u200b",
-                value="\u200b",
-                inline=False
-            ).add_field(
-                name="🔶 ORANGE team 🔶 please pick TWO players.",
-                value="Ex: `!pick @Twan @Tux`",
-                inline=False
-            ).add_field(
-                name="\u200b",
-                value="\u200b",
-                inline=False
-            ).add_field(
-                name="Available picks",
-                value=playerList,
-                inline=False
-            )
-        else:
-            embed = ErrorEmbed(
-                title="Player Not in Queue",
-                desc=errorMsg
-            )
-
-    return embed
-
-
-async def orangeTeamPick(ctx):
-    """
-    Helper function for the !pick command when orange team is picking.
-
-    Parameters:
-        ctx (Discord Context): The ctx passed into the !pick command.
-
-    Returns:
-        Discord.Embed: An embedded message to send.
-
-    """
-    if len(ctx.message.mentions) == 0:
-        embed = ErrorEmbed(
-            title="No Mentioned Player",
-            desc="No one was mentioned, please pick an available player."
-        )
-
-    elif len(ctx.message.mentions) != 2:
-        embed = ErrorEmbed(
-            title="Incorrect Format",
-            desc="Use format: `!pick @player1 @player2`"
-        )
-
-    else:
-
-        errorMsg = Queue.pick(ctx.message.mentions[0], ctx.message.mentions[1])
-
-        if (errorMsg == ""):
-            [player1, player2] = ctx.message.mentions
-            blueTeam, orangeTeam = Queue.getTeamList()
-
-            embed = QueueUpdateEmbed(
-                title="Final Players Added",
-                desc="🔶 ORANGE TEAM 🔶 picked " + player1.mention + " & " + player2.mention +
-                "\n\nLast player added to 🔷 BLUE TEAM 🔷"
-            )
-
-            await ctx.send(embed=embed)
-
-            embed = QueueUpdateEmbed(
-                title="Teams are Set!",
-                desc=""
-            ).add_field(
-                name="🔷 BLUE TEAM 🔷",
-                value="\n".join([player.mention for player in blueTeam]),
-                inline=False
-            ).add_field(
-                name="🔶 ORANGE TEAM 🔶",
-                value="\n".join([player.mention for player in orangeTeam]),
-                inline=False
-            )
-
-            Leaderboard.startMatch(blueTeam, orangeTeam)
-            Queue.clearQueue()
-        else:
-            embed = ErrorEmbed(
-                title="Player(s) Not Found",
-                desc="Either one or both of the players you mentioned is not in the queue. Try again."
-            )
-
-    return embed
-
-
 @client.command(name='pick', aliases=['add', 'choose', '<:pick:628999871554387969>'], pass_context=True)
 async def pick(ctx):
-    if (not Queue.queueAlreadyPopped()):
-        embed = ErrorEmbed(
-            title="Captains Not Set",
-            desc="If queue is full, please type **!captains**"
-        )
-
-    elif(Queue.validateBluePick(ctx.message.author)):
-        embed = blueTeamPick(ctx)
-
-    elif(Queue.validateOrangePick(ctx.message.author)):
-        embed = await orangeTeamPick(ctx)
-
-    else:
-        blueCap, orangeCap = Queue.captainsPop()
-        blueTeam, _ = Queue.getTeamList()
-        if (len(blueTeam) == 1):
-            embed = ErrorEmbed(
-                title="Not the Blue Captain",
-                desc="You are not 🔷 BLUE Team Captain 🔷\n\n"
-                "🔷 BLUE Team Captain 🔷 is: " + blueCap.mention
-            )
-        else:
-            embed = ErrorEmbed(
-                title="Not the Orange Captain",
-                desc="You are not 🔶 ORANGE Team Captain 🔶 \n\n"
-                "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.mention
-            )
-
-    await ctx.send(embed=embed)
+    embeds = SixMans.pick(ctx.message.author, ctx.message.mentions)
+    for embed in embeds:
+        await ctx.send(embed=embed)
 
 
 @client.command(name="report", pass_contex=True)
 async def reportMatch(ctx, *arg):
-    if (len(arg) == 1 and (str(arg[0]).lower() == Team.BLUE or str(arg[0]).lower() == Team.ORANGE)):
-        msg = Leaderboard.reportMatch(ctx.message.author, arg[0])
-
-        if (":x:" in msg):
-            embed = ErrorEmbed(
-                title="Match Not Found",
-                desc=msg[4:]
-            )
-        elif (":white_check_mark:" in msg):
-            embed = QueueUpdateEmbed(
-                title="Match Reported",
-                desc=msg[19:]
-            )
-
-            try:
-                # if match was reported successfully, update leaderboard channel
-                await updateLeaderboardChannel(LEADERBOARD_CH_ID)
-            except Exception as e:
-                print("! Norm does not have access to update the leaderboard.", e)
-        else:
-            embed = InfoEmbed(
-                title="Match Reported, Needs Confirmation",
-                desc=msg
-            )
-    else:
-        embed = ErrorEmbed(
-            title="Incorrect Report Format",
-            desc="Report only accepts 'blue' or 'orange' as the winner of the match.\n\n"
-            "Use the format: `!report blue`"
-        )
-
-    await ctx.send(embed=embed)
+    await ctx.send(embed=await SixMans.report(ctx.message.author, LB_CHANNEL, *arg))
 
 
 @client.command(name="leaderboard", aliases=["lb", "standings", "rank", "rankings", "stonks"], pass_contex=True)
 async def showLeaderboard(ctx, *arg):
-
-    playerMentioned: bool = len(ctx.message.mentions) == 1
-    selfRank: bool = len(arg) == 1 and arg[0] == "me"
-
-    if (playerMentioned or selfRank):
-
-        player = ctx.message.mentions[0] if playerMentioned else ctx.message.author
-
-        players_rank = Leaderboard.showLeaderboard(player)
-
-        if (type(players_rank) == str):
-            embed = InfoEmbed(
-                title="Leaderboard Placement for {0}".format(player.name),
-                desc=players_rank
-            )
-        else:
-            embed = ErrorEmbed(
-                title="No Matches Played",
-                desc="{0} hasn't played any matches and won't show up on the leaderboard.".format(players_rank.mention)
-            )
-
-    elif (len(arg) == 0 and len(ctx.message.mentions) == 0):
-        embed = InfoEmbed(
-            title="UNCC 6 Mans | Top 5",
-            desc=Leaderboard.showLeaderboard(limit=5) +
-            "\nTo see the full leaderboard, visit <#{0}>.".format(LEADERBOARD_CH_ID)
-        )
-    else:
-        embed = ErrorEmbed(
-            title="Leaderboard Command Help",
-            desc="Mention someone to see their rank, use 'me' to see your rank,"
-            " include nothing to see the top 5 on the leaderboard."
-        )
-
-    await ctx.send(embed=embed)
-
-
-async def updateLeaderboardChannel(channel_id):
-    """Deletes the old leaderboard and posts the updated one."""
-    if (LEADERBOARD_CH_ID == -1):
-        print("Leaderboard channel not set in config.")
-        return
-
-    channel = client.get_channel(channel_id)
-    await channel.purge()
-    lb = Leaderboard.showLeaderboard()
-    if (isinstance(lb, list)):
-        for i, msg in enumerate(lb):
-            await channel.send(embed=InfoEmbed(
-                title="UNCC 6 Mans | Full Leaderboard ({0}/{1})".format(i + 1, len(lb)),
-                desc=msg,
-            ))
-    else:
-        await channel.send(embed=InfoEmbed(
-            title="UNCC 6 Mans | Full Leaderboard",
-            desc=lb,
-        ))
+    await ctx.send(embed=SixMans.leaderboard(ctx.message.author, ctx.message.mentions, *arg))
 
 
 @client.command(name="brokenq", aliases=["requeue", "re-q"], pass_contex=True)
 async def removeLastPoppedQueue(ctx):
-    msg = Leaderboard.brokenQueue(ctx.message.author)
-
-    if (":white_check_mark:" in msg):
-        embed = QueueUpdateEmbed(
-            title="Popped Queue Removed",
-            desc="The popped queue has been removed from active matches. You may now re-queue."
-        )
-    else:
-        embed = ErrorEmbed(
-            title="Could Not Remove Queue",
-            desc=msg
-        )
-
-    await ctx.send(embed=embed)
+    await ctx.send(embed=SixMans.brokenQueue(ctx.message.author))
 
 
 @client.command(name='clear', aliases=['clr', 'reset'], pass_context=True)
