@@ -18,10 +18,11 @@ from Types import Team
 from asyncio import sleep as asyncsleep
 import discord
 from discord.ext.commands import Bot, CommandNotFound
-from math import ceil
 from os import name as osName, system as osSystem
 from random import choice, randint
 from time import sleep
+
+from Commands import EasterEggs, SixMans, Testing, Admin
 
 # Bot prefix and Discord Bot token
 BOT_PREFIX = ("!")
@@ -153,181 +154,23 @@ async def stale_queue_timer():
 
 
 @client.command(name='q', aliases=['addmepapanorm', 'Q', 'addmebitch', 'queue', 'join'], pass_context=True)
-async def q(ctx, *arg, quiet=False):
-    queue_length = Queue.getQueueLength()
-    player = ctx.message.author
-
-    try:
-        queueTime = int(arg[0]) if len(arg) > 0 else 60
-    except ValueError:  # if someone doesn't input a number we default to 60 minutes
-        queueTime = 60
-
-    # this converts the input to the next highest value of 10
-    # ex: 14 -> 20, 9 -> 10, -5 -> 10, 3 -> 10
-    queueTime = int(ceil(queueTime / 10)) * 10
-
-    # minimum queue time of 10 minutes and maximum of 60 minutes
-    if (queueTime < 10):
-        queueTime = 10
-    elif (queueTime > 60):
-        queueTime = 60
-
-    if (Queue.queueAlreadyPopped()):
-        embed = ErrorEmbed(
-            title="Current Lobby Not Set",
-            desc="Please wait until current lobby has been set.",
-        )
-
-    elif(Queue.isPlayerInQueue(player)):
-        Queue.resetPlayerQueueTime(player, queueTime)
-        embed = QueueUpdateEmbed(
-            title="Already in Queue, Queue Time Reset",
-            desc="You're already in the queue, but your queue time has been reset to {0} minutes.".format(queueTime),
-        )
-
-    elif (Leaderboard.getActiveMatch(player) is not None):
-        embed = ErrorEmbed(
-            title="Match Still Active",
-            desc="Your previous match has not been reported yet."
-            " Report your match in <#{0}> and try again.".format(REPORT_CH_IDS[0]),
-        )
-
-    elif(queue_length == 0):
-        Queue.addToQueue(player, queueTime)
-
-        if (quiet):
-            embed = QueueUpdateEmbed(
-                title="Queue has Started :shushing_face:",
-                desc="{0} wants to queue!\n\nQueued for {1} minutes.\n\n"
-                "Type **!q** to join".format(player.mention, queueTime),
-            )
-        else:
-            await ctx.send("@here Queue has started!")
-            embed = QueueUpdateEmbed(
-                title="Queue Started",
-                desc="{0} wants to queue!\n\nQueued for {1} minutes.\n\n"
-                "Type **!q** to join".format(player.mention, queueTime),
-            )
-
-    elif(queue_length >= 6):
-        embed = ErrorEmbed(
-            title="Queue Already Full",
-            desc="Queue is already full, please wait until the current queue is set and try again.",
-        )
-
-    elif(queue_length == 5):
-        Queue.addToQueue(player, queueTime)
-        mentionedPlayerList = Queue.getQueueList(mentionPlayers=True)
-
-        await ctx.send(embed=QueueUpdateEmbed(
-            title="Queue Popped!",
-            desc=player.mention + " has been added to the queue for " + str(queueTime) + " minutes.\n\n"
-            "**Queue is now full!** \n\n"
-            "Type !random for random teams.\n"
-            "Type !captains to get picked last."
-        ))
-        await ctx.send("Queue has popped! Get ready!\n" + mentionedPlayerList)
-        return
-
-    else:
-        Queue.addToQueue(player, queueTime)
-        playerList = Queue.getQueueList()
-
-        embed = QueueUpdateEmbed(
-            title="Player Added to Queue",
-            desc=player.mention + " has been added to the queue for " + str(queueTime) + " minutes.\n\n"
-            "Queue size: " + str(queue_length + 1) + "/6\n\n"
-            "Current queue:\n" + playerList
-        )
-
-    await ctx.send(embed=embed)
+async def q(ctx, *arg):
+    await ctx.send(embed=SixMans.PlayerQueue(ctx, *arg))
 
 
 @client.command(name='qq', aliases=['quietq', 'QQ', 'quietqueue', 'shh', 'dontping'], pass_context=True)
 async def qq(ctx, *arg):
-    await q(ctx, *arg, quiet=True)
+    await ctx.send(embed=SixMans.PlayerQueue(ctx, *arg, quiet=True))
 
 
 @client.command(name='leave', aliases=['yoink', 'gtfo', 'getmethefuckouttahere'], pass_context=True)
 async def leave(ctx):
-    player = ctx.message.author
-    username = player.display_name
-
-    if (Queue.queueAlreadyPopped()):
-        embed = ErrorEmbed(
-            title="Queue Already Popped",
-            desc="TOO LATE! You should've left before captains were picked."
-        )
-
-    elif(Queue.isPlayerInQueue(player)):
-
-        Queue.removeFromQueue(player)
-        playerList = Queue.getQueueList()
-
-        if(Queue.getQueueLength() != 0):
-            embed = QueueUpdateEmbed(
-                title="Player Left Queue",
-                desc=username + " has left the queue.\n\n"
-                "Queue size: " + str(Queue.getQueueLength()) + "/6\n\n"
-                "Remaining players:\n" + playerList
-            )
-        else:
-            embed = QueueUpdateEmbed(
-                title="Player Left Queue",
-                desc=username + " has left the queue.\n\n"
-                "Queue is now empty."
-            )
-    else:
-        embed = ErrorEmbed(
-            title="Not in Queue",
-            desc="You are not in the queue, type **!q** to join"
-        )
-
-    await ctx.send(embed=embed)
+    await ctx.send(embed=SixMans.leave(ctx.message.author))
 
 
 @client.command(name='kick', aliases=['remove', 'yeet'], pass_context=True)
 async def kick(ctx):
-    player = ctx.message.mentions[0]
-
-    if (not Queue.isBotAdmin(ctx.message.author.roles)):
-        embed = ErrorEmbed(
-            title="Permission Denied",
-            desc="You do not have the leg strength to kick other players."
-        )
-
-    elif (len(ctx.message.mentions) != 1):
-        embed = ErrorEmbed(
-            title="Did Not Mention a Player",
-            desc="Please mention a player in the queue to kick."
-        )
-
-    elif (Queue.queueAlreadyPopped()):
-        embed = ErrorEmbed(
-            title="Queue Already Popped",
-            desc="Can't kick players while picking teams."
-        )
-
-    elif(Queue.getQueueLength() == 0):
-        embed = ErrorEmbed(
-            title="Queue is Empty",
-            desc="The queue is empty, what are you doing?"
-        )
-
-    if (Queue.isPlayerInQueue(player)):
-        Queue.removeFromQueue(player)
-        embed = AdminEmbed(
-            title="Kicked Player",
-            desc="Removed " + player.display_name + " from the queue"
-        )
-
-    else:
-        embed = ErrorEmbed(
-            title="User Not in Queue",
-            desc="To see who is in current queue, type: **!list**"
-        )
-
-    await ctx.send(embed=embed)
+    await ctx.send(embed=SixMans.kick(ctx.message.mentions, ctx.message.author.roles))
 
 
 @client.command(name='flip', aliases=['coinflip', 'chance', 'coin'], pass_context=True)
@@ -340,137 +183,17 @@ async def coinFlip(ctx):
 
 @client.command(name='listq', aliases=['list', 'listqueue', 'show', 'showq', 'showqueue', 'inq', 'sq', 'lq', 'status', 'showmethefknqueue', '<:who:599055076639899648>'], pass_context=True)  # noqa
 async def listq(ctx):
-    if (Queue.getQueueLength() == 0):
-        embed = QueueUpdateEmbed(
-            title="Queue is Empty",
-            desc="Join the queue by typing **!q**"
-        )
-    elif (Queue.queueAlreadyPopped()):
-        await captains(ctx)
-        return
-    else:
-        playerList = Queue.getQueueList()
-        embed = QueueUpdateEmbed(
-            title="Current Queue",
-            desc="Queue size: " + str(Queue.getQueueLength()) + "/6\n\n" + "Current queue:\n" + playerList
-        )
-
-    await ctx.send(embed=embed)
+    await ctx.send(embed=SixMans.listQueue(ctx.message.author))
 
 
 @client.command(name='rnd', aliases=['random', 'idontwanttopickteams', 'fuckcaptains'], pass_context=True)
 async def random(ctx):
-    if (Queue.queueAlreadyPopped()):
-        embed = ErrorEmbed(
-            title="Captains Already Chosen",
-            desc="You cannot change your mind once you pick captains."
-        )
-    elif (Queue.getQueueLength() != 6):
-        embed = ErrorEmbed(
-            title="Queue is Not Full",
-            desc="You cannot pop a queue until is full."
-        )
-    elif (not Queue.isPlayerInQueue(ctx.message.author)):
-        embed = ErrorEmbed(
-            title="Not in Queue",
-            desc="You are not in the queue, therefore you cannot pop the queue."
-        )
-    else:
-        blueTeam, orangeTeam = Queue.randomPop()
-        Leaderboard.startMatch(blueTeam, orangeTeam)
-
-        embed = QueueUpdateEmbed(
-            title="Teams are Set!",
-            desc=""
-        ).add_field(
-            name="🔷 BLUE TEAM 🔷",
-            value="\n".join([player.mention for player in blueTeam]),
-            inline=False
-        ).add_field(
-            name="🔶 ORANGE TEAM 🔶",
-            value="\n".join([player.mention for player in orangeTeam]),
-            inline=False
-        )
-
-    await ctx.send(embed=embed)
+    await ctx.send(embed=SixMans.random(ctx.message.author))
 
 
 @client.command(name='captains', aliases=['cap', 'iwanttopickteams', 'Captains', 'captain', 'Captain', 'Cap'], pass_context=True)  # noqa
 async def captains(ctx):
-    if (Queue.queueAlreadyPopped()):
-        blueCap, orangeCap = Queue.captainsPop()
-        playerList = Queue.getQueueList(includeTimes=False)
-        blueTeam, _ = Queue.getTeamList()
-
-        embed = InfoEmbed(
-            title="Captains Already Set",
-            desc="🔷 BLUE Team Captain 🔷: " + blueCap.mention +
-            "\n\n🔶 ORANGE Team Captain 🔶: " + orangeCap.mention
-        ).add_field(
-            name="\u200b",
-            value="\u200b",
-            inline=False
-        )
-
-        if (len(blueTeam) == 1):
-            embed.add_field(
-                name="It is 🔷 BLUE Team's 🔷 turn to pick",
-                value="Type **!pick** and mention a player from the queue below.",
-                inline=False
-            )
-        else:
-            embed.add_field(
-                name="It is 🔶 ORANGE Team's 🔶 turn to pick",
-                value="Please pick two players.\nEx: `!pick @Twan @Tux`",
-                inline=False
-            )
-
-        embed.add_field(
-            name="\u200b",
-            value="\u200b",
-            inline=False
-        ).add_field(
-            name="Available picks",
-            value=playerList,
-            inline=False
-        )
-    elif (Queue.getQueueLength() != 6):
-        embed = ErrorEmbed(
-            title="Queue is Not Full",
-            desc="You cannot pop a queue until is full."
-        )
-    elif (not Queue.isPlayerInQueue(ctx.message.author)):
-        embed = ErrorEmbed(
-            title="Not in Queue",
-            desc="You are not in the queue, therefore you cannot pop the queue."
-        )
-    else:
-        blueCap, orangeCap = Queue.captainsPop()
-        playerList = Queue.getQueueList(includeTimes=False)
-
-        embed = QueueUpdateEmbed(
-            title="Captains",
-            desc="🔷 BLUE Team Captain 🔷: " + blueCap.mention +
-            "\n\n🔶 ORANGE Team Captain 🔶: " + orangeCap.mention
-        ).add_field(
-            name="\u200b",
-            value="\u200b",
-            inline=False
-        ).add_field(
-            name="🔷 BLUE Team 🔷 picks first",
-            value="Type **!pick** and mention a player from the queue below.",
-            inline=False
-        ).add_field(
-            name="\u200b",
-            value="\u200b",
-            inline=False
-        ).add_field(
-            name="Available picks",
-            value=playerList,
-            inline=False
-        )
-
-    await ctx.send(embed=embed)
+    await ctx.send(embed=SixMans.captains(ctx.message.author))
 
 
 def blueTeamPick(ctx):
@@ -743,130 +466,41 @@ async def removeLastPoppedQueue(ctx):
 
 @client.command(name='clear', aliases=['clr', 'reset'], pass_context=True)
 async def clear(ctx):
-    if(Queue.isBotAdmin(ctx.message.author.roles)):
-        Queue.clearQueue()
-        embed = AdminEmbed(
-            title="Queue Cleared",
-            desc="The queue has been cleared by an admin.  <:UNCCfeelsgood:538182514091491338>"
-        )
-    else:
-        embed = ErrorEmbed(
-            title="Permission Denied",
-            desc="You do not have permission to clear the queue."
-        )
-
-    await ctx.send(embed=embed)
+    await ctx.send(embed=Admin.clear(ctx.message.author.roles))
 
 
 @client.command(name="fill", pass_context=True)
 async def fill(ctx):
     if (__debug__):
-        if(Queue.isBotAdmin(ctx.message.author.roles)):
-            TestHelper.fillQueue()
-            embed = AdminEmbed(
-                title="Queue Filled",
-                desc="Queue has been filled with fake/real players"
-            )
-        else:
-            embed = ErrorEmbed(
-                title="Permission Denied",
-                desc="You do not have permission to fill the queue."
-            )
-
-        await ctx.send(embed=embed)
+        await ctx.send(embed=Testing.fill(ctx.message.author.roles))
 
 
 @client.command(name="fillCap", pass_context=True)
 async def fillCap(ctx):
     if (__debug__):
-        if(Queue.isBotAdmin(ctx.message.author.roles)):
-            TestHelper.fillWithCaptains()
-            embed = AdminEmbed(
-                title="Queue Filled w/ Captains",
-                desc="Queue has been filled with fake/real players"
-            )
-        else:
-            embed = ErrorEmbed(
-                title="Permission Denied",
-                desc="You do not have permission to fill the queue."
-            )
-
-        await ctx.send(embed=embed)
+        await ctx.send(embed=Testing.fillCap(ctx.message.author.roles))
 
 
 @client.command(name="flipCap", pass_context=True)
 async def flipCap(ctx):
     if (__debug__):
-        if(Queue.isBotAdmin(ctx.message.author.roles)):
-            TestHelper.flipCaptains()
-            embed = AdminEmbed(
-                title="Captains Flipped",
-                desc="Captains have been flipped."
-            )
-        else:
-            embed = ErrorEmbed(
-                title="Permission Denied",
-                desc="You do not have permission to clear the queue."
-            )
-
-        await ctx.send(embed=embed)
+        await ctx.send(embed=Testing.flipCap(ctx.message.author.roles))
 
 
 @client.command(name="flipReport", pass_context=True)
 async def flipReport(ctx):
     if (__debug__):
-        if(Queue.isBotAdmin(ctx.message.author.roles)):
-            TestHelper.swapReportedPlayer()
-            embed = AdminEmbed(
-                title="Reported Player Swapped",
-                desc="The player who reported has been swapped out."
-            )
-        else:
-            embed = ErrorEmbed(
-                title="Permission Denied",
-                desc="You do not have permission to clear the queue."
-            )
-
-        await ctx.send(embed=embed)
+        await ctx.send(embed=Testing.flipReport(ctx.message.author.roles))
 
 
-# Disabling command as it does not work with the new executable.
-# TODO: Find a new way to restart Norm since he is now an executable
 @client.command(name='restart', aliases=['restartbot'], pass_context=True)
 async def restart(ctx):
-    await ctx.send(embed=AdminEmbed(
-        title="Command Diasbled",
-        desc="This command is temporarily disabled."
-    ))
-
-    # if(Queue.isBotAdmin(ctx.message.author.roles)):
-    #     await ctx.send("Bot restarting...hopefully this fixes everything <:UNCCfeelsgood:538182514091491338>")
-    #     os.remove("./data/queue.json")
-    #     print("Restarting...")
-    #     subprocess.call(["python", ".\\src\\bot.py"])
-    #     sys.exit()
-    # else:
-    #     await ctx.send("You do not have permission to restart me.")
+    await ctx.send(embed=Admin.restart())
 
 
 @client.command(name='update', pass_context=True)
 async def update(ctx):
-
-    if(Queue.isBotAdmin(ctx.message.author.roles)):
-        await ctx.send(embed=AdminEmbed(
-            title="Checking For Updates",
-            desc="Please hang tight."
-        ))
-        CheckForUpdates.updateBot()
-        await ctx.send(embed=AdminEmbed(
-            title="Already Up to Date",
-            desc="Current version: v{0}".format(__version__)
-        ))
-    else:
-        await ctx.send(embed=AdminEmbed(
-            title="Permission Denied",
-            desc="You do not have permission to check for updates."
-        ))
+    await ctx.send(embed=Admin.update())
 
 
 """
