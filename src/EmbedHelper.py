@@ -1,8 +1,8 @@
-import discord
+from discord import Color, Embed
 
 
-def BaseEmbed(title, description, color):
-    return discord.Embed(
+def BaseEmbed(title: str, description: str, color: Color) -> Embed:
+    return Embed(
         title=title,
         description=description,
         color=color,
@@ -11,33 +11,33 @@ def BaseEmbed(title, description, color):
     )
 
 
-def ErrorEmbed(title, desc):
+def ErrorEmbed(title: str, desc: str) -> Embed:
     return BaseEmbed(
         title=":x:\t{0}".format(title),
         description="{0}".format(desc),
-        color=discord.Color.red(),
+        color=Color.red(),
     )
 
 
-def QueueUpdateEmbed(title, desc):
+def QueueUpdateEmbed(title: str, desc: str) -> Embed:
     return BaseEmbed(
         title="{0}".format(title),
         description="{0}".format(desc),
-        color=discord.Color.green(),
+        color=Color.green(),
     )
 
 
-def AdminEmbed(title, desc):
+def AdminEmbed(title: str, desc: str) -> Embed:
     return BaseEmbed(
         title=":exclamation:\t{0}".format(title),
         description="{0}".format(desc),
-        color=discord.Color.dark_gold(),
+        color=Color.dark_gold(),
     )
 
 
-def InfoEmbed(title, desc):
+def InfoEmbed(title: str, desc: str) -> Embed:
     return BaseEmbed(
         title="{0}".format(title),
         description="{0}".format(desc),
-        color=discord.Color.blue(),
+        color=Color.blue(),
     )

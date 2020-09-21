@@ -3,3 +3,4 @@ flake8
 wget
 requests
 boto3
+tinydb

@@ -5,7 +5,7 @@ import sys
 import wget
 
 
-def updateBot():
+def updateBot() -> None:
     release_url = requests.get("https://github.com/ClamSageCaleb/UNCC-SIX-MANS/releases/latest").url
     split_url = release_url.split("/")
     release_version = split_url[len(split_url) - 1]
