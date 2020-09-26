@@ -1,5 +1,4 @@
-from discord.ext.commands import context as Context
-from discord import Embed, Member, Role, channel as Channel
+from discord import Embed, Member, channel as Channel
 import Queue
 import Leaderboard
 from typing import List
@@ -8,29 +7,27 @@ from math import ceil
 from EmbedHelper import \
     ErrorEmbed,\
     QueueUpdateEmbed,\
-    AdminEmbed,\
     InfoEmbed,\
     CaptainsAlreadySetEmbed,\
     CaptainsPopEmbed,\
     PlayersSetEmbed
-from bot import REPORT_CH_IDS, LEADERBOARD_CH_ID
 from Commands.Utils import updateLeaderboardChannel, orangeTeamPick, blueTeamPick
 
 
-async def playerQueue(ctx: Context, *arg, quiet: bool = False) -> Embed:
+def playerQueue(player: Member, reportChannelId: int, *arg, quiet: bool = False) -> List[str or Embed]:
     """
         Adds the author to the Queue for the specified amount of time.
 
         Parameters:
-            ctx: discord.ext.commands.context - The context object passed into the client function.
+            player: discord.Member - The author of the message. The person being removed from the queue.
             *arg: tuple - The args passed into the client function.
             quiet: bool (optional, default is False) - Specifies whether to include @here ping in channel.
 
         Returns:
             dicord.Embed - The embedded message to respond with.
     """
+    messages: List[str or Embed] = []
     queue_length = Queue.getQueueLength()
-    player = ctx.message.author
 
     try:
         queueTime = int(arg[0]) if len(arg) > 0 else 60
@@ -48,70 +45,73 @@ async def playerQueue(ctx: Context, *arg, quiet: bool = False) -> Embed:
         queueTime = 60
 
     if (Queue.queueAlreadyPopped()):
-        return ErrorEmbed(
+        return [ErrorEmbed(
             title="Current Lobby Not Set",
             desc="Please wait until current lobby has been set.",
-        )
+        )]
 
     if (Queue.isPlayerInQueue(player)):
         Queue.resetPlayerQueueTime(player, queueTime)
-        return QueueUpdateEmbed(
+        return [QueueUpdateEmbed(
             title="Already in Queue, Queue Time Reset",
             desc="You're already in the queue, but your queue time has been reset to {0} minutes.".format(queueTime),
-        )
+        )]
 
     if (Leaderboard.getActiveMatch(player) is not None):
-        return ErrorEmbed(
+        return [ErrorEmbed(
             title="Match Still Active",
             desc="Your previous match has not been reported yet."
-            " Report your match in <#{0}> and try again.".format(REPORT_CH_IDS[0]),
-        )
+            " Report your match in <#{0}> and try again.".format(reportChannelId),
+        )]
 
     if(queue_length == 0):
         Queue.addToQueue(player, queueTime)
 
         if (quiet):
-            return QueueUpdateEmbed(
+            return [QueueUpdateEmbed(
                 title="Queue has Started :shushing_face:",
                 desc="{0} wants to queue!\n\nQueued for {1} minutes.\n\n"
                 "Type **!q** to join".format(player.mention, queueTime),
-            )
+            )]
 
-        await ctx.send("@here Queue has started!")
-        return QueueUpdateEmbed(
+        messages.append("@here Queue has started!")
+        messages.append(QueueUpdateEmbed(
             title="Queue Started",
             desc="{0} wants to queue!\n\nQueued for {1} minutes.\n\n"
             "Type **!q** to join".format(player.mention, queueTime),
-        )
+        ))
 
-    if (queue_length >= 6):
+    elif (queue_length >= 6):
         return ErrorEmbed(
             title="Queue Already Full",
             desc="Queue is already full, please wait until the current queue is set and try again.",
         )
 
-    if (queue_length == 5):
+    elif (queue_length == 5):
         Queue.addToQueue(player, queueTime)
         mentionedPlayerList = Queue.getQueueList(mentionPlayers=True)
 
-        await ctx.send("Queue has popped! Get ready!\n" + mentionedPlayerList)
-        return QueueUpdateEmbed(
+        messages.append(QueueUpdateEmbed(
             title="Queue Popped!",
             desc=player.mention + " has been added to the queue for " + str(queueTime) + " minutes.\n\n"
             "**Queue is now full!** \n\n"
             "Type !random for random teams.\n"
             "Type !captains to get picked last."
-        )
+        ))
+        messages.append("Queue has popped! Get ready!\n" + mentionedPlayerList)
 
-    Queue.addToQueue(player, queueTime)
-    playerList = Queue.getQueueList()
+    else:
+        Queue.addToQueue(player, queueTime)
+        playerList = Queue.getQueueList()
 
-    return QueueUpdateEmbed(
-        title="Player Added to Queue",
-        desc=player.mention + " has been added to the queue for " + str(queueTime) + " minutes.\n\n"
-        "Queue size: " + str(queue_length + 1) + "/6\n\n"
-        "Current queue:\n" + playerList
-    )
+        return [QueueUpdateEmbed(
+            title="Player Added to Queue",
+            desc=player.mention + " has been added to the queue for " + str(queueTime) + " minutes.\n\n"
+            "Queue size: " + str(queue_length + 1) + "/6\n\n"
+            "Current queue:\n" + playerList
+        )]
+
+    return messages
 
 
 def leave(player: Member) -> Embed:
@@ -154,55 +154,6 @@ def leave(player: Member) -> Embed:
     return ErrorEmbed(
         title="Not in Queue",
         desc="You are not in the queue, type **!q** to join"
-    )
-
-
-def kick(mentions: List[Member], roles: List[Role]) -> Embed:
-    """
-        Kicks the mentioned player from the queue. Requires Bot Admin role.
-
-        Parameters:
-            mentions: List[discord.Member] - The mentions in the message.
-            roles: List[discord.Role] - The roles of the author of the message.
-
-        Returns:
-            dicord.Embed - The embedded message to respond with.
-    """
-    if (not Queue.isBotAdmin(roles)):
-        return ErrorEmbed(
-            title="Permission Denied",
-            desc="You do not have the leg strength to kick other players."
-        )
-
-    if (len(mentions) != 1):
-        return ErrorEmbed(
-            title="Did Not Mention a Player",
-            desc="Please mention a player in the queue to kick."
-        )
-
-    if (Queue.queueAlreadyPopped()):
-        return ErrorEmbed(
-            title="Queue Already Popped",
-            desc="Can't kick players while picking teams."
-        )
-
-    if (Queue.getQueueLength() == 0):
-        return ErrorEmbed(
-            title="Queue is Empty",
-            desc="The queue is empty, what are you doing?"
-        )
-
-    player = mentions[0]
-    if (Queue.isPlayerInQueue(player)):
-        Queue.removeFromQueue(player)
-        return AdminEmbed(
-            title="Kicked Player",
-            desc="Removed " + player.display_name + " from the queue"
-        )
-
-    return ErrorEmbed(
-        title="User Not in Queue",
-        desc="To see who is in current queue, type: **!list**"
     )
 
 
@@ -330,7 +281,7 @@ def brokenQueue(player: Member) -> Embed:
     )
 
 
-def leaderboard(author: Member, mentions: List[Member], *arg) -> Embed:
+def leaderboard(author: Member, mentions: List[Member], lbChannelId: int, *arg) -> Embed:
     """
         Shows the leaderboard. Shows top 5 if no one mentioned. Shows player stats if mentioned or used keyword "me".
 
@@ -366,7 +317,7 @@ def leaderboard(author: Member, mentions: List[Member], *arg) -> Embed:
         return InfoEmbed(
             title="UNCC 6 Mans | Top 5",
             desc=Leaderboard.showLeaderboard(limit=5) +
-            "\nTo see the full leaderboard, visit <#{0}>.".format(LEADERBOARD_CH_ID)
+            "\nTo see the full leaderboard, visit <#{0}>.".format(lbChannelId)
         )
 
     return ErrorEmbed(
@@ -457,3 +408,49 @@ def pick(player: Member, mentions: List[Member]) -> List[Embed]:
         desc="You are not 🔶 ORANGE Team Captain 🔶 \n\n"
         "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.mention
     )
+
+
+def checkQueueTimes() -> List[Embed] or None:
+    """
+        Checks the queue times for each player and returns warning or removal embeds if applicable
+
+        Parameters:
+            None.
+
+        Returns:
+            List[Embed] or None - A list of embeds to send or nothing
+    """
+    if (Queue.getQueueLength() == 0 or Queue.queueAlreadyPopped()):
+        return None
+
+    warn_players, removed_players = Queue.checkQueueTimes()
+
+    if (len(warn_players) == 0 and len(removed_players) == 0):
+        return None
+
+    embeds = []
+
+    if (len(warn_players) > 0):
+        warn_str = ",".join([player.mention for player in warn_players])
+        embeds.append(InfoEmbed(
+            title="Stale Player Queue Warning",
+            desc=warn_str + " will be removed from the queue in 5 minutes.\n\n"
+            "To stay in the queue, type **!q**"
+        ))
+    if (len(removed_players) > 0):
+        rem_str = ",".join([player.mention for player in removed_players])
+        playerList = Queue.getQueueList()
+        if(Queue.getQueueLength() != 0):
+            embeds.append(QueueUpdateEmbed(
+                title="Queue Stale Players Removed",
+                desc=rem_str + " have been removed from the queue.\n\n" +
+                "Queue size: " + str(Queue.getQueueLength()) + "/6\n\n"
+                "Remaining players:\n" + playerList
+            ))
+        else:
+            embeds.append(QueueUpdateEmbed(
+                title="Queue Stale Players Removed",
+                desc=rem_str + " have been removed from the queue.\n\n" + "Queue is now empty."
+            ))
+
+    return embeds

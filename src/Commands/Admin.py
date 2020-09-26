@@ -2,12 +2,12 @@ from CheckForUpdates import updateBot
 from EmbedHelper import AdminEmbed, ErrorEmbed
 from typing import List
 from bot import __version__
-from discord import Role, Embed
-from Queue import isBotAdmin, clearQueue
+from discord import Role, Embed, Member
+import Queue
 
 
 def update(roles: List[Role]) -> Embed:
-    if(isBotAdmin(roles)):
+    if(Queue.isBotAdmin(roles)):
         return AdminEmbed(
             title="Checking For Updates",
             desc="Please hang tight."
@@ -25,8 +25,8 @@ def update(roles: List[Role]) -> Embed:
 
 
 def clear(roles: List[Role]) -> Embed:
-    if(isBotAdmin(roles)):
-        clearQueue()
+    if(Queue.isBotAdmin(roles)):
+        Queue.clearQueue()
         return AdminEmbed(
             title="Queue Cleared",
             desc="The queue has been cleared by an admin.  <:UNCCfeelsgood:538182514091491338>"
@@ -35,6 +35,55 @@ def clear(roles: List[Role]) -> Embed:
     return ErrorEmbed(
         title="Permission Denied",
         desc="You do not have permission to clear the queue."
+    )
+
+
+def kick(mentions: List[Member], roles: List[Role]) -> Embed:
+    """
+        Kicks the mentioned player from the queue. Requires Bot Admin role.
+
+        Parameters:
+            mentions: List[discord.Member] - The mentions in the message.
+            roles: List[discord.Role] - The roles of the author of the message.
+
+        Returns:
+            dicord.Embed - The embedded message to respond with.
+    """
+    if (not Queue.isBotAdmin(roles)):
+        return ErrorEmbed(
+            title="Permission Denied",
+            desc="You do not have the leg strength to kick other players."
+        )
+
+    if (len(mentions) != 1):
+        return ErrorEmbed(
+            title="Did Not Mention a Player",
+            desc="Please mention a player in the queue to kick."
+        )
+
+    if (Queue.queueAlreadyPopped()):
+        return ErrorEmbed(
+            title="Queue Already Popped",
+            desc="Can't kick players while picking teams."
+        )
+
+    if (Queue.getQueueLength() == 0):
+        return ErrorEmbed(
+            title="Queue is Empty",
+            desc="The queue is empty, what are you doing?"
+        )
+
+    player = mentions[0]
+    if (Queue.isPlayerInQueue(player)):
+        Queue.removeFromQueue(player)
+        return AdminEmbed(
+            title="Kicked Player",
+            desc="Removed " + player.display_name + " from the queue"
+        )
+
+    return ErrorEmbed(
+        title="User Not in Queue",
+        desc="To see who is in current queue, type: **!list**"
     )
 
 

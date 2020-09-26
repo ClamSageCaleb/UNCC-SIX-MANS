@@ -119,3 +119,56 @@ def PlayersSetEmbed(blueTeam: List[BallChaser], orangeTeam: List[BallChaser]):
         value="\n".join([player.mention for player in orangeTeam]),
         inline=False
     )
+
+
+def HelpEmbed() -> Embed:
+    return Embed(
+        title="Norm Commands",
+        description="https://clamsagecaleb.github.io/UNCC-SIX-MANS",
+        color=0x38761D
+    ).add_field(
+        name="!q",
+        value="Adds you to the queue",
+        inline=False
+    ).add_field(
+        name="!leave",
+        value="Removes you from the queue",
+        inline=False
+    ).add_field(
+        name="!list",
+        value="Lists the current queue",
+        inline=False
+    ).add_field(
+        name="!random",
+        value="Randomly picks teams (Requires 6 players in queue)",
+        inline=False
+    ).add_field(
+        name="!captains",
+        value="Randomly selects captains (Requires 6 players in queue)."
+        "\nFirst captain picks 1 \nSecond captain picks the next two",
+        inline=False
+    ).add_field(
+        name="!report",
+        value="Reports the result of your queue. Use this command followed by the color of the winning team.",
+        inline=False
+    ).add_field(
+        name="!leaderboard",
+        value="Shows the top 5 players on the leaderboard.",
+        inline=False
+    ).add_field(
+        name="!leaderboard me",
+        value="Shows your rank on the leaderboard.",
+        inline=False
+    ).add_field(
+        name='!norm, !asknorm, or !8ball',
+        value='Will respond to a yes/no question. Good for predictions',
+        inline=False
+    ).add_field(
+        name="!help",
+        value="This command :O",
+        inline=False
+    ).set_thumbnail(
+        url="https://raw.githubusercontent.com/ClamSageCaleb/UNCC-SIX-MANS/master/media/49ers.png"
+    ).set_footer(
+        text="Developed by Twan, Clam, and Tux"
+    )
