@@ -163,7 +163,7 @@ async def kick(ctx):
 @client.command(name='flip', aliases=['coinflip', 'chance', 'coin'], pass_context=True)
 async def coinFlip(ctx):
     if (randint(1, 2) == 1):
-        await q(ctx, quiet=False)
+        await q(ctx)
     else:
         await leave(ctx)
 

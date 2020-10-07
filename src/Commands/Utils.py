@@ -1,7 +1,8 @@
 from discord import Embed, Member, channel as Channel
-from EmbedHelper import ErrorEmbed, QueueUpdateEmbed, InfoEmbed
+from EmbedHelper import ErrorEmbed, QueueUpdateEmbed, InfoEmbed, PlayersSetEmbed
 import Queue
 import Leaderboard
+from Types import BallChaser
 from typing import List
 
 
@@ -34,7 +35,7 @@ async def updateLeaderboardChannel(lbChannel: Channel) -> None:
         ))
 
 
-def blueTeamPick(mentions: List[Member]) -> Embed:
+def blueTeamPick(mentions: List[Member], blueCap: BallChaser, orangeCap: BallChaser) -> Embed:
     """
         Helper function for the !pick command when blue team is picking.
 
@@ -64,13 +65,13 @@ def blueTeamPick(mentions: List[Member]) -> Embed:
 
         return QueueUpdateEmbed(
             title="Player Added to Team",
-            desc=mentions[0].mention + " was added to 🔷 BLUE TEAM 🔷"
+            desc="🔷 " + blueCap.name + " 🔷 picked " + mentions[0].mention
         ).add_field(
             name="\u200b",
             value="\u200b",
             inline=False
         ).add_field(
-            name="🔶 ORANGE team 🔶 please pick TWO players.",
+            name="🔶 " + orangeCap.name + " 🔶 please pick TWO players.",
             value="Ex: `!pick @Twan @Tux`",
             inline=False
         ).add_field(
@@ -89,7 +90,7 @@ def blueTeamPick(mentions: List[Member]) -> Embed:
     )
 
 
-def orangeTeamPick(mentions: List[Member]) -> List[Embed]:
+def orangeTeamPick(mentions: List[Member], blueCap: BallChaser, orangeCap: BallChaser) -> List[Embed]:
     """
         Helper function for the !pick command when orange team is picking.
 
@@ -120,22 +121,11 @@ def orangeTeamPick(mentions: List[Member]) -> List[Embed]:
 
         embed1 = QueueUpdateEmbed(
             title="Final Players Added",
-            desc="🔶 ORANGE TEAM 🔶 picked " + player1.mention + " & " + player2.mention +
-            "\n\nLast player added to 🔷 BLUE TEAM 🔷"
+            desc="🔶 " + orangeCap.name + " 🔶 picked " + player1.mention + " & " + player2.mention +
+            "\n\nLast player added to 🔷 Blue Team 🔷"
         )
 
-        embed2 = QueueUpdateEmbed(
-            title="Teams are Set!",
-            desc=""
-        ).add_field(
-            name="🔷 BLUE TEAM 🔷",
-            value="\n".join([player.mention for player in blueTeam]),
-            inline=False
-        ).add_field(
-            name="🔶 ORANGE TEAM 🔶",
-            value="\n".join([player.mention for player in orangeTeam]),
-            inline=False
-        )
+        embed2 = PlayersSetEmbed(blueTeam, orangeTeam)
 
         Leaderboard.startMatch(blueTeam, orangeTeam)
         Queue.clearQueue()

@@ -48,8 +48,8 @@ def InfoEmbed(title: str, desc: str) -> Embed:
 def CaptainsAlreadySetEmbed(blueCap: BallChaser, orangeCap: BallChaser, teamToPick: Team, playerList: str) -> Embed:
     embed = InfoEmbed(
         title="Captains Already Set",
-        desc="🔷 BLUE Team Captain 🔷: " + blueCap.mention +
-        "\n\n🔶 ORANGE Team Captain 🔶: " + orangeCap.mention
+        desc="🔷 Blue Team Captain 🔷: " + blueCap.mention +
+        "\n\n🔶 Orange Team Captain 🔶: " + orangeCap.mention
     ).add_field(
         name="\u200b",
         value="\u200b",
@@ -58,13 +58,13 @@ def CaptainsAlreadySetEmbed(blueCap: BallChaser, orangeCap: BallChaser, teamToPi
 
     if (teamToPick == Team.BLUE):
         embed.add_field(
-            name="It is 🔷 BLUE Team's 🔷 turn to pick",
-            value="Type **!pick** and mention a player from the queue below.",
+            name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
+            value="Type `!pick` and mention a player from the queue below.",
             inline=False
         )
     else:
         embed.add_field(
-            name="It is 🔶 ORANGE Team's 🔶 turn to pick",
+            name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
             value="Please pick two players.\nEx: `!pick @Twan @Tux`",
             inline=False
         )
@@ -92,7 +92,7 @@ def CaptainsPopEmbed(blueCap: BallChaser, orangeCap: BallChaser, playerList: str
         value="\u200b",
         inline=False
     ).add_field(
-        name="🔷 BLUE Team 🔷 picks first",
+        name="🔷 " + blueCap.mention + " 🔷 picks first",
         value="Type **!pick** and mention a player from the queue below.",
         inline=False
     ).add_field(
@@ -106,7 +106,7 @@ def CaptainsPopEmbed(blueCap: BallChaser, orangeCap: BallChaser, playerList: str
     )
 
 
-def PlayersSetEmbed(blueTeam: List[BallChaser], orangeTeam: List[BallChaser]):
+def PlayersSetEmbed(blueTeam: List[BallChaser], orangeTeam: List[BallChaser]) -> Embed:
     return QueueUpdateEmbed(
         title="Teams are Set!",
         desc=""

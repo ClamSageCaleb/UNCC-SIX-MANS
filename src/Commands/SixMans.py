@@ -26,7 +26,6 @@ def playerQueue(player: Member, reportChannelId: int, *arg, quiet: bool = False)
         Returns:
             dicord.Embed - The embedded message to respond with.
     """
-    messages: List[str or Embed] = []
     queue_length = Queue.getQueueLength()
 
     try:
@@ -74,44 +73,42 @@ def playerQueue(player: Member, reportChannelId: int, *arg, quiet: bool = False)
                 "Type **!q** to join".format(player.mention, queueTime),
             )]
 
-        messages.append("@here Queue has started!")
-        messages.append(QueueUpdateEmbed(
-            title="Queue Started",
-            desc="{0} wants to queue!\n\nQueued for {1} minutes.\n\n"
-            "Type **!q** to join".format(player.mention, queueTime),
-        ))
+        return ["@here Queue has started!",
+                QueueUpdateEmbed(
+                    title="Queue Started",
+                    desc="{0} wants to queue!\n\nQueued for {1} minutes.\n\n"
+                    "Type **!q** to join".format(player.mention, queueTime),
+                )]
 
-    elif (queue_length >= 6):
-        return ErrorEmbed(
+    if (queue_length >= 6):
+        return [ErrorEmbed(
             title="Queue Already Full",
             desc="Queue is already full, please wait until the current queue is set and try again.",
-        )
+        )]
 
-    elif (queue_length == 5):
+    if (queue_length == 5):
         Queue.addToQueue(player, queueTime)
-        mentionedPlayerList = Queue.getQueueList(mentionPlayers=True)
+        mentionedPlayerList = Queue.getQueueList(mentionPlayers=True, separator=", ")
 
-        messages.append(QueueUpdateEmbed(
+        return [QueueUpdateEmbed(
             title="Queue Popped!",
             desc=player.mention + " has been added to the queue for " + str(queueTime) + " minutes.\n\n"
             "**Queue is now full!** \n\n"
             "Type !random for random teams.\n"
             "Type !captains to get picked last."
-        ))
-        messages.append("Queue has popped! Get ready!\n" + mentionedPlayerList)
+        ),
+            "Queue has popped! Get ready!\n" + mentionedPlayerList]
 
-    else:
-        Queue.addToQueue(player, queueTime)
-        playerList = Queue.getQueueList()
+    Queue.addToQueue(player, queueTime)
+    playerList = Queue.getQueueList()
 
-        return [QueueUpdateEmbed(
-            title="Player Added to Queue",
-            desc=player.mention + " has been added to the queue for " + str(queueTime) + " minutes.\n\n"
-            "Queue size: " + str(queue_length + 1) + "/6\n\n"
-            "Current queue:\n" + playerList
-        )]
-
-    return messages
+    return [QueueUpdateEmbed(
+        title="Player Added to Queue",
+        desc=player.mention + " has been added to the queue for " + str(queueTime) + " minutes."
+    ).add_field(
+        name="Current Queue " + str(queue_length + 1) + "/6",
+        value=playerList
+    )]
 
 
 def leave(player: Member) -> Embed:
@@ -140,9 +137,10 @@ def leave(player: Member) -> Embed:
         if(Queue.getQueueLength() != 0):
             return QueueUpdateEmbed(
                 title="Player Left Queue",
-                desc=username + " has left the queue.\n\n"
-                "Queue size: " + str(Queue.getQueueLength()) + "/6\n\n"
-                "Remaining players:\n" + playerList
+                desc=username + " has left the queue."
+            ).add_field(
+                name="Remaining Players (" + str(Queue.getQueueLength()) + "/6)",
+                value=playerList
             )
 
         return QueueUpdateEmbed(
@@ -177,8 +175,8 @@ def listQueue(player: Member):
 
     playerList = Queue.getQueueList()
     return QueueUpdateEmbed(
-        title="Current Queue",
-        desc="Queue size: " + str(Queue.getQueueLength()) + "/6\n\n" + "Current queue:\n" + playerList
+        title="Current Queue (" + str(Queue.getQueueLength()) + "/6)",
+        desc=playerList
     )
 
 
@@ -388,26 +386,27 @@ def pick(player: Member, mentions: List[Member]) -> List[Embed]:
             desc="If queue is full, please type **!captains**"
         )
 
+    blueCap, orangeCap = Queue.captainsPop()
+
     if (Queue.validateBluePick(player)):
-        return [blueTeamPick(mentions)]
+        return [blueTeamPick(mentions, blueCap, orangeCap)]
 
     if (Queue.validateOrangePick(player)):
-        return orangeTeamPick(mentions)
+        return orangeTeamPick(mentions, blueCap, orangeCap)
 
-    blueCap, orangeCap = Queue.captainsPop()
     blueTeam, _ = Queue.getTeamList()
     if (len(blueTeam) == 1):
-        return ErrorEmbed(
+        return [ErrorEmbed(
             title="Not the Blue Captain",
             desc="You are not 🔷 BLUE Team Captain 🔷\n\n"
             "🔷 BLUE Team Captain 🔷 is: " + blueCap.mention
-        )
+        )]
 
-    return ErrorEmbed(
+    return [ErrorEmbed(
         title="Not the Orange Captain",
         desc="You are not 🔶 ORANGE Team Captain 🔶 \n\n"
         "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.mention
-    )
+    )]
 
 
 def checkQueueTimes() -> List[Embed] or None:
@@ -437,15 +436,17 @@ def checkQueueTimes() -> List[Embed] or None:
             desc=warn_str + " will be removed from the queue in 5 minutes.\n\n"
             "To stay in the queue, type **!q**"
         ))
+
     if (len(removed_players) > 0):
         rem_str = ",".join([player.mention for player in removed_players])
         playerList = Queue.getQueueList()
         if(Queue.getQueueLength() != 0):
             embeds.append(QueueUpdateEmbed(
                 title="Queue Stale Players Removed",
-                desc=rem_str + " have been removed from the queue.\n\n" +
-                "Queue size: " + str(Queue.getQueueLength()) + "/6\n\n"
-                "Remaining players:\n" + playerList
+                desc=rem_str + " have been removed from the queue."
+            ).add_field(
+                name="Remaining Players (" + str(Queue.getQueueLength()) + "/6)",
+                value=playerList
             ))
         else:
             embeds.append(QueueUpdateEmbed(

@@ -7,6 +7,15 @@ import Queue
 
 
 def update(roles: List[Role]) -> Embed:
+    """
+        Middleware function to check author's permissions before running the update script.
+
+        Parameters:
+            roles: List[discord.Role] - The roles of the author of the message.
+
+        Returns:
+            dicord.Embed - The embedded message to respond with.
+    """
     if(Queue.isBotAdmin(roles)):
         return AdminEmbed(
             title="Checking For Updates",
@@ -25,6 +34,15 @@ def update(roles: List[Role]) -> Embed:
 
 
 def clear(roles: List[Role]) -> Embed:
+    """
+        Clears the current queue if the author has the Bot Admin role.
+
+        Parameters:
+            roles: List[discord.Role] - The roles of the author of the message.
+
+        Returns:
+            dicord.Embed - The embedded message to respond with.
+    """
     if(Queue.isBotAdmin(roles)):
         Queue.clearQueue()
         return AdminEmbed(
