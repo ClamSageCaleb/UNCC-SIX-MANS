@@ -84,7 +84,7 @@ def resetPlayerQueueTime(player: Member, mins_to_queue_for: int = 60) -> None:
     addToQueue(player, mins_to_queue_for)
 
 
-def getQueueList(mentionPlayers: bool = False, includeTimes: bool = True) -> str:
+def getQueueList(mentionPlayers: bool = False, includeTimes: bool = True, separator: str = "\n") -> str:
     playerList = []
 
     for player in currQueue.search(where(BallChaserKey.TEAM) == None):
@@ -98,7 +98,7 @@ def getQueueList(mentionPlayers: bool = False, includeTimes: bool = True) -> str
                 player_name += " (" + str(minutes_diff) + " mins)"
             playerList.append(player_name)
 
-    return ", ".join(playerList)
+    return separator.join(playerList)
 
 
 def randomPop() -> Tuple[List[BallChaser], List[BallChaser]]:
