@@ -154,3 +154,13 @@ header > nav {
   margin: 0;
   margin-left: 10px;
 }
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: rgb(65, 65, 65);
+}
+::-webkit-scrollbar-thumb {
+  background-color: #b3a369;
+}
