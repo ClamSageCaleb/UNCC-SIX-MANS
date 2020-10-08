@@ -6,6 +6,7 @@ from json import dumps
 from tinydb import where
 from tinydb.table import Document
 from typing import List
+import concurrent.futures
 
 
 sorted_lb = None
@@ -125,7 +126,9 @@ def reportMatch(player: Member, whoWon: Team) -> str:
 
     activeMatches.remove(doc_ids=[match.doc_id])
     sorted_lb = sorted(leaderboard.all(), key=lambda x: (x[LbKey.WINS], x[LbKey.WIN_PERC]), reverse=True)
-    AWS.writeRemoteLeaderboard(dumps(sorted_lb))
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.submit(AWS.writeRemoteLeaderboard, dumps(sorted_lb))
 
     return ":white_check_mark: Match has been reported successfully."
 
