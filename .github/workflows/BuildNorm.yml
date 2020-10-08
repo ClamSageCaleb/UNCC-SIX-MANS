@@ -5,9 +5,9 @@ name: Build Norm Executable
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
 
-jobs:  
+jobs:
   build:
     name: Build project files
     runs-on: ${{ matrix.os }}
@@ -33,7 +33,7 @@ jobs:
       - name: Build project
         run: |
           pip install pyinstaller
-          pyinstaller --exclude-module tkinter -i 'media/norm_icon.ico' -n Norm_the_6_Mans_Bot --onefile src/bot.py
+          python -O -m PyInstaller --exclude-module tkinter -i 'media/norm_icon.ico' -n Norm_the_6_Mans_Bot --onefile src/bot.py
 
       - name: Upload Binary as Release Asset - Windows
         if: matrix.os == 'windows-latest'
