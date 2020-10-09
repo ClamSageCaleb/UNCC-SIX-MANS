@@ -133,7 +133,7 @@ async def stale_queue_timer():
 
 @client.command(name='q', aliases=['addmepapanorm', 'Q', 'addmebitch', 'queue', 'join'], pass_context=True)
 async def q(ctx, *arg):
-    messages = SixMans.playerQueue(ctx.message.author, REPORT_CH_IDS[0], *arg)
+    messages = SixMans.playerQueue(ctx.message.author, REPORT_CH_IDS[0] if (len(REPORT_CH_IDS) > 0) else -1, *arg)
     for msg in messages:
         if (isinstance(msg, Embed)):
             await ctx.send(embed=msg)
@@ -143,7 +143,12 @@ async def q(ctx, *arg):
 
 @client.command(name='qq', aliases=['quietq', 'QQ', 'quietqueue', 'shh', 'dontping'], pass_context=True)
 async def qq(ctx, *arg):
-    messages = SixMans.playerQueue(ctx.message.author, REPORT_CH_IDS[0], *arg, quiet=True)
+    messages = SixMans.playerQueue(
+        ctx.message.author,
+        REPORT_CH_IDS[0] if (len(REPORT_CH_IDS) > 0) else -1,
+        *arg,
+        quiet=True
+    )
     for msg in messages:
         if (isinstance(msg, Embed)):
             await ctx.send(embed=msg)
@@ -198,7 +203,7 @@ async def reportMatch(ctx, *arg):
 
 @client.command(name="leaderboard", aliases=["lb", "standings", "rank", "rankings", "stonks"], pass_contex=True)
 async def showLeaderboard(ctx, *arg):
-    await ctx.send(embed=SixMans.leaderboard(ctx.message.author, ctx.message.mentions, LB_CHANNEL, *arg))
+    await ctx.send(embed=SixMans.leaderboard(ctx.message.author, ctx.message.mentions, LEADERBOARD_CH_ID, *arg))
 
 
 @client.command(name="brokenq", aliases=["requeue", "re-q"], pass_contex=True)

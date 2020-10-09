@@ -1,5 +1,5 @@
 import json
-from os import path
+from os import path, mkdir
 from pathlib import Path
 from tinydb import TinyDB
 
@@ -8,10 +8,8 @@ basePath = path.join(Path.home(), "SixMans")
 configPath = path.join(basePath, "config.json")
 dataPath = path.join(basePath, "data.json")
 
-db = TinyDB(dataPath, indent=2)
-currQueue = db.table("queue")
-activeMatches = db.table("activeMatches")
-leaderboard = db.table("leaderboard")
+if (not path.exists(basePath)):
+    mkdir(basePath)
 
 if (not path.exists(configPath)):
     with open(configPath, "w") as config:
@@ -25,6 +23,11 @@ if (not path.exists(configPath)):
             "leaderboard_channel": -1
         }
         json.dump(blankConfigFile, config)
+
+db = TinyDB(dataPath, indent=2)
+currQueue = db.table("queue")
+activeMatches = db.table("activeMatches")
+leaderboard = db.table("leaderboard")
 
 
 def getDiscordToken() -> str:

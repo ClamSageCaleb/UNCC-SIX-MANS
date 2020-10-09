@@ -57,11 +57,18 @@ def playerQueue(player: Member, reportChannelId: int, *arg, quiet: bool = False)
         )]
 
     if (Leaderboard.getActiveMatch(player) is not None):
-        return [ErrorEmbed(
-            title="Match Still Active",
-            desc="Your previous match has not been reported yet."
-            " Report your match in <#{0}> and try again.".format(reportChannelId),
-        )]
+        if (reportChannelId != -1):
+            return [ErrorEmbed(
+                title="Match Still Active",
+                desc="Your previous match has not been reported yet."
+                " Report your match in <#{0}> and try again.".format(reportChannelId),
+            )]
+        else:
+            return [ErrorEmbed(
+                title="Match Still Active",
+                desc="Your previous match has not been reported yet."
+                " Report your match and try again.",
+            )]
 
     if(queue_length == 0):
         Queue.addToQueue(player, queueTime)
@@ -312,10 +319,10 @@ def leaderboard(author: Member, mentions: List[Member], lbChannelId: int, *arg) 
         )
 
     if (len(arg) == 0 and len(mentions) == 0):
+        viewFullLb = "\nTo see the full leaderboard, visit <#{0}>.".format(lbChannelId) if (lbChannelId != -1) else ""
         return InfoEmbed(
             title="UNCC 6 Mans | Top 5",
-            desc=Leaderboard.showLeaderboard(limit=5) +
-            "\nTo see the full leaderboard, visit <#{0}>.".format(lbChannelId)
+            desc=Leaderboard.showLeaderboard(limit=5) + viewFullLb
         )
 
     return ErrorEmbed(
