@@ -1,10 +1,11 @@
 $(() => loadWinners())
 
+const dataBaseUrl = "https://raw.githubusercontent.com/ClamSageCaleb/UNCC-SIX-MANS/master/github_pages_files/winners"
 const winnerFiles = ["summer2020.json"]
 
 const loadWinners = async () => {
   for (const file of winnerFiles) {
-    const data = await fetch(`/github_pages_files/winners/${file}`).then((res) => res.json())
+    const data = await fetch(`${dataBaseUrl}/${file}`).then((res) => res.json())
     data.forEach((player, index) => populateWinners(player, index + 1, file.replace(".json", "")))
   }
 
