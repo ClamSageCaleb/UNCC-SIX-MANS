@@ -89,15 +89,6 @@ async def on_ready():
     print("Logged in as " + client.user.name + " version " + __version__)
 
     try:
-        AWS.readRemoteLeaderboard()
-        if (LEADERBOARD_CH_ID != -1):
-            LB_CHANNEL = client.get_channel(LEADERBOARD_CH_ID)
-            await Utils.updateLeaderboardChannel(LB_CHANNEL)  # update leaderboard channel when remote leaderboard pulls
-    except Exception as e:
-        # this should only throw an exception if the Leaderboard file does not exist or the credentials are invalid
-        print(e)
-
-    try:
         channel = client.get_channel(QUEUE_CH_IDS[0])
         await channel.send(embed=AdminEmbed(
             title="Norm Started",
@@ -105,6 +96,16 @@ async def on_ready():
         ))
     except Exception as e:
         print("! Norm does not have access to post in the queue channel.", e)
+
+    try:
+        AWS.readRemoteLeaderboard()
+        if (LEADERBOARD_CH_ID != -1):
+            LB_CHANNEL = client.get_channel(LEADERBOARD_CH_ID)
+            # update leaderboard channel when remote leaderboard pulls
+            await Utils.updateLeaderboardChannel(LB_CHANNEL)
+    except Exception as e:
+        # this should only throw an exception if the Leaderboard file does not exist or the credentials are invalid
+        print(e)
 
 
 async def stale_queue_timer():

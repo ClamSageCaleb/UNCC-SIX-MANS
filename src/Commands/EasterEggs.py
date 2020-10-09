@@ -4,7 +4,7 @@ from random import choice
 import Queue
 from EmbedHelper import ErrorEmbed, QueueUpdateEmbed
 
-pikaO = 1
+pikaO = 0
 
 
 def EightBall(author: Member):
@@ -43,14 +43,14 @@ def EightBall(author: Member):
 
 
 def Teams() -> str:
-    return "it goes like this:\n"
-    "A team: doesn't practice but somehow is good"
-    "\nB team: everyone hates how their teamates play but don't talk it out to resolve issues"
-    "\nC team: who?"
-    "\nD team: best team"
-    "\nE team: surprisingly solid"
-    "\nF team: how many fkn teams do we have"
-    "\nGG team: originally g team"
+    return ("it goes like this:\n"
+            "A team: doesn't practice but somehow is good"
+            "\nB team: everyone hates how their teamates play but don't talk it out to resolve issues"
+            "\nC team: who?"
+            "\nD team: best team"
+            "\nE team: surprisingly solid"
+            "\nF team: how many fkn teams do we have"
+            "\nGG team: originally g team")
 
 
 def NormQ() -> List[str or Embed]:
@@ -83,18 +83,19 @@ def NormQ() -> List[str or Embed]:
 
 
 def Duis() -> str:
-    return "Papa Duis, mor like God Duis. Don't even think about queueing up against him because he will ruin you."
-    " You think you're good?\n\nyou think you're good at RL??!?!?!?!?!?!?!?!?!?!?\nfuck no\nyou aren't good.\n"
-    "you are shit\nur fkn washed\n You don't even come close to Duis. He will absolutely ruin you without even"
-    " looking. His monitor is off 90 percent of the time, eyes closed too. Never doubt the Duis, bitch"
+    return ("Papa Duis, mor like God Duis. Don't even think about queueing up against him because he will ruin you."
+            " You think you're good?\nyou think you're good at RL??!?!?!?!?!?!?!?!?!?!?\nfuck no\nyou aren't good.\n"
+            "you are shit\nur fkn washed\n You don't even come close to Duis. He will absolutely ruin you without even"
+            " looking. His monitor is off 90 percent of the time, eyes closed too. Never doubt the Duis, bitch")
 
 
 def Zappa() -> str:
-    return "<:zappa:632813684678197268> <:zapp:632813709579911179> brainyzac more like brainyWACK amirite...that is"
-    " until you get absolutely destroyed by him in 6mans and all the self resprct you had for yourself flies out"
-    " the window. Not even sykes can beat him in a 1v1, so what makes you think you can? Do you have 2 emotes in"
-    " this server? I didnt think so idiot, so <:zappa:632813684678197268> and <:zapp:632813709579911179> outta"
-    " here cuz you're the whack one here <:zappa:632813684678197268> <:zapp:632813709579911179>"
+    return ("<:zappa:632813684678197268> <:zapp:632813709579911179> brainyzac more like brainyWACK amirite...that is"
+            " until you get absolutely destroyed by him in 6mans and all the self resprct you had for yourself flies"
+            " out the window. Not even sykes can beat him in a 1v1, so what makes you think you can? Do you have 2"
+            " emotes in this server? I didnt think so idiot, so <:zappa:632813684678197268> and"
+            " <:zapp:632813709579911179> outta here cuz you're the whack one here <:zappa:632813684678197268>"
+            " <:zapp:632813709579911179>")
 
 
 def Pika() -> str:
@@ -114,10 +115,10 @@ def Smh() -> str:
 
 
 def Twan() -> str:
-    return "<:twantheswan:540327706076905472> twantheswan is probably the greatest Rocket League (tm) player to have"
-    " ever walked the face of this planet. When he tries, no one ever beats him. If you beat him in a game, he"
-    " was letting you win just to make you feel better. ur fkn trash at rl unless u r twantheswan. sub to him on"
-    " twitch <:twantheswan:540327706076905472>"
+    return ("<:twantheswan:540327706076905472> twantheswan is probably the greatest Rocket League (tm) player to have"
+            " ever walked the face of this planet. When he tries, no one ever beats him. If you beat him in a game, he"
+            " was letting you win just to make you feel better. ur fkn trash at rl unless u r twantheswan. sub to him"
+            " on twitch <:twantheswan:540327706076905472>")
 
 
 def Sad() -> str:

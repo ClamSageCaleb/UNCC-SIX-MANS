@@ -6,6 +6,7 @@ from json import dumps
 from tinydb import where
 from tinydb.table import Document
 from typing import List
+import concurrent.futures
 
 
 sorted_lb = None
@@ -98,16 +99,16 @@ def reportMatch(player: Member, whoWon: Team) -> str:
                 win = 0
                 loss = 1
 
-            player = leaderboard.get(where(LbKey.ID) == teamMember[MatchKey.ID])
+            player = leaderboard.get(doc_id=teamMember[MatchKey.ID])
             if (not player):
-                leaderboard.insert({
+                leaderboard.insert(Document({
                     LbKey.ID: teamMember[MatchKey.ID],
                     LbKey.NAME: teamMember[MatchKey.NAME],
                     LbKey.WINS: win,
                     LbKey.LOSSES: loss,
                     LbKey.MATCHES: 1,
                     LbKey.WIN_PERC: float(win),
-                })
+                }, doc_id=teamMember[MatchKey.ID]))
             else:
                 updated_player = {
                     LbKey.NAME: teamMember[MatchKey.NAME],
@@ -125,7 +126,9 @@ def reportMatch(player: Member, whoWon: Team) -> str:
 
     activeMatches.remove(doc_ids=[match.doc_id])
     sorted_lb = sorted(leaderboard.all(), key=lambda x: (x[LbKey.WINS], x[LbKey.WIN_PERC]), reverse=True)
-    AWS.writeRemoteLeaderboard(dumps(sorted_lb))
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.submit(AWS.writeRemoteLeaderboard, dumps(sorted_lb))
 
     return ":white_check_mark: Match has been reported successfully."
 
@@ -147,7 +150,7 @@ def showLeaderboard(player: Member = None, limit: int = None) -> str or List[str
         sorted_lb = sorted(leaderboard.all(), key=lambda x: (x[LbKey.WINS], x[LbKey.WIN_PERC]), reverse=True)
 
     if (player):
-        player_data = leaderboard.get(where(LbKey.ID) == player.id)
+        player_data = leaderboard.get(doc_id=player.id)
 
         if (not player_data):
             return player
@@ -185,4 +188,5 @@ def showLeaderboard(player: Member = None, limit: int = None) -> str or List[str
 
 def resetFromRemote(remoteData: dict) -> None:
     leaderboard.truncate()
-    leaderboard.insert_multiple(remoteData)
+    for p in remoteData:
+        leaderboard.insert(Document(p, doc_id=p["id"]))

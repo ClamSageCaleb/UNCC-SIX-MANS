@@ -5,6 +5,7 @@ from discord import Role, Member
 from math import ceil
 import random
 from tinydb import where
+from tinydb.table import Document
 from typing import Tuple, List
 
 
@@ -34,7 +35,7 @@ def clearQueue() -> None:
 
 
 def validateOrangePick(player: Member) -> bool:
-    player = currQueue.get(where(BallChaserKey.ID) == player.id)
+    player = currQueue.get(doc_id=player.id)
     return (
         currQueue.count(where(BallChaserKey.TEAM) == Team.BLUE) == 2 and
         player[BallChaserKey.IS_CAP] and
@@ -43,7 +44,7 @@ def validateOrangePick(player: Member) -> bool:
 
 
 def validateBluePick(player: Member) -> bool:
-    player = currQueue.get(where(BallChaserKey.ID) == player.id)
+    player = currQueue.get(doc_id=player.id)
     return (
         currQueue.count(where(BallChaserKey.TEAM) == Team.BLUE) == 1 and
         player[BallChaserKey.IS_CAP] and
@@ -72,11 +73,11 @@ def addToQueue(player: Member, mins_to_queue_for: int = 60) -> None:
         player.id,
         queueTime=(datetime.now() + timedelta(minutes=mins_to_queue_for))
     )
-    currQueue.insert(new_player.toJSON())
+    currQueue.insert(Document(new_player.toJSON(), doc_id=new_player.id))
 
 
 def removeFromQueue(player: Member) -> None:
-    currQueue.remove(where(BallChaserKey.ID) == player.id)
+    currQueue.remove(doc_ids=[player.id])
 
 
 def resetPlayerQueueTime(player: Member, mins_to_queue_for: int = 60) -> None:
@@ -124,7 +125,7 @@ def captainsPop() -> Tuple[List[BallChaser], List[BallChaser]]:
         orangeCap = BallChaser.fromDocument(orangeCapDoc)
         currQueue.update({BallChaserKey.IS_CAP: True, BallChaserKey.TEAM: Team.ORANGE}, doc_ids=[orangeCapDoc.doc_id])
 
-        blueCapDoc = random.sample(currQueue.search(where(BallChaserKey.IS_CAP) == False), 1)[0]
+        blueCapDoc = random.choice(currQueue.search(where(BallChaserKey.IS_CAP) == False))
         blueCap = BallChaser.fromDocument(blueCapDoc)
         currQueue.update({BallChaserKey.IS_CAP: True, BallChaserKey.TEAM: Team.BLUE}, doc_ids=[blueCapDoc.doc_id])
     else:
@@ -140,7 +141,7 @@ def captainsPop() -> Tuple[List[BallChaser], List[BallChaser]]:
 
 # Returns a string if there is an error. Otherwise returns an empty string
 def pick(player_picked: Member, player_picked_2: Member = None) -> str:
-    playerPickedDoc = currQueue.get(where(BallChaserKey.ID) == player_picked.id)
+    playerPickedDoc = currQueue.get(doc_id=player_picked.id)
 
     if (playerPickedDoc is not None):
         if (player_picked_2):
@@ -151,7 +152,7 @@ def pick(player_picked: Member, player_picked_2: Member = None) -> str:
         return "Player not in queue, dummy. Try again."
 
     if (player_picked_2 is not None):
-        secondPlayerPickedDoc = currQueue.get(where(BallChaserKey.ID) == player_picked_2.id)
+        secondPlayerPickedDoc = currQueue.get(doc_id=player_picked_2.id)
 
         if (secondPlayerPickedDoc):
             currQueue.update({BallChaserKey.TEAM: Team.ORANGE}, doc_ids=[secondPlayerPickedDoc.doc_id])

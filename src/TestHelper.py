@@ -3,6 +3,7 @@ from Queue import clearQueue, BallChaser
 from Types import Team, MatchKey, BallChaserKey
 from datetime import datetime, timedelta
 from tinydb import where
+from tinydb.table import Document
 
 
 def fillQueue():
@@ -39,7 +40,8 @@ def fillQueue():
             queueTime=(datetime.now() + timedelta(minutes=60))
         ),
     ]
-    currQueue.insert_multiple([p.toJSON() for p in new_queue])
+    for p in new_queue:
+        currQueue.insert(Document(p.toJSON(), doc_id=p.id))
 
 
 def fillWithCaptains():
@@ -80,7 +82,8 @@ def fillWithCaptains():
             queueTime=(datetime.now() + timedelta(minutes=60))
         ),
     ]
-    currQueue.insert_multiple([p.toJSON() for p in new_queue])
+    for p in new_queue:
+        currQueue.insert(Document(p.toJSON(), doc_id=p.id))
 
 
 def flipCaptains():
