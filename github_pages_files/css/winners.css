@@ -15,8 +15,10 @@
   background-color: #259963;
   padding: 6px;
   margin-bottom: 0px;
+  margin-top: 2px;
   border-radius: 4px;
   position: relative;
+  user-select: none;
 }
 
 #accordion span {
@@ -32,5 +34,4 @@
   padding: 1rem;
   margin-top: -5px;
   background-color: #444;
-  border-radius: 0px 0px 4px 4px;
 }

@@ -10,6 +10,12 @@
       "request": "launch",
       "program": "${workspaceFolder}/src/bot.py",
       "console": "integratedTerminal"
+    },
+    {
+      "type": "vscode-edge-devtools.debug",
+      "request": "launch",
+      "name": "Launch Microsoft Edge and open the Edge DevTools",
+      "url": "http://127.0.0.1:5500/index.html"
     }
   ]
 }

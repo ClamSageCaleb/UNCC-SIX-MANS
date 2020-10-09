@@ -1,218 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Norm the 6 Mans Bot | UNC Charlotte Niner Esports Rocket League Community</title>
+    <meta name="description" content="The official 6 mans bot for the UNC Charlotte Rocket League Community" />
+    <meta name="keywords" content="Rocket, League, six, mans, UNCC, esports" />
+    <meta name="google-site-verification" content="jiopfGXuyu9EWBmteZN4JN5-qwtR-N9zDfGNn4KduxY" />
+    <link rel="icon" href="./media/norm_icon.ico" />
+    <link rel="stylesheet" href="./github_pages_files/css/main.css" />
+    <link rel="stylesheet" href="./github_pages_files/css/typography.css" />
+    <link rel="stylesheet" href="./github_pages_files/css/leaderboard.css" />
+    <link rel="stylesheet" href="./github_pages_files/css/winners.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto" />
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script defer src="github_pages_files/js/main.js"></script>
+    <script src="github_pages_files/js/winners.js"></script>
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Norm the 6 Mans Bot | UNC Charlotte Niner Esports Rocket League Community</title>
-  <meta name="description" content="The official 6 mans bot for the UNC Charlotte Rocket League Community" />
-  <meta name="keywords" content="Rocket, League, six, mans, UNCC, esports">
-  <meta name="google-site-verification" content="jiopfGXuyu9EWBmteZN4JN5-qwtR-N9zDfGNn4KduxY" />
-  <link rel="icon" href="./media/norm_icon.ico" />
-  <link rel="stylesheet" href="./github_pages_files/css/main.css" />
-  <link rel="stylesheet" href="./github_pages_files/css/typography.css" />
-  <link rel="stylesheet" href="./github_pages_files/css/leaderboard.css" />
-  <link rel="stylesheet" href="./github_pages_files/css/winners.css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
-  <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <script src="github_pages_files/js/main.js"></script>
-  <script src="github_pages_files/js/winners.js"></script>
-</head>
+  <body>
+    <header>
+      <nav id="nav-container" class="center">
+        <img id="logo" alt="Logo" src="media/SixMansLogo.png" width="50px" />
+        <a href="#about">Norm</a>
+        <a href="#commands">Commands</a>
+        <a href="#winners">Previous Winners</a>
+        <a href="#leaderboard">Leaderboard</a>
+      </nav>
+    </header>
 
-<body>
-
-  <header>
-    <div id="nav-container" class="center">
-      <img id="logo" alt="Logo" src="media/SixMansLogo.png" width="50px" />
-      <a href="#about">
-        Norm
-      </a>
-      <a href="#commands">
-        Commands
-      </a>
-      <a href="#winners">
-        Previous Winners
-      </a>
-      <a href="#leaderboard">
-        Leaderboard
-      </a>
-    </div>
-  </header>
-
-  <div id="content">
-    <main>
-      <section id="about">
-        <h1>Norm the 6 Mans Bot</h1>
-        <h2>The official 6 mans bot for the UNC Charlotte Rocket League Community</h2>
-        <img id="norm" draggable="false" alt="Norm" src="media/norm.gif" width=400 />
-        <div class="center">
-          <a href="https://github.com/ClamSageCaleb/UNCC-SIX-MANS/releases" id="github-link">
-            Latest Norm Release
-            <img alt="Github" src="./github_pages_files/icons/github.svg" width=25 />
-          </a>
-          <p>Created by Caleb, Twan, and Tux</p>
-        </div>
-      </section>
-
-      <hr />
-
-      <section id="commands">
-        <h2>Norm's Language</h2>
-
-        <h3>General Commands</h3>
-        <ul>
-          <li><span>!q</span>: adds you to the queue for 60 minutes</li>
-          <li>
-            <span>!q 30</span>: adds you to the queue for 30 minutes
-            <ul>
-              <li>Queue times are intervals of 10 with a minimum of 10 minutes and a maximum of 60 minutes.</li>
-              <li>At 5 minutes left, a warning message is sent.</li>
-              <li>Another message is sent when the player is removed.</li>
-            </ul>
-          </li>
-          <li><span>!qq</span>: adds you to the queue for 60 minutes without pinging everyone</li>
-          <li><span>!leave</span>: removes you from the queue</li>
-          <li><span>!flip</span>: 50/50 chance of joining or leaving the queue</li>
-          <li><span>!list</span>: lists the players currently in the queue</li>
-          <li><span>!brokenq</span>: destroys the latest popped queue</li>
-        </ul>
-
-        <h3>Once the Queue Pops (once the queue has 6 people)</h3>
-        <ul>
-          <li><span>!random</span>: randomly assigns teams</li>
-          <li><span>!captains</span>: chooses two captains to pick teams manually</li>
-        </ul>
-
-        <h3>Captains Mode</h3>
-        <p>Blue captain will pick first and pick ONE player:</p>
-        <ul>
-          <li><span>!pick [mention player]</span></li>
-        </ul>
-        <p>After the blue captain picks a player, the orange captain will pick TWO people:</p>
-        <ul>
-          <li><span>!pick [mention player 1] [mention player 2]</span></li>
-        </ul>
-        <p>The last player will be automatically added to the Blue team</p>
-
-        <h3>Once the Series Ends</h3>
-        <p>One player from each team will report the winner of the series using:</p>
-        <ul>
-          <li><span>!report [winning team color]</span></li>
-        </ul>
-        <em>You cannot queue again until the match has been reported by both teams.</em>
-
-        <h3>The Leaderboard</h3>
-        <ul>
-          <li>
-            <span>!leaderboard</span>: shows the top 5 on the leaderboard
-            <ul>
-              <li><span>!leaderboard me</span>: shows your rank on the leaderboard</li>
-              <li><span>!leaderboard [mention player]</span>: shows mentioned player's rank on the leaderboard</li>
-            </ul>
-          </li>
-        </ul>
-        <em>You must play 5 series before being added to the leaderboard.</em>
-      </section>
-
-      <hr />
-
-      <section id="winners">
-        <h2>Previous Winners</h2>
-        <div id="accordion">
-          <h3>Summer 2020</h3>
-          <div>
-            <table>
-              <thead>
-                <tr>
-                  <th id="rank" scope="col">Rank</th>
-                  <th id="name" scope="col">Name</th>
-                  <th id="wins" scope="col">Wins</th>
-                  <th id="losses" scope="col">Losses</th>
-                  <th id="matches-played" scope="col">Matches Played</th>
-                  <th id="win-perc" scope="col">Win Percentage</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td headers="rank">1</td>
-                  <td headers="name">Don#1424</td>
-                  <td headers="wins">22</td>
-                  <td headers="losses">5</td>
-                  <td headers="matches-played">27</td>
-                  <td headers="win-perc">81%</td>
-                </tr>
-                <tr>
-                  <td headers="rank">2</td>
-                  <td headers="name">BigMan#4592</td>
-                  <td headers="wins">4</td>
-                  <td headers="losses">1</td>
-                  <td headers="matches-played">5</td>
-                  <td headers="win-perc">80%</td>
-                </tr>
-                <tr>
-                  <td headers="rank">3</td>
-                  <td headers="name">daffy#6070</td>
-                  <td headers="wins">11</td>
-                  <td headers="losses">4</td>
-                  <td headers="matches-played">15</td>
-                  <td headers="win-perc">73%</td>
-                </tr>
-                <tr>
-                  <td headers="rank">4</td>
-                  <td headers="name">furryWolfman33#5937</td>
-                  <td headers="wins">13</td>
-                  <td headers="losses">5</td>
-                  <td headers="matches-played">15</td>
-                  <td headers="win-perc">72%</td>
-                </tr>
-                <tr>
-                  <td headers="rank">5</td>
-                  <td headers="name">cash#1547</td>
-                  <td headers="wins">6</td>
-                  <td headers="losses">3</td>
-                  <td headers="matches-played">9</td>
-                  <td headers="win-perc">67%</td>
-                </tr>
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colspan="6">
-                    Season Ended: Aug. 15, 2020
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
+    <div id="content">
+      <main>
+        <section id="about">
+          <h1>Norm the 6 Mans Bot</h1>
+          <h2>The official 6 mans bot for the UNC Charlotte Rocket League Community</h2>
+          <img id="norm" draggable="false" alt="Norm" src="media/norm.gif" width="400" />
+          <div class="center">
+            <a href="https://github.com/ClamSageCaleb/UNCC-SIX-MANS/releases" id="github-link">
+              Latest Norm Release
+              <img alt="Github" src="./github_pages_files/icons/github.svg" width="25" />
+            </a>
+            <p>Created by Caleb, Twan, and Tux</p>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <hr />
+        <hr />
 
-      <section id="leaderboard">
-        <table id="leaderboard-table">
-          <caption>
-            <h2>UNCC 6 Mans | Full Leaderboard</h2>
-          </caption>
-          <thead>
-            <tr>
-              <th id="rank" scope="col">Rank</th>
-              <th id="name" scope="col">Name</th>
-              <th id="wins" scope="col">Wins</th>
-              <th id="losses" scope="col">Losses</th>
-              <th id="matches-played" scope="col">Matches Played</th>
-              <th id="win-perc" scope="col">Win Percentage</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
-    </main>
+        <section id="commands">
+          <h2>Norm's Language</h2>
 
-    <footer>
-      <p>&copy; Websited created by Matt Wells</p>
-    </footer>
-  </div>
-</body>
+          <h3>General Commands</h3>
+          <ul>
+            <li><span>!q</span>: adds you to the queue for 60 minutes</li>
+            <li>
+              <span>!q 30</span>: adds you to the queue for 30 minutes
+              <ul>
+                <li>Queue times are intervals of 10 with a minimum of 10 minutes and a maximum of 60 minutes.</li>
+                <li>At 5 minutes left, a warning message is sent.</li>
+                <li>Another message is sent when the player is removed.</li>
+              </ul>
+            </li>
+            <li><span>!qq</span>: adds you to the queue for 60 minutes without pinging everyone</li>
+            <li><span>!leave</span>: removes you from the queue</li>
+            <li><span>!flip</span>: 50/50 chance of joining or leaving the queue</li>
+            <li><span>!list</span>: lists the players currently in the queue</li>
+            <li><span>!brokenq</span>: destroys the latest popped queue</li>
+          </ul>
 
+          <h3>Once the Queue Pops (once the queue has 6 people)</h3>
+          <ul>
+            <li><span>!random</span>: randomly assigns teams</li>
+            <li><span>!captains</span>: chooses two captains to pick teams manually</li>
+          </ul>
+
+          <h3>Captains Mode</h3>
+          <p>Blue captain will pick first and pick ONE player:</p>
+          <ul>
+            <li><span>!pick [mention player]</span></li>
+          </ul>
+          <p>After the blue captain picks a player, the orange captain will pick TWO people:</p>
+          <ul>
+            <li><span>!pick [mention player 1] [mention player 2]</span></li>
+          </ul>
+          <p>The last player will be automatically added to the Blue team</p>
+
+          <h3>Once the Series Ends</h3>
+          <p>One player from each team will report the winner of the series using:</p>
+          <ul>
+            <li><span>!report [winning team color]</span></li>
+          </ul>
+          <em>You cannot queue again until the match has been reported by both teams.</em>
+
+          <h3>The Leaderboard</h3>
+          <ul>
+            <li>
+              <span>!leaderboard</span>: shows the top 5 on the leaderboard
+              <ul>
+                <li><span>!leaderboard me</span>: shows your rank on the leaderboard</li>
+                <li><span>!leaderboard [mention player]</span>: shows mentioned player's rank on the leaderboard</li>
+              </ul>
+            </li>
+          </ul>
+          <em>You must play 5 series before being added to the leaderboard.</em>
+        </section>
+
+        <hr />
+
+        <section id="winners">
+          <h2>Previous Winners</h2>
+          <div id="accordion">
+            <h3>Summer 2020</h3>
+            <div>
+              <table id="winners-table-summer2020">
+                <thead>
+                  <tr>
+                    <th id="rank" scope="col">Rank</th>
+                    <th id="name" scope="col">Name</th>
+                    <th id="wins" scope="col">Wins</th>
+                    <th id="losses" scope="col">Losses</th>
+                    <th id="matches-played" scope="col">Matches Played</th>
+                    <th id="win-perc" scope="col">Win Percentage</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="6">Season Ended: Aug. 15, 2020</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <hr />
+
+        <section id="leaderboard">
+          <table id="leaderboard-table">
+            <caption>
+              <h2>UNCC 6 Mans | Full Leaderboard</h2>
+              <input id="lbSearch" type="text" placeholder="Search for a ballchaser..." />
+            </caption>
+            <thead>
+              <tr>
+                <th id="rank" scope="col">Rank</th>
+                <th id="name" scope="col">Name</th>
+                <th id="wins" scope="col">Wins</th>
+                <th id="losses" scope="col">Losses</th>
+                <th id="matches-played" scope="col">Matches Played</th>
+                <th id="win-perc" scope="col">Win Percentage</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </section>
+      </main>
+
+      <footer>
+        <p>&copy; Websited created by Matt Wells</p>
+      </footer>
+    </div>
+  </body>
 </html>
