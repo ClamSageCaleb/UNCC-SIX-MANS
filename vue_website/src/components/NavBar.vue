@@ -1,7 +1,7 @@
 <template>
   <div>
     <button id="open-sidebar" @click="state.open = true">
-      <img class="icon" src="../assets/open_sidebar.svg" />
+      <img src="../assets/open_sidebar.svg" />
     </button>
     <div class="sidebar-backdrop" @click="state.open = false" v-if="state.open"></div>
     <transition name="slide">
@@ -9,19 +9,19 @@
         <nav id="nav-container" class="center">
           <button id="close-sidebar" @click="state.open = false"><img src="../assets/close.svg" /></button>
           <a href="#">
-            <img class="icon" src="../assets/home.svg" />
+            <img src="../assets/home.svg" />
             Home
           </a>
           <a href="#commands">
-            <img class="icon" src="../assets/commands.svg" />
+            <img src="../assets/commands.svg" />
             Commands
           </a>
           <a href="#hall-of-fame">
-            <img class="icon" src="../assets/hall_of_fame.svg" />
+            <img src="../assets/hall_of_fame.svg" />
             Hall of Fame
           </a>
           <a href="#leaderboard">
-            <img class="icon" src="../assets/leaderboard.svg" />
+            <img src="../assets/leaderboard.svg" />
             Leaderboard
           </a>
         </nav>
@@ -71,7 +71,7 @@ button {
   top: 0;
   left: 0;
   height: 100%;
-  width: min-content;
+  width: 125px;
   background-color: #00703c;
   padding: 0px 30px;
   overflow: auto;
@@ -95,13 +95,13 @@ button {
       color: #e5e5e5;
       font-family: "Play";
       text-decoration: none !important;
-      margin-top: 50%;
+      margin-top: 5vh;
       text-align: center;
 
-      .icon {
-        @media only screen and (min-device-width: 375px) and (max-device-width: 812px) and (-webkit-min-device-pixel-ratio: 3) {
-          width: 30%;
-        }
+      img {
+        width: 50%;
+        display: block;
+        margin: auto;
       }
     }
   }
