@@ -1,7 +1,7 @@
 $(() => loadWinners())
 
-const dataBaseUrl = "https://raw.githubusercontent.com/ClamSageCaleb/UNCC-SIX-MANS/master/github_pages_files/winners"
-const winnerFiles = ["summer2020.json"]
+const dataBaseUrl = "https://uncc-six-mans.s3.amazonaws.com/winners";
+const winnerFiles = ["summer2020.json", "fall2020.json"];
 
 const loadWinners = async () => {
   for (const file of winnerFiles) {
@@ -24,7 +24,7 @@ function populateWinners(winnerDetails, rank, tableId) {
       <td headers="wins">${winnerDetails["Wins"]}</td>
       <td headers="losses">${winnerDetails["Losses"]}</td>
       <td headers="matches-played">${winnerDetails["Wins"] + winnerDetails["Losses"]}</td>
-      <td headers="win-perc">${parseInt(
+      <td headers="win-perc">${Math.round(
         (winnerDetails["Wins"] / (winnerDetails["Wins"] + winnerDetails["Losses"])) * 100
       )}%</td>
     </tr>`
