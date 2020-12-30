@@ -82,6 +82,23 @@ async def on_command_error(ctx, error):
 
 
 @client.event
+async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
+    if reaction.emoji == "✅":
+        messages = SixMans.playerQueue(user, REPORT_CH_IDS[0] if (len(REPORT_CH_IDS) > 0) else -1)
+        channel = client.get_channel(QUEUE_CH_IDS[0])
+        for msg in messages:
+            if (isinstance(msg, Embed)):
+                await channel.send(embed=msg)
+                print("success1")
+            else:
+                await channel.send(msg)
+                print("success2")
+    elif reaction.emoji == "❌":
+        channel = client.get_channel(QUEUE_CH_IDS[0])
+        await channel.send(embed=SixMans.leave(user))
+
+
+@client.event
 async def on_ready():
     global LB_CHANNEL
 
