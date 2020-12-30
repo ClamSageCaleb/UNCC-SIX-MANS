@@ -111,6 +111,8 @@ async def on_ready():
             title="Norm Started",
             desc="Current version: v{0}".format(__version__)
         ))
+        await channel.send(embed=SixMans.listQueue(client.user.name))
+
     except Exception as e:
         print("! Norm does not have access to post in the queue channel.", e)
 
