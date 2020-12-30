@@ -360,8 +360,8 @@ def main():
             "If you need help locating the token for your bot, visit https://www.writebots.com/discord-bot-token/"
         )
         sleep(5)
-    except Exception:
-        pass
+    except Exception as e:
+        print(e)
 
 
 if __name__ == "__main__":
