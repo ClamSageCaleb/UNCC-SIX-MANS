@@ -89,10 +89,8 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
         for msg in messages:
             if (isinstance(msg, Embed)):
                 await channel.send(embed=msg)
-                print("success1")
             else:
                 await channel.send(msg)
-                print("success2")
     elif reaction.emoji == "❌":
         channel = client.get_channel(QUEUE_CH_IDS[0])
         await channel.send(embed=SixMans.leave(user))
@@ -111,7 +109,9 @@ async def on_ready():
             title="Norm Started",
             desc="Current version: v{0}".format(__version__)
         ))
-        await channel.send(embed=SixMans.listQueue(client.user.name))
+        msg = await channel.send(embed=SixMans.reacts(client.user.name))
+        await msg.add_reaction("✅")
+        await msg.add_reaction("❌")
 
     except Exception as e:
         print("! Norm does not have access to post in the queue channel.", e)
