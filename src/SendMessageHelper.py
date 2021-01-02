@@ -38,4 +38,3 @@ async def sendMessage(
   else:
     txtMsg = await channel.send(content)
     await txtMsg.delete()
-
