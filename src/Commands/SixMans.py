@@ -51,9 +51,13 @@ def playerQueue(player: Member, reportChannelId: int, *arg, quiet: bool = False)
 
     if (Queue.isPlayerInQueue(player)):
         Queue.resetPlayerQueueTime(player, queueTime)
+        playerList = Queue.getQueueList()
         return [QueueUpdateEmbed(
             title="Already in Queue, Queue Time Reset",
             desc="You're already in the queue, but your queue time has been reset to {0} minutes.".format(queueTime),
+        ).add_field(
+            name="Current Queue " + str(queue_length) + "/6",
+            value=playerList
         )]
 
     if (Leaderboard.getActiveMatch(player) is not None):
@@ -88,13 +92,18 @@ def playerQueue(player: Member, reportChannelId: int, *arg, quiet: bool = False)
                 )]
 
     if (queue_length >= 6):
+        playerList = Queue.getQueueList()
         return [ErrorEmbed(
             title="Queue Already Full",
             desc="Queue is already full, please wait until the current queue is set and try again.",
+        ).add_field(
+            name="Current Queue " + str(queue_length) + "/6",
+            value=playerList
         )]
 
     if (queue_length == 5):
         Queue.addToQueue(player, queueTime)
+        playerList = Queue.getQueueList()
         mentionedPlayerList = Queue.getQueueList(mentionPlayers=True, separator=", ")
 
         return [QueueUpdateEmbed(
@@ -102,7 +111,11 @@ def playerQueue(player: Member, reportChannelId: int, *arg, quiet: bool = False)
             desc=player.mention + " has been added to the queue for " + str(queueTime) + " minutes.\n\n"
             "**Queue is now full!** \n\n"
             "Type !random for random teams.\n"
-            "Type !captains to get picked last."
+            "Type !captains to get picked last.\n"
+            "Or react to the emojis for captains or random."
+        ).add_field(
+            name="Current Queue " + str(queue_length + 1) + "/6",
+            value=playerList
         ),
             "Queue has popped! Get ready!\n" + mentionedPlayerList]
 
@@ -149,16 +162,22 @@ def leave(player: Member) -> Embed:
                 name="Remaining Players (" + str(Queue.getQueueLength()) + "/6)",
                 value=playerList
             )
-
         return QueueUpdateEmbed(
             title="Player Left Queue",
             desc=username + " has left the queue.\n\n"
-            "Queue is now empty."
+            "Queue is now empty.\n\n"
+            "Join the queue by reacting to the icons.\n"
+            "You can also join the queue by typing **!q**"
         )
 
+    playerList = Queue.getQueueList()
     return ErrorEmbed(
         title="Not in Queue",
-        desc="You are not in the queue, type **!q** to join"
+        desc="You are not in the queue, react to the icons to join.\n"
+        "Or join the queue by typing **!q**"
+    ).add_field(
+        name="Remaining Players (" + str(Queue.getQueueLength()) + "/6)",
+        value="Queue is empty." if playerList == "" else playerList
     )
 
 
@@ -175,7 +194,8 @@ def listQueue(player: Member):
     if (Queue.getQueueLength() == 0):
         return QueueUpdateEmbed(
             title="Queue is Empty",
-            desc="Join the queue by typing **!q**"
+            desc="Join the queue by reacting to the roles.\n"
+            "You can also join the queue by typing **!q**"
         )
     if (Queue.queueAlreadyPopped()):
         return captains(player)
@@ -185,6 +205,26 @@ def listQueue(player: Member):
         title="Current Queue (" + str(Queue.getQueueLength()) + "/6)",
         desc=playerList
     )
+
+
+def reacts(player: Member):
+    """
+        Sends the message with reaction roles attached to q or leave.
+
+        Parameters:
+            player: dicord.Member - The author of the message.
+
+        Returns:
+            discord.Embed - The embedded message to respond with.
+    """
+    if (Queue.getQueueLength() == 0):
+        return QueueUpdateEmbed(
+            title="Queue is Empty",
+            desc="Join the queue by reacting to the roles.\n"
+            "You can also join the queue by typing **!q**"
+        )
+    if (Queue.getQueueLength() > 0 or Queue.getQueueLength() == 6):
+        return listQueue(player)
 
 
 def captains(player: Member):
@@ -210,7 +250,7 @@ def captains(player: Member):
         )
 
     blueCap, orangeCap = Queue.captainsPop()
-    playerList = Queue.getQueueList(includeTimes=False)
+    playerList = Queue.getQueueList(includeTimes=False, includeLetters=True)
 
     if (Queue.queueAlreadyPopped()):
         blueTeam, _ = Queue.getTeamList()
@@ -273,11 +313,13 @@ def brokenQueue(player: Member) -> Embed:
             dicord.Embed - The embedded message to respond with.
     """
     msg = Leaderboard.brokenQueue(player)
-
     if (":white_check_mark:" in msg):
         return QueueUpdateEmbed(
             title="Popped Queue Removed",
             desc="The popped queue has been removed from active matches. You may now re-queue."
+        ).add_field(
+            name="Current Queue 0/6",
+            value="Queue is empty."
         )
 
     return ErrorEmbed(
@@ -332,7 +374,7 @@ def leaderboard(author: Member, mentions: List[Member], lbChannelId: int, *arg) 
     )
 
 
-async def report(player: Member, lbChannel: Channel, *arg) -> Embed:
+async def report(player: Member, lbChannel: Channel, winningTeam: "blue" or "orange") -> Embed or None:
     """
         Used to report the winning team of the series.
 
@@ -343,37 +385,22 @@ async def report(player: Member, lbChannel: Channel, *arg) -> Embed:
         Returns:
             dicord.Embed - The embedded message to respond with.
     """
-    if (len(arg) == 1 and (str(arg[0]).lower() == Team.BLUE or str(arg[0]).lower() == Team.ORANGE)):
-        msg = Leaderboard.reportMatch(player, arg[0])
+    msg = Leaderboard.reportMatch(player, winningTeam)
 
-        if (":x:" in msg):
-            return ErrorEmbed(
-                title="Match Not Found",
-                desc=msg[4:]
-            )
-        if (":white_check_mark:" in msg):
+    if (":white_check_mark:" in msg):
+        try:
+            # if match was reported successfully, update leaderboard channel
+            await updateLeaderboardChannel(lbChannel)
+        except Exception as e:
+            print("! Norm does not have access to update the leaderboard.", e)
 
-            try:
-                # if match was reported successfully, update leaderboard channel
-                await updateLeaderboardChannel(lbChannel)
-            except Exception as e:
-                print("! Norm does not have access to update the leaderboard.", e)
-
-            return QueueUpdateEmbed(
-                title="Match Reported",
-                desc=msg[19:]
-            )
-
-        return InfoEmbed(
-            title="Match Reported, Needs Confirmation",
-            desc=msg
+        return QueueUpdateEmbed(
+            title="Match Reported",
+            desc=msg[19:]
         )
 
-    return ErrorEmbed(
-        title="Incorrect Report Format",
-        desc="Report only accepts 'blue' or 'orange' as the winner of the match.\n\n"
-        "Use the format: `!report blue`"
-    )
+    else:
+        return None
 
 
 def pick(player: Member, mentions: List[Member]) -> List[Embed]:

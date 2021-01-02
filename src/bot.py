@@ -10,6 +10,7 @@ __email__ = "caleb.benjamin9799@gmail.com / unavailable / mattwells878@gmail.com
 import AWSHelper as AWS
 from DataFiles import getDiscordToken, updateDiscordToken, getChannelIds
 from EmbedHelper import ErrorEmbed, AdminEmbed, HelpEmbed
+from SendMessageHelper import sendMessage
 from asyncio import sleep as asyncsleep
 import discord
 from discord.ext.commands import Bot, CommandNotFound
@@ -83,17 +84,70 @@ async def on_command_error(ctx, error):
 
 @client.event
 async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
-    if reaction.emoji == "✅":
-        messages = SixMans.playerQueue(user, REPORT_CH_IDS[0] if (len(REPORT_CH_IDS) > 0) else -1)
+    global LB_CHANNEL
+
+    if (not user.bot):
         channel = client.get_channel(QUEUE_CH_IDS[0])
-        for msg in messages:
-            if (isinstance(msg, Embed)):
-                await channel.send(embed=msg)
-            else:
-                await channel.send(msg)
-    elif reaction.emoji == "❌":
-        channel = client.get_channel(QUEUE_CH_IDS[0])
-        await channel.send(embed=SixMans.leave(user))
+
+        if (reaction.emoji == "✅"):
+            await reaction.message.delete()
+            messages = SixMans.playerQueue(user, REPORT_CH_IDS[0] if (len(REPORT_CH_IDS) > 0) else -1)
+            for msg in messages:
+                if (msg.title == "Queue Popped!"):
+                    await sendMessage(channel, msg, "popped")
+                else:
+                    await sendMessage(channel, msg, "queue")
+
+        elif (reaction.emoji == "❌"):
+            await reaction.message.delete()
+            await sendMessage(channel, SixMans.leave(user), "queue")
+
+        # regional indicator C
+        elif (reaction.emoji == "\U0001F1E8"):
+            await reaction.message.delete()
+            await sendMessage(channel, SixMans.captains(user), "picks")
+
+        # regional indicator R
+        elif (reaction.emoji == "\U0001F1F7"):
+            await reaction.message.delete()
+            await sendMessage(channel, SixMans.random(user), "active")
+
+        elif (reaction.emoji == "1️⃣"):
+            await reaction.message.delete()
+            await sendMessage(channel, SixMans.pick(user, 1), "picks")
+
+        elif (reaction.emoji == "2️⃣"):
+            await reaction.message.delete()
+            await sendMessage(channel, SixMans.pick(user, 2), "picks")
+
+        elif (reaction.emoji == "3️⃣"):
+            await reaction.message.delete()
+            await sendMessage(channel, SixMans.pick(user, 3), "picks")
+
+        elif (reaction.emoji == "4️⃣"):
+            await reaction.message.delete()
+            await sendMessage(channel, SixMans.pick(user, 4), "picks")
+
+        elif (reaction.emoji == "🔷"):
+            embedMsg = await SixMans.report(user, LB_CHANNEL, "blue")
+            if (embedMsg):
+                embedMsg.add_field(
+                    name="Current Queue 0/6",
+                    value="Queue is empty."
+                )
+                await sendMessage(channel, embedMsg, "queue")
+
+        elif (reaction.emoji == "🔶"):
+            embedMsg = await SixMans.report(user, LB_CHANNEL, "orange")
+            if (embedMsg):
+                embedMsg.add_field(
+                    name="Current Queue 0/6",
+                    value="Queue is empty."
+                )
+                await sendMessage(channel, embedMsg, "queue")
+
+        elif (reaction.emoji == "💔" and reaction.count >= 5):  # majority vote is 4 + 1 for the bot reaction
+            await sendMessage(channel, SixMans.brokenQueue(user), "queue")
 
 
 @client.event
@@ -105,13 +159,11 @@ async def on_ready():
 
     try:
         channel = client.get_channel(QUEUE_CH_IDS[0])
-        await channel.send(embed=AdminEmbed(
+        await sendMessage(channel, AdminEmbed(
             title="Norm Started",
             desc="Current version: v{0}".format(__version__)
-        ))
-        msg = await channel.send(embed=SixMans.reacts(client.user.name))
-        await msg.add_reaction("✅")
-        await msg.add_reaction("❌")
+        ), None)
+        await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
 
     except Exception as e:
         print("! Norm does not have access to post in the queue channel.", e)
@@ -154,10 +206,10 @@ async def stale_queue_timer():
 async def q(ctx, *arg):
     messages = SixMans.playerQueue(ctx.message.author, REPORT_CH_IDS[0] if (len(REPORT_CH_IDS) > 0) else -1, *arg)
     for msg in messages:
-        if (isinstance(msg, Embed)):
-            await ctx.send(embed=msg)
+        if (msg.title == "Queue Popped!"):
+            await sendMessage(ctx, msg, "popped")
         else:
-            await ctx.send(msg)
+            await sendMessage(ctx, msg, "queue")
 
 
 @client.command(name='qq', aliases=['quietq', 'QQ', 'quietqueue', 'shh', 'dontping'], pass_context=True)
@@ -169,20 +221,20 @@ async def qq(ctx, *arg):
         quiet=True
     )
     for msg in messages:
-        if (isinstance(msg, Embed)):
-            await ctx.send(embed=msg)
+        if (msg.title == "Queue Popped!"):
+            await sendMessage(ctx, msg, "popped")
         else:
-            await ctx.send(msg)
+            await sendMessage(ctx, msg, "queue")
 
 
 @client.command(name='leave', aliases=['yoink', 'gtfo', 'getmethefuckouttahere'], pass_context=True)
 async def leave(ctx):
-    await ctx.send(embed=SixMans.leave(ctx.message.author))
+    await sendMessage(ctx, SixMans.leave(ctx.message.author), "queue")
 
 
 @client.command(name='kick', aliases=['remove', 'yeet'], pass_context=True)
 async def kick(ctx):
-    await ctx.send(embed=Admin.kick(ctx.message.mentions, ctx.message.author.roles))
+    await sendMessage(ctx, Admin.kick(ctx.message.mentions, ctx.message.author.roles), "queue")
 
 
 @client.command(name='flip', aliases=['coinflip', 'chance', 'coin'], pass_context=True)
@@ -195,7 +247,7 @@ async def coinFlip(ctx):
 
 @client.command(name='listq', aliases=['list', 'listqueue', 'show', 'showq', 'showqueue', 'inq', 'sq', 'lq', 'status', 'showmethefknqueue', '<:who:599055076639899648>'], pass_context=True)  # noqa
 async def listq(ctx):
-    await ctx.send(embed=SixMans.listQueue(ctx.message.author))
+    await sendMessage(ctx, SixMans.listQueue(ctx.message.author), "queue")
 
 
 @client.command(name='rnd', aliases=['random', 'idontwanttopickteams', 'fuckcaptains'], pass_context=True)
@@ -227,7 +279,7 @@ async def showLeaderboard(ctx, *arg):
 
 @client.command(name="brokenq", aliases=["requeue", "re-q"], pass_contex=True)
 async def removeLastPoppedQueue(ctx):
-    await ctx.send(embed=SixMans.brokenQueue(ctx.message.author))
+    await sendMessage(ctx, Admin.brokenQueue(ctx.message.author, ctx.message.author.roles), "queue")
 
 
 @client.command(name='clear', aliases=['clr', 'reset'], pass_context=True)

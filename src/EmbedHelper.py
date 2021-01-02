@@ -59,7 +59,8 @@ def CaptainsAlreadySetEmbed(blueCap: BallChaser, orangeCap: BallChaser, teamToPi
     if (teamToPick == Team.BLUE):
         embed.add_field(
             name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
-            value="Type `!pick` and mention a player from the queue below.",
+            value="Type `!pick` and mention a player from the queue below.\n"
+            "Or pick a player from the list below by reacting to the numbers.",
             inline=False
         )
     else:

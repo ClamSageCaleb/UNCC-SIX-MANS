@@ -85,8 +85,15 @@ def resetPlayerQueueTime(player: Member, mins_to_queue_for: int = 60) -> None:
     addToQueue(player, mins_to_queue_for)
 
 
-def getQueueList(mentionPlayers: bool = False, includeTimes: bool = True, separator: str = "\n") -> str:
+def getQueueList(mentionPlayers: bool = False, includeTimes: bool = True, separator: str = "\n", includeLetters=False) -> str:  # noqa
     playerList = []
+    letters = [
+        "1️⃣",
+        "2️⃣",
+        "3️⃣",
+        "4️⃣",
+    ]
+    i = 0
 
     for player in currQueue.search(where(BallChaserKey.TEAM) == None):
         player = BallChaser.fromDocument(player)
@@ -97,7 +104,10 @@ def getQueueList(mentionPlayers: bool = False, includeTimes: bool = True, separa
             if (includeTimes):
                 minutes_diff = getQueueTimeRemaining(player)
                 player_name += " (" + str(minutes_diff) + " mins)"
+            if (includeLetters):
+                player_name = letters[i] + " " + player_name
             playerList.append(player_name)
+        i += 1
 
     return separator.join(playerList)
 

@@ -20,8 +20,8 @@ def fillQueue():
             queueTime=(datetime.now() + timedelta(minutes=60))
         ),
         BallChaser(
-            name="Durham#1999",
-            id=251924205271121920,
+            name="h.#0001",
+            id=163667436229361664,
             queueTime=(datetime.now() + timedelta(minutes=60))
         ),
         BallChaser(
@@ -57,13 +57,13 @@ def fillWithCaptains():
         BallChaser(
             name="Don#1424",
             id=528369347807412227,
-            isCap=True,
-            team=Team.ORANGE,
             queueTime=(datetime.now() + timedelta(minutes=60))
         ),
         BallChaser(
-            name="Durham#1999",
-            id=251924205271121920,
+            name="h.#0001",
+            id=163667436229361664,
+            isCap=True,
+            team=Team.ORANGE,
             queueTime=(datetime.now() + timedelta(minutes=60))
         ),
         BallChaser(

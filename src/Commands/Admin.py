@@ -1,5 +1,6 @@
 from CheckForUpdates import updateBot
-from EmbedHelper import AdminEmbed, ErrorEmbed
+from EmbedHelper import AdminEmbed, ErrorEmbed, QueueUpdateEmbed
+from Leaderboard import brokenQueue as lbBrokenQueue
 from typing import List
 from bot import __version__
 from discord import Role, Embed, Member
@@ -102,6 +103,39 @@ def kick(mentions: List[Member], roles: List[Role]) -> Embed:
     return ErrorEmbed(
         title="User Not in Queue",
         desc="To see who is in current queue, type: **!list**"
+    )
+
+
+def brokenQueue(player: Member, roles: List[Role]) -> Embed:
+    """
+        Removes the active match that the author is in.
+
+        Parameters:
+            player: dicord.Member - The author of the message.
+            roles: List[discord.Role] - The roles of the author of the message.
+
+        Returns:
+            dicord.Embed - The embedded message to respond with.
+    """
+    if (not Queue.isBotAdmin(roles)):
+        return ErrorEmbed(
+            title="Permission Denied",
+            desc="You do not have permission to break the queue without a majority."
+        )
+
+    msg = lbBrokenQueue(player)
+    if (":white_check_mark:" in msg):
+        return QueueUpdateEmbed(
+            title="Popped Queue Removed",
+            desc="The popped queue has been removed from active matches. You may now re-queue."
+        ).add_field(
+            name="Current Queue 0/6",
+            value="Queue is empty."
+        )
+
+    return ErrorEmbed(
+        title="Could Not Remove Queue",
+        desc=msg
     )
 
 
