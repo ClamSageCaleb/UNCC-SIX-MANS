@@ -112,6 +112,13 @@ def getQueueList(mentionPlayers: bool = False, includeTimes: bool = True, separa
     return separator.join(playerList)
 
 
+def getAvailablePicks() -> List[BallChaser]:
+    availablePicks = []
+    for player in currQueue.search(where(BallChaserKey.TEAM) == None):
+        availablePicks.append(BallChaser.fromDocument(player))
+    return availablePicks
+
+
 def randomPop() -> Tuple[List[BallChaser], List[BallChaser]]:
     players = [BallChaser.fromDocument(p) for p in currQueue.all()]
     orangeTeam = random.sample(players, 3)
@@ -150,29 +157,24 @@ def captainsPop() -> Tuple[List[BallChaser], List[BallChaser]]:
 
 
 # Returns a string if there is an error. Otherwise returns an empty string
-def pick(player_picked: Member, player_picked_2: Member = None) -> str:
-    playerPickedDoc = currQueue.get(doc_id=player_picked.id)
-    secondPlayerPickedDoc = None
+def pick(player_picked: BallChaser, player_picked_2: BallChaser = None) -> str:
 
-    if (player_picked_2 is not None):
-        secondPlayerPickedDoc = currQueue.get(doc_id=player_picked_2.id)
-
-    if (playerPickedDoc is not None):
-        if (playerPickedDoc[BallChaserKey.TEAM] is not None):
-            return "<@{0}> has already been picked. Pick someone else 4head.".format(playerPickedDoc[BallChaserKey.ID])
-        if (secondPlayerPickedDoc is not None and secondPlayerPickedDoc[BallChaserKey.TEAM] is not None):
+    if (player_picked is not None):
+        if (player_picked.team is not None):
+            return "<@{0}> has already been picked. Pick someone else 4head.".format(player_picked.id)
+        if (player_picked_2 is not None and player_picked_2.team is not None):
             return ("<@{0}> has already been picked."
-                    " Pick someone else 4head. Pick reset.".format(secondPlayerPickedDoc[BallChaserKey.ID]))
+                    " Pick someone else 4head. Pick reset.".format(player_picked_2.id))
         if (player_picked_2):
-            currQueue.update({BallChaserKey.TEAM: Team.ORANGE}, doc_ids=[playerPickedDoc.doc_id])
+            currQueue.update({BallChaserKey.TEAM: Team.ORANGE}, doc_ids=[player_picked.id])
         else:
-            currQueue.update({BallChaserKey.TEAM: Team.BLUE}, doc_ids=[playerPickedDoc.doc_id])
+            currQueue.update({BallChaserKey.TEAM: Team.BLUE}, doc_ids=[player_picked.id])
     else:
         return "Player not in queue, dummy. Try again."
 
     if (player_picked_2 is not None):
-        if (secondPlayerPickedDoc is not None):
-            currQueue.update({BallChaserKey.TEAM: Team.ORANGE}, doc_ids=[secondPlayerPickedDoc.doc_id])
+        if (player_picked_2 is not None):
+            currQueue.update({BallChaserKey.TEAM: Team.ORANGE}, doc_ids=[player_picked_2.id])
 
             currQueue.update({BallChaserKey.TEAM: Team.BLUE}, where(BallChaserKey.TEAM) == None)
         else:

@@ -12,6 +12,8 @@ from EmbedHelper import \
     CaptainsPopEmbed,\
     PlayersSetEmbed
 from Commands.Utils import updateLeaderboardChannel, orangeTeamPick, blueTeamPick
+import discord
+from asyncio import sleep as asyncsleep
 
 
 def playerQueue(player: Member, reportChannelId: int, *arg, quiet: bool = False) -> List[str or Embed]:
@@ -403,7 +405,7 @@ async def report(player: Member, lbChannel: Channel, winningTeam: "blue" or "ora
         return None
 
 
-def pick(player: Member, mentions: List[Member]) -> List[Embed]:
+def pick(player: Member, reactionNumber: int) -> List[Embed]:
     """
         Assigns picked players to their respective teams.
 
@@ -423,10 +425,42 @@ def pick(player: Member, mentions: List[Member]) -> List[Embed]:
     blueCap, orangeCap = Queue.captainsPop()
 
     if (Queue.validateBluePick(player)):
-        return [blueTeamPick(mentions, blueCap, orangeCap)]
+        availablePicks = Queue.getAvailablePicks()
+        return [blueTeamPick(availablePicks[reactionNumber - 1], blueCap, orangeCap)]
 
+# Work in progress.
     if (Queue.validateOrangePick(player)):
-        return orangeTeamPick(mentions, blueCap, orangeCap)
+        if (discord.Reaction.count == 6):
+            if (discord.Reaction.emoji == "1️⃣"):
+                player1 = availablePicks[reactionNumber - 1]
+                if (discord.Reaction.emoji == "2️⃣"):
+                    player2 = availablePicks[reactionNumber - 1]
+                    return orangeTeamPick(player1, player2, blueCap, orangeCap)
+            if (discord.Reaction.emoji == "1️⃣"):
+                player1 = availablePicks[reactionNumber - 1]
+                if (discord.Reaction.emoji == "3️⃣"):
+                    player2 = availablePicks[reactionNumber - 1]
+                    return orangeTeamPick(player1, player2, blueCap, orangeCap)
+            if (discord.Reaction.emoji == "1️⃣"):
+                player1 = availablePicks[reactionNumber - 1]
+                if (discord.Reaction.emoji == "4️⃣"):
+                    player2 = availablePicks[reactionNumber - 1]
+                    return orangeTeamPick(player1, player2, blueCap, orangeCap)
+            if (discord.Reaction.emoji == "2️⃣"):
+                player1 = availablePicks[reactionNumber - 1]
+                if (discord.Reaction.emoji == "3️⃣"):
+                    player2 = availablePicks[reactionNumber - 1]
+                    return orangeTeamPick(player1, player2, blueCap, orangeCap)
+            if (discord.Reaction.emoji == "2️⃣"):
+                player1 = availablePicks[reactionNumber - 1]
+                if (discord.Reaction.emoji == "4️⃣"):
+                    player2 = availablePicks[reactionNumber - 1]
+                    return orangeTeamPick(player1, player2, blueCap, orangeCap)
+            if (discord.Reaction.emoji == "3️⃣"):
+                player1 = availablePicks[reactionNumber - 1]
+                if (discord.Reaction.emoji == "4️⃣"):
+                    player2 = availablePicks[reactionNumber - 1]
+                    return orangeTeamPick(player1, player2, blueCap, orangeCap)
 
     blueTeam, _ = Queue.getTeamList()
     if (len(blueTeam) == 1):

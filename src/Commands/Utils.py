@@ -35,7 +35,7 @@ async def updateLeaderboardChannel(lbChannel: Channel) -> None:
         ))
 
 
-def blueTeamPick(mentions: List[Member], blueCap: BallChaser, orangeCap: BallChaser) -> Embed:
+def blueTeamPick(pickedPlayer: BallChaser, blueCap: BallChaser, orangeCap: BallChaser) -> Embed:
     """
         Helper function for the !pick command when blue team is picking.
 
@@ -46,32 +46,21 @@ def blueTeamPick(mentions: List[Member], blueCap: BallChaser, orangeCap: BallCha
             discord.Embed - An embedded message to send.
 
     """
-    if len(mentions) == 0:
-        return ErrorEmbed(
-            title="No Mentioned Player",
-            desc="No one was mentioned, please pick an available player."
-        )
 
-    if len(mentions) != 1:
-        return ErrorEmbed(
-            title="Too Many Mentioned Players",
-            desc="More than one player mentioned, please pick just one player."
-        )
-
-    errorMsg = Queue.pick(mentions[0])
+    errorMsg = Queue.pick(pickedPlayer)
 
     if (errorMsg == ""):
         playerList = Queue.getQueueList(includeTimes=False)
 
         return QueueUpdateEmbed(
             title="Player Added to Team",
-            desc="🔷 " + blueCap.name + " 🔷 picked " + mentions[0].mention
+            desc="🔷 " + blueCap.name + " 🔷 picked " + pickedPlayer.mention
         ).add_field(
             name="\u200b",
             value="\u200b",
             inline=False
         ).add_field(
-            name="🔶 " + orangeCap.name + " 🔶 please pick TWO players.",
+            name="🔶 " + orangeCap.name + " 🔶 please pick 2️⃣ players.",
             value="Ex: `!pick @Twan @Tux`",
             inline=False
         ).add_field(
@@ -90,7 +79,7 @@ def blueTeamPick(mentions: List[Member], blueCap: BallChaser, orangeCap: BallCha
     )
 
 
-def orangeTeamPick(mentions: List[Member], blueCap: BallChaser, orangeCap: BallChaser) -> List[Embed]:
+def orangeTeamPick(pickedPlayer1: BallChaser, pickedPlayer2: BallChaser, blueCap: BallChaser, orangeCap: BallChaser) -> List[Embed]:
     """
         Helper function for the !pick command when orange team is picking.
 
@@ -101,27 +90,15 @@ def orangeTeamPick(mentions: List[Member], blueCap: BallChaser, orangeCap: BallC
             List[discord.Embed] - A list of embedded messages to send.
 
     """
-    if len(mentions) == 0:
-        return [ErrorEmbed(
-            title="No Mentioned Player",
-            desc="No one was mentioned, please pick an available player."
-        )]
 
-    if len(mentions) != 2:
-        return [ErrorEmbed(
-            title="Incorrect Format",
-            desc="Use format: `!pick @player1 @player2`"
-        )]
-
-    errorMsg = Queue.pick(mentions[0], mentions[1])
+    errorMsg = Queue.pick(pickedPlayer1, pickedPlayer2)
 
     if (errorMsg == ""):
-        [player1, player2] = mentions
         blueTeam, orangeTeam = Queue.getTeamList()
 
         embed1 = QueueUpdateEmbed(
             title="Final Players Added",
-            desc="🔶 " + orangeCap.name + " 🔶 picked " + player1.mention + " & " + player2.mention +
+            desc="🔶 " + orangeCap.name + " 🔶 picked " + pickedPlayer1.mention + " & " + pickedPlayer2.mention +
             "\n\nLast player added to 🔷 Blue Team 🔷"
         )
 
