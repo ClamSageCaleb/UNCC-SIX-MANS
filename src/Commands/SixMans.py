@@ -426,41 +426,7 @@ def pick(player: Member, reactionNumber: int) -> List[Embed]:
 
     if (Queue.validateBluePick(player)):
         availablePicks = Queue.getAvailablePicks()
-        return [blueTeamPick(availablePicks[reactionNumber - 1], blueCap, orangeCap)]
-
-# Work in progress.
-    if (Queue.validateOrangePick(player)):
-        if (discord.Reaction.count == 6):
-            if (discord.Reaction.emoji == "1️⃣"):
-                player1 = availablePicks[reactionNumber - 1]
-                if (discord.Reaction.emoji == "2️⃣"):
-                    player2 = availablePicks[reactionNumber - 1]
-                    return orangeTeamPick(player1, player2, blueCap, orangeCap)
-            if (discord.Reaction.emoji == "1️⃣"):
-                player1 = availablePicks[reactionNumber - 1]
-                if (discord.Reaction.emoji == "3️⃣"):
-                    player2 = availablePicks[reactionNumber - 1]
-                    return orangeTeamPick(player1, player2, blueCap, orangeCap)
-            if (discord.Reaction.emoji == "1️⃣"):
-                player1 = availablePicks[reactionNumber - 1]
-                if (discord.Reaction.emoji == "4️⃣"):
-                    player2 = availablePicks[reactionNumber - 1]
-                    return orangeTeamPick(player1, player2, blueCap, orangeCap)
-            if (discord.Reaction.emoji == "2️⃣"):
-                player1 = availablePicks[reactionNumber - 1]
-                if (discord.Reaction.emoji == "3️⃣"):
-                    player2 = availablePicks[reactionNumber - 1]
-                    return orangeTeamPick(player1, player2, blueCap, orangeCap)
-            if (discord.Reaction.emoji == "2️⃣"):
-                player1 = availablePicks[reactionNumber - 1]
-                if (discord.Reaction.emoji == "4️⃣"):
-                    player2 = availablePicks[reactionNumber - 1]
-                    return orangeTeamPick(player1, player2, blueCap, orangeCap)
-            if (discord.Reaction.emoji == "3️⃣"):
-                player1 = availablePicks[reactionNumber - 1]
-                if (discord.Reaction.emoji == "4️⃣"):
-                    player2 = availablePicks[reactionNumber - 1]
-                    return orangeTeamPick(player1, player2, blueCap, orangeCap)
+        return blueTeamPick(availablePicks[reactionNumber - 1], blueCap, orangeCap)
 
     blueTeam, _ = Queue.getTeamList()
     if (len(blueTeam) == 1):
@@ -469,6 +435,46 @@ def pick(player: Member, reactionNumber: int) -> List[Embed]:
             desc="You are not 🔷 BLUE Team Captain 🔷\n\n"
             "🔷 BLUE Team Captain 🔷 is: " + blueCap.mention
         )]
+
+    _, orangeTeam = Queue.getTeamList()
+    orangeTeamPlayers = []
+    if (len(orangeTeam) == 1):
+        if (Queue.validateOrangePick(player)):
+            availableOrangePicks = Queue.getAvailablePicks()
+            orangeTeamPlayers = [availableOrangePicks[reactionNumber - 1]]
+            availableOrangePicks.remove(availableOrangePicks[reactionNumber - 1])
+            availablePicks = Queue.getQueueList() #for testing (only for now)
+            #discord.Reaction.message.delete()
+            return QueueUpdateEmbed(
+                title="Player Added to Team",
+                desc="🔶 " + orangeCap.name + " 🔶 picked " + availableOrangePicks[reactionNumber - 1].mention
+            ).add_field(
+                name="\u200b",
+                value="\u200b",
+                inline=False
+            ).add_field(
+                name="🔶 " + orangeCap.name + " 🔶 please pick 1️⃣ player.",
+                value="React to the number of the player that you'd like to pick.",
+                inline=False
+            ).add_field(
+                name="\u200b",
+                value="\u200b",
+                inline=False
+            ).add_field(
+                name="Available Picks",
+                value=availablePicks, #for testing (only for now)
+                inline=False
+            ).add_field(
+                name="Orange Captain Picked",
+                value=orangeTeamPlayers,
+                inline=False
+            )
+
+    if (len(orangeTeam) == 2):
+        if (Queue.validateOrangePick(player)):
+            availableOrangePicks = Queue.getAvailablePicks()
+            orangeTeamPlayers.append([availableOrangePicks[reactionNumber - 1]])
+            return [orangeTeamPick(orangeTeamPlayers, blueCap, orangeCap)]
 
     return [ErrorEmbed(
         title="Not the Orange Captain",

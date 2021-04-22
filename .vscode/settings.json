@@ -2,4 +2,5 @@
   "python.linting.flake8Enabled": true,
   "python.linting.enabled": true,
   "python.linting.pylintEnabled": false,
+  "python.pythonPath": "C:\\Users\\noise\\AppData\\Local\\Programs\\Python\\Python38\\python.exe",
 }
