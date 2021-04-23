@@ -79,7 +79,7 @@ def blueTeamPick(pickedPlayer: BallChaser, blueCap: BallChaser, orangeCap: BallC
     )
 
 
-def orangeTeamPick(pickedPlayer1: BallChaser, pickedPlayer2: BallChaser, blueCap: BallChaser, orangeCap: BallChaser) -> List[Embed]:
+def orangeTeamPick(pickedPlayer1: BallChaser, pickedPlayer2: BallChaser, blueCap: BallChaser, orangeCap: BallChaser) -> List[Embed]: # noqa
     """
         Helper function for the !pick command when orange team is picking.
 
