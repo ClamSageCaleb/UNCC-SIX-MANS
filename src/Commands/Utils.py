@@ -50,7 +50,6 @@ def blueTeamPick(pickedPlayer: BallChaser, blueCap: BallChaser, orangeCap: BallC
     errorMsg = Queue.pick(pickedPlayer)
 
     if (errorMsg == ""):
-        playerList = Queue.getQueueList(includeTimes=False)
 
         return QueueUpdateEmbed(
             title="Player Added to Team",
@@ -61,7 +60,7 @@ def blueTeamPick(pickedPlayer: BallChaser, blueCap: BallChaser, orangeCap: BallC
             inline=False
         ).add_field(
             name="🔶 " + orangeCap.name + " 🔶 please pick 2️⃣ players.",
-            value="Ex: `!pick @Twan @Tux`",
+            value="Pick a player from the list below by reacting to the numbers.",
             inline=False
         ).add_field(
             name="\u200b",
@@ -69,7 +68,7 @@ def blueTeamPick(pickedPlayer: BallChaser, blueCap: BallChaser, orangeCap: BallC
             inline=False
         ).add_field(
             name="Available picks",
-            value=playerList,
+            value=Queue.getQueueList(includeTimes=False, includeLetters=True),
             inline=False
         )
 
@@ -109,7 +108,7 @@ def orangeTeamPick(pickedPlayer: BallChaser, orangeTeam: List[BallChaser], blueC
             inline=False
         ).add_field(
             name="Available Picks",
-            value=Queue.getQueueList(includeTimes=False),
+            value=Queue.getQueueList(includeTimes=False, includeLetters=True),
             inline=False
         ).add_field(
             name="Orange Captain Picked",

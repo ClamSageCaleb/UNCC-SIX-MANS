@@ -12,8 +12,6 @@ from EmbedHelper import \
     CaptainsPopEmbed,\
     PlayersSetEmbed
 from Commands.Utils import updateLeaderboardChannel, orangeTeamPick, blueTeamPick
-import discord
-from asyncio import sleep as asyncsleep
 
 
 def playerQueue(player: Member, reportChannelId: int, *arg, quiet: bool = False) -> List[str or Embed]:
@@ -83,14 +81,14 @@ def playerQueue(player: Member, reportChannelId: int, *arg, quiet: bool = False)
             return [QueueUpdateEmbed(
                 title="Queue has Started :shushing_face:",
                 desc="{0} wants to queue!\n\nQueued for {1} minutes.\n\n"
-                "Type **!q** to join".format(player.mention, queueTime),
+                "React to the ✅ to join".format(player.mention, queueTime),
             )]
 
         return ["@here Queue has started!",
                 QueueUpdateEmbed(
                     title="Queue Started",
                     desc="{0} wants to queue!\n\nQueued for {1} minutes.\n\n"
-                    "Type **!q** to join".format(player.mention, queueTime),
+                    "React to the ✅ to join".format(player.mention, queueTime),
                 )]
 
     if (queue_length >= 6):
@@ -112,9 +110,7 @@ def playerQueue(player: Member, reportChannelId: int, *arg, quiet: bool = False)
             title="Queue Popped!",
             desc=player.mention + " has been added to the queue for " + str(queueTime) + " minutes.\n\n"
             "**Queue is now full!** \n\n"
-            "Type !random for random teams.\n"
-            "Type !captains to get picked last.\n"
-            "Or react to the emojis for captains or random."
+            "Or react to the \U0001F1E8 or \U0001F1F7 for captains or random.\n"
         ).add_field(
             name="Current Queue " + str(queue_length + 1) + "/6",
             value=playerList
@@ -168,15 +164,13 @@ def leave(player: Member) -> Embed:
             title="Player Left Queue",
             desc=username + " has left the queue.\n\n"
             "Queue is now empty.\n\n"
-            "Join the queue by reacting to the icons.\n"
-            "You can also join the queue by typing **!q**"
+            "Join the queue by reacting to the ✅.\n"
         )
 
     playerList = Queue.getQueueList()
     return ErrorEmbed(
         title="Not in Queue",
-        desc="You are not in the queue, react to the icons to join.\n"
-        "Or join the queue by typing **!q**"
+        desc="You are not in the queue, react to the ✅ to join.\n"
     ).add_field(
         name="Remaining Players (" + str(Queue.getQueueLength()) + "/6)",
         value="Queue is empty." if playerList == "" else playerList
@@ -196,8 +190,7 @@ def listQueue(player: Member):
     if (Queue.getQueueLength() == 0):
         return QueueUpdateEmbed(
             title="Queue is Empty",
-            desc="Join the queue by reacting to the roles.\n"
-            "You can also join the queue by typing **!q**"
+            desc="Join the queue by reacting to the ✅.\n"
         )
     if (Queue.queueAlreadyPopped()):
         return captains(player)
@@ -419,17 +412,16 @@ def pick(player: Member, reactionNumber: int) -> List[Embed]:
     if (not Queue.queueAlreadyPopped()):
         return ErrorEmbed(
             title="Captains Not Set",
-            desc="If queue is full, please type **!captains**"
+            desc="If queue is full, please react to the \U0001F1E8 or \U0001F1F7"  # noqa | regional indicator C / regional indicator R
         )
 
     blueCap, orangeCap = Queue.captainsPop()
 
+    blueTeam, _ = Queue.getTeamList()
     if (Queue.validateBluePick(player)):
         availablePicks = Queue.getAvailablePicks()
         return blueTeamPick(availablePicks[reactionNumber - 1], blueCap, orangeCap)
-
-    blueTeam, _ = Queue.getTeamList()
-    if (len(blueTeam) == 1):
+    else:
         return [ErrorEmbed(
             title="Not the Blue Captain",
             desc="You are not 🔷 BLUE Team Captain 🔷\n\n"
@@ -440,12 +432,12 @@ def pick(player: Member, reactionNumber: int) -> List[Embed]:
     if (Queue.validateOrangePick(player)):
         availablePicks = Queue.getAvailablePicks()
         return orangeTeamPick(availablePicks[reactionNumber - 1], orangeTeam, blueCap, orangeCap)
-
-    return [ErrorEmbed(
-        title="Not the Orange Captain",
-        desc="You are not 🔶 ORANGE Team Captain 🔶 \n\n"
-        "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.mention
-    )]
+    else:
+        return [ErrorEmbed(
+            title="Not the Orange Captain",
+            desc="You are not 🔶 ORANGE Team Captain 🔶 \n\n"
+            "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.mention
+        )]
 
 
 def checkQueueTimes() -> List[Embed] or None:
@@ -473,7 +465,7 @@ def checkQueueTimes() -> List[Embed] or None:
         embeds.append(InfoEmbed(
             title="Stale Player Queue Warning",
             desc=warn_str + " will be removed from the queue in 5 minutes.\n\n"
-            "To stay in the queue, type **!q**"
+            "To stay in the queue, react to the ✅"
         ))
 
     if (len(removed_players) > 0):

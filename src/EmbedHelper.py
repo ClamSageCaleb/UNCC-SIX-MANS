@@ -59,15 +59,14 @@ def CaptainsAlreadySetEmbed(blueCap: BallChaser, orangeCap: BallChaser, teamToPi
     if (teamToPick == Team.BLUE):
         embed.add_field(
             name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
-            value="Type `!pick` and mention a player from the queue below.\n"
-            "Or pick a player from the list below by reacting to the numbers.",
+            value="Pick a player from the list below by reacting to the numbers.\n",
             inline=False
         )
     else:
         embed.add_field(
             name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-            value="Please pick two players.\nEx: `!pick @Twan @Tux`\n"
-            "Or react to the numbers to select a player.",
+            value="Please pick two players.\n"
+            "React to the numbers to select a player.",
             inline=False
         )
 
@@ -95,8 +94,7 @@ def CaptainsPopEmbed(blueCap: BallChaser, orangeCap: BallChaser, playerList: str
         inline=False
     ).add_field(
         name="🔷 " + blueCap.mention + " 🔷 picks first",
-        value="Type **!pick** and mention a player from the queue below.\n"
-        "Or react to the numbers to select a player.",
+        value="Pick a player from the list below by reacting to the numbers.\n",
         inline=False
     ).add_field(
         name="\u200b",
