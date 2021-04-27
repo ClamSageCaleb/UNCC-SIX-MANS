@@ -157,29 +157,15 @@ def captainsPop() -> Tuple[List[BallChaser], List[BallChaser]]:
 
 
 # Returns a string if there is an error. Otherwise returns an empty string
-def pick(player_picked: BallChaser, player_picked_2: BallChaser = None) -> str:
+def pick(player_picked: BallChaser) -> str:
 
-    if (player_picked is not None):
-        if (player_picked.team is not None):
-            return "<@{0}> has already been picked. Pick someone else 4head.".format(player_picked.id)
-        if (player_picked_2 is not None and player_picked_2.team is not None):
-            return ("<@{0}> has already been picked."
-                    " Pick someone else 4head. Pick reset.".format(player_picked_2.id))
-        if (player_picked_2):
-            currQueue.update({BallChaserKey.TEAM: Team.ORANGE}, doc_ids=[player_picked.id])
-        else:
-            currQueue.update({BallChaserKey.TEAM: Team.BLUE}, doc_ids=[player_picked.id])
-    else:
-        return "Player not in queue, dummy. Try again."
-
-    if (player_picked_2 is not None):
-        if (player_picked_2 is not None):
-            currQueue.update({BallChaserKey.TEAM: Team.ORANGE}, doc_ids=[player_picked_2.id])
-
-            currQueue.update({BallChaserKey.TEAM: Team.BLUE}, where(BallChaserKey.TEAM) == None)
-        else:
-            return "{0} is not in the queue. Try again.".format(player_picked_2.name)
-
+    blueTeam, orangeTeam = getTeamList()
+    if (len(blueTeam) == 1):
+        currQueue.update({BallChaserKey.TEAM: Team.BLUE}, doc_ids=[player_picked.id])
+    elif (len(blueTeam) == 2):
+        currQueue.update({BallChaserKey.TEAM: Team.ORANGE}, doc_ids=[player_picked.id])
+    if (len(orangeTeam) == 2):
+        currQueue.update({BallChaserKey.TEAM: Team.BLUE}, where(BallChaserKey.TEAM) == None)
     return ""
 
 

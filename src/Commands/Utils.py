@@ -79,7 +79,7 @@ def blueTeamPick(pickedPlayer: BallChaser, blueCap: BallChaser, orangeCap: BallC
     )
 
 
-def orangeTeamPick(pickedPlayer1: BallChaser, pickedPlayer2: BallChaser, blueCap: BallChaser, orangeCap: BallChaser) -> List[Embed]: # noqa
+def orangeTeamPick(pickedPlayer: BallChaser, orangeTeam: List[BallChaser], blueCap: BallChaser, orangeCap: BallChaser) -> Embed: # noqa
     """
         Helper function for the !pick command when orange team is picking.
 
@@ -90,26 +90,39 @@ def orangeTeamPick(pickedPlayer1: BallChaser, pickedPlayer2: BallChaser, blueCap
             List[discord.Embed] - A list of embedded messages to send.
 
     """
-
-    errorMsg = Queue.pick(pickedPlayer1, pickedPlayer2)
-
-    if (errorMsg == ""):
-        blueTeam, orangeTeam = Queue.getTeamList()
-
-        embed1 = QueueUpdateEmbed(
-            title="Final Players Added",
-            desc="🔶 " + orangeCap.name + " 🔶 picked " + pickedPlayer1.mention + " & " + pickedPlayer2.mention +
-            "\n\nLast player added to 🔷 Blue Team 🔷"
+    Queue.pick(pickedPlayer)
+    if (len(orangeTeam) == 1):
+        return QueueUpdateEmbed(
+            title="Player Added to Team",
+            desc="🔶 " + orangeCap.name + " 🔶 picked " + pickedPlayer.mention
+        ).add_field(
+            name="\u200b",
+            value="\u200b",
+            inline=False
+        ).add_field(
+            name="🔶 " + orangeCap.name + " 🔶 please pick 1️⃣ player.",
+            value="React to the number of the player that you'd like to pick.",
+            inline=False
+        ).add_field(
+            name="\u200b",
+            value="\u200b",
+            inline=False
+        ).add_field(
+            name="Available Picks",
+            value=Queue.getQueueList(includeTimes=False),
+            inline=False
+        ).add_field(
+            name="Orange Captain Picked",
+            value=pickedPlayer.name.split('#')[0],
+            inline=False
         )
 
-        embed2 = PlayersSetEmbed(blueTeam, orangeTeam)
+    else:
+        blueTeam, orangeTeam = Queue.getTeamList()
+
+        embed = PlayersSetEmbed(blueTeam, orangeTeam)
 
         Leaderboard.startMatch(blueTeam, orangeTeam)
         Queue.clearQueue()
 
-        return [embed1, embed2]
-
-    return [ErrorEmbed(
-        title="Player(s) Not Found",
-        desc="Either one or both of the players you mentioned is not in the queue. Try again."
-    )]
+        return embed

@@ -437,50 +437,9 @@ def pick(player: Member, reactionNumber: int) -> List[Embed]:
         )]
 
     _, orangeTeam = Queue.getTeamList()
-    orangeTeamPlayers = []
-    picks = []
-    players = []
-    if (len(orangeTeam) == 1):
-        if (Queue.validateOrangePick(player)):
-            availableOrangePicks = Queue.getAvailablePicks()
-            orangeTeamPlayers = [availableOrangePicks[reactionNumber - 1]]
-            picked = availableOrangePicks[reactionNumber - 1]
-            availableOrangePicks.remove(availableOrangePicks[reactionNumber - 1])
-            for i in availableOrangePicks:
-                picks.append(i.mention)
-            for k in orangeTeamPlayers:
-                players.append(k.mention)
-            #discord.Reaction.message.delete()
-            return QueueUpdateEmbed(
-                title="Player Added to Team",
-                desc="🔶 " + orangeCap.name + " 🔶 picked " + picked.mention
-            ).add_field(
-                name="\u200b",
-                value="\u200b",
-                inline=False
-            ).add_field(
-                name="🔶 " + orangeCap.name + " 🔶 please pick 1️⃣ player.",
-                value="React to the number of the player that you'd like to pick.",
-                inline=False
-            ).add_field(
-                name="\u200b",
-                value="\u200b",
-                inline=False
-            ).add_field(
-                name="Available Picks",
-                value='\n'.join(picks),
-                inline=False
-            ).add_field(
-                name="Orange Captain Picked",
-                value='\n'.join(players),
-                inline=False
-            )
-
-    if (len(orangeTeam) != 1):
-        if (Queue.validateOrangePick(player)):
-            availableOrangePicks = Queue.getAvailablePicks()
-            orangeTeamPlayers.append([availableOrangePicks[reactionNumber - 1]])
-            return [orangeTeamPick(orangeTeamPlayers, blueCap, orangeCap)]
+    if (Queue.validateOrangePick(player)):
+        availablePicks = Queue.getAvailablePicks()
+        return orangeTeamPick(availablePicks[reactionNumber - 1], orangeTeam, blueCap, orangeCap)
 
     return [ErrorEmbed(
         title="Not the Orange Captain",
