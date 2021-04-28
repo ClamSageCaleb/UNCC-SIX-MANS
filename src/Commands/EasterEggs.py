@@ -38,6 +38,7 @@ def EightBall(author: Member):
         'Some questions are best left unanswered...',
         'no',
         'Absolutely not',
+        'h',
     ]
     return choice(possible_responses) + ", " + author.mention
 

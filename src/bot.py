@@ -93,6 +93,8 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
         channel = client.get_channel(QUEUE_CH_IDS[0])
 
         if (reaction.emoji == "✅"):
+            if (len(blueTeam) > 0):
+                return
             await reaction.message.delete()
             messages = SixMans.playerQueue(user, REPORT_CH_IDS[0] if (len(REPORT_CH_IDS) > 0) else -1)
             for msg in messages:
@@ -102,6 +104,8 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
                     await sendMessage(channel, msg, "queue")
 
         elif (reaction.emoji == "❌"):
+            if (len(blueTeam) > 0):
+                return
             await reaction.message.delete()
             await sendMessage(channel, SixMans.leave(user), "queue")
 
@@ -117,40 +121,36 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
             await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
 
         elif (reaction.emoji == "1️⃣"):
-            if (len(orangeTeam) == 2):
+            if (len(orangeTeam) == 2 and Queue.validateOrangePick(user)):
                 await reaction.message.delete()
                 await sendMessage(channel, SixMans.pick(user, 1), "active")
                 await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
             elif (len(blueTeam) == 0):
-                await reaction.message.delete()
-                await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
+                return
             else:
                 await reaction.message.delete()
                 await sendMessage(channel, SixMans.pick(user, 1), "picks")
 
         elif (reaction.emoji == "2️⃣"):
-            if (len(orangeTeam) == 2):
+            if (len(orangeTeam) == 2 and Queue.validateOrangePick(user)):
                 await reaction.message.delete()
                 await sendMessage(channel, SixMans.pick(user, 2), "active")
                 await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
             elif (len(blueTeam) == 0):
-                await reaction.message.delete()
-                await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
+                return
             else:
                 await reaction.message.delete()
                 await sendMessage(channel, SixMans.pick(user, 2), "picks")
 
         elif (reaction.emoji == "3️⃣"):
             if (len(blueTeam) == 0):
-                await reaction.message.delete()
-                await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
+                return
             await reaction.message.delete()
             await sendMessage(channel, SixMans.pick(user, 3), "picks")
 
         elif (reaction.emoji == "4️⃣"):
             if (len(blueTeam) == 0):
-                await reaction.message.delete()
-                await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
+                return
             await reaction.message.delete()
             await sendMessage(channel, SixMans.pick(user, 4), "picks")
 
@@ -416,6 +416,16 @@ async def fuck(ctx):
 @client.command(name="help", pass_context=True)
 async def help(ctx):
     await ctx.send(embed=HelpEmbed())
+
+
+@client.command(name="oops", pass_context=True)
+async def oops(ctx):
+    await ctx.send("I didn't think the queue would pop...")
+
+
+@client.command(name="h", pass_contex=True)
+async def h(ctx):
+    await ctx.send("h")
 
 
 """

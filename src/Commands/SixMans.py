@@ -61,18 +61,16 @@ def playerQueue(player: Member, reportChannelId: int, *arg, quiet: bool = False)
         )]
 
     if (Leaderboard.getActiveMatch(player) is not None):
-        if (reportChannelId != -1):
-            return [ErrorEmbed(
-                title="Match Still Active",
-                desc="Your previous match has not been reported yet."
-                " Report your match in <#{0}> and try again.".format(reportChannelId),
-            )]
-        else:
-            return [ErrorEmbed(
-                title="Match Still Active",
-                desc="Your previous match has not been reported yet."
-                " Report your match and try again.",
-            )]
+        return [ErrorEmbed(
+            title="Your previous match has not been reported yet.",
+            desc="React to the 🔷 or 🔶 to report the match.\n"
+            "One player from each team must report the match.\n"
+            "You will not be able to queue again until the match has been reported!"
+        ).add_field(
+            name="React to the 💔 to broken queue.",
+            value="There must be at least 4️⃣ players that want to broken queue.",
+            inline=False
+        )]
 
     if(queue_length == 0):
         Queue.addToQueue(player, queueTime)
