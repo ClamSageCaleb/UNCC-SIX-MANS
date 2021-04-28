@@ -175,6 +175,17 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
         elif (reaction.emoji == "💔" and reaction.count >= 5):  # majority vote is 4 + 1 for the bot reaction
             await sendMessage(channel, SixMans.brokenQueue(user), "queue")
 
+        # regional indicator b
+        elif (reaction.emoji == "\U0001F1E7" and Queue.isBotAdmin(user.roles)):
+            await reaction.message.delete()
+            await sendMessage(channel, Admin.brokenQueue(user, user.roles), None)
+            await sendMessage(channel, SixMans.listQueue(user), "queue")
+
+        elif (reaction.emoji == "🛑" and Queue.isBotAdmin(user.roles)):
+            await reaction.message.delete()
+            await sendMessage(channel, Admin.clear(user.roles), None)
+            await sendMessage(channel, SixMans.listQueue(user), "queue")
+
 
 @client.event
 async def on_ready():
@@ -281,7 +292,7 @@ async def random(ctx):
     await ctx.send(embed=SixMans.random(ctx.message.author))
 
 
-@client.command(name='captains', aliases=['cap', 'iwanttopickteams', 'Captains', 'captain', 'Captain', 'Cap'], pass_context=True)  # noqa
+@client.command(name='captains', aliases=['cap', 'iwanttopickteams', 'fuckrandom', 'Captains', 'captain', 'Captain', 'Cap'], pass_context=True)  # noqa
 async def captains(ctx):
     await ctx.send(embed=SixMans.captains(ctx.message.author))
 
@@ -310,7 +321,7 @@ async def removeLastPoppedQueue(ctx):
 
 @client.command(name='clear', aliases=['clr', 'reset'], pass_context=True)
 async def clear(ctx):
-    await ctx.send(embed=Admin.clear(ctx.message.author.roles))
+    await sendMessage(ctx, Admin.clear(ctx.message.author.roles), "queue")
 
 
 @client.command(name="fill", pass_context=True)
