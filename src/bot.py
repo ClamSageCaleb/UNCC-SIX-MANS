@@ -1,10 +1,10 @@
-__author__ = "Caleb Smith / Twan / Matt Wells (Tux)"
+__author__ = "Caleb Smith / Twan / Matt Wells (Tux) / Austin Baker (h)"
 __copyright__ = "Copyright 2019, MIT License"
-__credits__ = "Caleb Smith / Twan / Matt Wells (Tux)"
+__credits__ = "Caleb Smith / Twan / Matt Wells (Tux) / Austin Baker (h)"
 __license__ = "MIT"
-__version__ = "6.0.0"
-__maintainer__ = "Caleb Smith / Twan / Matt Wells (Tux)"
-__email__ = "caleb.benjamin9799@gmail.com / unavailable / mattwells878@gmail.com"
+__version__ = "7.0.0"
+__maintainer__ = "Caleb Smith / Twan / Matt Wells (Tux) / Austin Baker (h)"
+__email__ = "caleb.benjamin9799@gmail.com / unavailable / mattwells878@gmail.com / noise.9no@gmail.com"
 
 
 import AWSHelper as AWS
@@ -98,7 +98,7 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
             await reaction.message.delete()
             messages = SixMans.playerQueue(user, REPORT_CH_IDS[0] if (len(REPORT_CH_IDS) > 0) else -1)
             for msg in messages:
-                if (msg.title == "Queue Popped!"):
+                if (msg.title == "Queue Popped!" or Queue.getQueueLength() == 6):
                     await sendMessage(channel, msg, "popped")
                 else:
                     await sendMessage(channel, msg, "queue")
