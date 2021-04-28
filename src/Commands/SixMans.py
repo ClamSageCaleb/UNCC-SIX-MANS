@@ -398,7 +398,7 @@ async def report(player: Member, lbChannel: Channel, winningTeam: "blue" or "ora
         return None
 
 
-def pick(player: Member, reactionNumber: int) -> List[Embed]:
+def pick(player: Member, reactionNumber: int) -> Embed:
     """
         Assigns picked players to their respective teams.
 
@@ -421,23 +421,51 @@ def pick(player: Member, reactionNumber: int) -> List[Embed]:
     if (Queue.validateBluePick(player)):
         availablePicks = Queue.getAvailablePicks()
         return blueTeamPick(availablePicks[reactionNumber - 1], blueCap, orangeCap)
-    else:
-        return [ErrorEmbed(
-            title="Not the Blue Captain",
-            desc="You are not 🔷 BLUE Team Captain 🔷\n\n"
-            "🔷 BLUE Team Captain 🔷 is: " + blueCap.mention
-        )]
+    if (len(blueTeam) == 1):
+        if (Queue.validateBluePick(player) == False):
+            return ErrorEmbed(
+                title="Not the Blue Captain",
+                desc="You are not 🔷 BLUE Team Captain 🔷\n\n"
+                "🔷 BLUE Team Captain 🔷 is: " + blueCap.mention
+            ).add_field(
+                name="🔷 " + blueCap.name.split('#')[0] + " 🔷 picks first. \n"
+                "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.name.split('#')[0],
+                value="Pick a player from the list below by reacting to the numbers.\n",
+                inline=False
+            ).add_field(
+                name="\u200b",
+                value="\u200b",
+                inline=False
+            ).add_field(
+                name="Available picks",
+                value=Queue.getQueueList(includeTimes=False, includeLetters=True),
+                inline=False
+            )
 
     _, orangeTeam = Queue.getTeamList()
     if (Queue.validateOrangePick(player)):
         availablePicks = Queue.getAvailablePicks()
         return orangeTeamPick(availablePicks[reactionNumber - 1], orangeTeam, blueCap, orangeCap)
-    else:
-        return [ErrorEmbed(
-            title="Not the Orange Captain",
-            desc="You are not 🔶 ORANGE Team Captain 🔶 \n\n"
-            "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.mention
-        )]
+    if (len(blueTeam) == 2):
+        if (Queue.validateOrangePick(player) == False):
+            return ErrorEmbed(
+                title="Not the Orange Captain",
+                desc="You are not 🔶 ORANGE Team Captain 🔶 \n\n"
+                "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.mention
+            ).add_field(
+                name="🔶 " + orangeCap.name.split('#')[0] + " 🔶 picks second. \n"
+                "🔷 BLUE Team Captain 🔷 is: " + blueCap.name.split('#')[0],
+                value="Pick a player from the list below by reacting to the numbers.\n",
+                inline=False
+            ).add_field(
+                name="\u200b",
+                value="\u200b",
+                inline=False
+            ).add_field(
+                name="Available picks",
+                value=Queue.getQueueList(includeTimes=False, includeLetters=True),
+                inline=False
+            )
 
 
 def checkQueueTimes() -> List[Embed] or None:

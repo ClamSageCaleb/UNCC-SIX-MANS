@@ -20,6 +20,7 @@ from time import sleep
 from typing import List
 from Commands import EasterEggs, SixMans, Testing, Admin, Utils
 from discord.embeds import Embed
+import Queue
 
 # Bot prefix and Discord Bot token
 BOT_PREFIX = ("!")
@@ -86,6 +87,8 @@ async def on_command_error(ctx, error):
 async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
     global LB_CHANNEL
 
+    blueTeam, orangeTeam = Queue.getTeamList()
+
     if (not user.bot):
         channel = client.get_channel(QUEUE_CH_IDS[0])
 
@@ -111,20 +114,43 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
         elif (reaction.emoji == "\U0001F1F7"):
             await reaction.message.delete()
             await sendMessage(channel, SixMans.random(user), "active")
+            await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
 
         elif (reaction.emoji == "1️⃣"):
-            await reaction.message.delete()
-            await sendMessage(channel, SixMans.pick(user, 1), "picks")
+            if (len(orangeTeam) == 2):
+                await reaction.message.delete()
+                await sendMessage(channel, SixMans.pick(user, 1), "active")
+                await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
+            elif (len(blueTeam) == 0):
+                await reaction.message.delete()
+                await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
+            else:
+                await reaction.message.delete()
+                await sendMessage(channel, SixMans.pick(user, 1), "picks")
 
         elif (reaction.emoji == "2️⃣"):
-            await reaction.message.delete()
-            await sendMessage(channel, SixMans.pick(user, 2), "picks")
+            if (len(orangeTeam) == 2):
+                await reaction.message.delete()
+                await sendMessage(channel, SixMans.pick(user, 2), "active")
+                await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
+            elif (len(blueTeam) == 0):
+                await reaction.message.delete()
+                await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
+            else:
+                await reaction.message.delete()
+                await sendMessage(channel, SixMans.pick(user, 2), "picks")
 
         elif (reaction.emoji == "3️⃣"):
+            if (len(blueTeam) == 0):
+                await reaction.message.delete()
+                await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
             await reaction.message.delete()
             await sendMessage(channel, SixMans.pick(user, 3), "picks")
 
         elif (reaction.emoji == "4️⃣"):
+            if (len(blueTeam) == 0):
+                await reaction.message.delete()
+                await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
             await reaction.message.delete()
             await sendMessage(channel, SixMans.pick(user, 4), "picks")
 
@@ -367,6 +393,7 @@ async def normq(ctx):
     for msg in messages:
         if (isinstance(msg, Embed)):
             await ctx.send(embed=msg)
+            await sendMessage(ctx, SixMans.reacts(client.user.name), "queue")
         else:
             await ctx.send(msg)
 
