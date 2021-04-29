@@ -46,34 +46,8 @@ LB_CHANNEL: discord.channel = None
 
 @client.event
 async def on_message(message: discord.Message):
-    isReport = "report" in message.content.lower()
     if (message.author != client.user):
-
-        if (
-            isReport and
-            len(QUEUE_CH_IDS) > 0 and
-            message.channel.id in QUEUE_CH_IDS and
-            message.channel.id not in REPORT_CH_IDS
-        ):
-            channel = client.get_channel(message.channel.id)
-            await channel.send(embed=ErrorEmbed(
-                title="Can't Do That Here",
-                desc="You can only report matches in the <#{0}> channel.".format(REPORT_CH_IDS[0])
-            ))
-
-        elif (
-            not isReport and
-            len(REPORT_CH_IDS) > 0 and
-            message.channel.id in REPORT_CH_IDS and
-            message.channel.id not in QUEUE_CH_IDS
-        ):
-            channel = client.get_channel(message.channel.id)
-            await channel.send(embed=ErrorEmbed(
-                title="Can't Do That Here",
-                desc="You can only use that command in the <#{0}> channel.".format(QUEUE_CH_IDS[0])
-            ))
-        else:
-            await client.process_commands(message)
+        await client.process_commands(message)
 
 
 @client.event
@@ -111,10 +85,8 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
         blueTeam, orangeTeam = Queue.getTeamList()
 
         if (reaction.emoji == "✅"):
-            if (len(blueTeam) > 0):
-                return
             await reaction.message.delete()
-            messages = SixMans.playerQueue(user, REPORT_CH_IDS[0] if (len(REPORT_CH_IDS) > 0) else -1)
+            messages = SixMans.playerQueue(user)
             for msg in messages:
                 await sendMessage(
                     channel,
@@ -123,10 +95,18 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
                 )
 
         elif (reaction.emoji == "❌"):
-            if (len(blueTeam) > 0):
-                return
             await reaction.message.delete()
             await sendMessage(channel, SixMans.leave(user), "queue")
+
+        elif (reaction.emoji == "🤫"):
+            await reaction.message.delete()
+            messages = SixMans.playerQueue(user, quiet=True)
+            for msg in messages:
+                await sendMessage(
+                    channel,
+                    msg,
+                    "popped" if msg.title == "Queue Popped!" or Queue.getQueueLength() == 6 else "queue"
+                )
 
         # regional indicator C
         elif (reaction.emoji == "\U0001F1E8"):

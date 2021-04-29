@@ -14,7 +14,7 @@ from EmbedHelper import \
 from Commands.Utils import updateLeaderboardChannel, orangeTeamPick, blueTeamPick
 
 
-def playerQueue(player: Member, reportChannelId: int, *arg, quiet: bool = False) -> List[str or Embed]:
+def playerQueue(player: Member, *arg, quiet: bool = False) -> List[str or Embed]:
     """
         Adds the author to the Queue for the specified amount of time.
 

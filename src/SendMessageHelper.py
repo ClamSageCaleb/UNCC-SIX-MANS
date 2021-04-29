@@ -6,6 +6,7 @@ import Queue
 reactions = {
     "queue": [
         "✅",
+        "🤫",
         "❌",
         "\U0001F1F1",
     ],
