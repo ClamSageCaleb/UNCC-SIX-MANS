@@ -53,8 +53,7 @@ async def on_message(message: discord.Message):
             await client.process_commands(message)
             await message.delete()
         elif (any(cmd in message.content for cmd in EasterEggs.egg_commands)):
-            await client.process_commands(message)
-            
+            await client.process_commands(message)      
 
 
 @client.event
@@ -114,6 +113,15 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
                     msg,
                     "popped" if msg.title == "Queue Popped!" or Queue.getQueueLength() == 6 else "queue"
                 )
+
+        elif (reaction.emoji == "🔢"):
+            await reaction.message.delete()
+            top_5 = []
+            await sendMessage(
+                channel,
+                SixMans.leaderboard(client.user.name, top_5, LEADERBOARD_CH_ID),
+                "popped" if Queue.getQueueLength() == 6 else "queue"
+            )
 
         # regional indicator C
         elif (reaction.emoji == "\U0001F1E8"):

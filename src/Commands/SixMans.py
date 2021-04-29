@@ -338,6 +338,10 @@ def leaderboard(author: Member, mentions: List[Member], lbChannelId: int, *arg) 
         return InfoEmbed(
             title="UNCC 6 Mans | Top 5",
             desc=Leaderboard.showLeaderboard(limit=5) + viewFullLb
+        ).add_field(
+            name="Current Queue",
+            value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅.", # noqa
+            inline=False
         )
 
     return ErrorEmbed(
