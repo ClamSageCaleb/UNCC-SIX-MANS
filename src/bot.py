@@ -53,7 +53,7 @@ async def on_message(message: discord.Message):
             await client.process_commands(message)
             await message.delete()
         elif (any(cmd in message.content for cmd in EasterEggs.egg_commands)):
-            await client.process_commands(message)      
+            await client.process_commands(message)
 
 
 @client.event
