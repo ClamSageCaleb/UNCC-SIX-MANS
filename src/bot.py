@@ -384,6 +384,26 @@ async def duis(ctx):
     await ctx.reply(EasterEggs.Duis())
 
 
+@client.command(name='furry', pass_context=True)
+async def furry(ctx):
+    await ctx.reply(EasterEggs.Furry())
+
+
+@client.command(name='don', pass_context=True)
+async def don(ctx):
+    await ctx.reply(EasterEggs.Don())
+
+
+@client.command(name='daffy', pass_context=True)
+async def daffy(ctx):
+    await ctx.reply(EasterEggs.Daffy())
+
+
+@client.command(name='giddy', pass_context=True)
+async def diddy(ctx):
+    await ctx.reply(EasterEggs.Giddy())
+
+
 @client.command(name='normq', pass_context=True)
 async def normq(ctx):
     messages: List[str or Embed] = EasterEggs.NormQ()

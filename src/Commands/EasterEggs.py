@@ -38,6 +38,10 @@ egg_commands = [
     "8-ball",
     "f",
     "frick",
+    "furry",
+    "don",
+    "daffy",
+    "giddy",
 ]
 
 
@@ -131,6 +135,26 @@ def Zappa() -> str:
             " emotes in this server? I didnt think so idiot, so <:zappa:632813684678197268> and"
             " <:zapp:632813709579911179> outta here cuz you're the whack one here <:zappa:632813684678197268>"
             " <:zapp:632813709579911179>")
+
+
+def Furry() -> str:
+    return("“Earned” both of his CRL titles but doesn't play like it."
+           " Earns SSL in Rumble only.")
+
+
+def Don() -> str:
+    return("Daffy and Giddy's teammate.")
+
+
+def Daffy() -> str:
+    return("Daffy “Daffy” Duck is a collegiate Rocket League player who currently plays for UNCC, an Electrical Sports"
+           " (E-Sports) team based in Charlotte, North Carolina, USA. He's currently also working as an actor in the"
+           " popular Warner Bros.© series “Looney Tunes”. He enjoys long walks on the beach and watching sunsets."
+           " Ladies, hit him up")
+
+
+def Giddy() -> str:
+    return("Most Saves CRL")
 
 
 def Pika() -> str:
