@@ -87,10 +87,28 @@ async def on_command_error(ctx, error):
 async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
     global LB_CHANNEL
 
-    blueTeam, orangeTeam = Queue.getTeamList()
-
     if (not user.bot):
         channel = client.get_channel(QUEUE_CH_IDS[0])
+
+        # regional indicator b
+        if (reaction.emoji == "\U0001F1E7" and Queue.isBotAdmin(user.roles)):
+            await reaction.message.delete()
+            await sendMessage(channel, Admin.brokenQueue(user, user.roles), None)
+            await sendMessage(channel, SixMans.listQueue(user), "queue")
+            return
+
+        elif (reaction.emoji == "🛑" and Queue.isBotAdmin(user.roles)):
+            await reaction.message.delete()
+            await sendMessage(channel, Admin.clear(user.roles), None)
+            await sendMessage(channel, SixMans.listQueue(user), "queue")
+            return
+
+        # Check to validate reaction is valid by seeing if Norm also reacted with the same reaction
+        reacted_users = await reaction.users().flatten()
+        if (not any(reacted_user.id == client.user.id for reacted_user in reacted_users)):
+            return
+
+        blueTeam, orangeTeam = Queue.getTeamList()
 
         if (reaction.emoji == "✅"):
             if (len(blueTeam) > 0):
@@ -98,10 +116,11 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
             await reaction.message.delete()
             messages = SixMans.playerQueue(user, REPORT_CH_IDS[0] if (len(REPORT_CH_IDS) > 0) else -1)
             for msg in messages:
-                if (msg.title == "Queue Popped!" or Queue.getQueueLength() == 6):
-                    await sendMessage(channel, msg, "popped")
-                else:
-                    await sendMessage(channel, msg, "queue")
+                await sendMessage(
+                    channel,
+                    msg,
+                    "popped" if msg.title == "Queue Popped!" or Queue.getQueueLength() == 6 else "queue"
+                )
 
         elif (reaction.emoji == "❌"):
             if (len(blueTeam) > 0):
@@ -120,15 +139,17 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
             await sendMessage(channel, SixMans.random(user), "active")
             await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
 
+        # regional indicator L
+        elif (reaction.emoji == "\U0001F1F1"):
+            await reaction.message.delete()
+            await sendMessage(channel, SixMans.listQueue(user), "queue" if len(blueTeam) == 0 else "picks")
+
         elif (reaction.emoji == "1️⃣"):
+            await reaction.message.delete()
             if (len(orangeTeam) == 2 and Queue.validateOrangePick(user)):
-                await reaction.message.delete()
                 await sendMessage(channel, SixMans.pick(user, 1), "active")
                 await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
-            elif (len(blueTeam) == 0):
-                return
             else:
-                await reaction.message.delete()
                 await sendMessage(channel, SixMans.pick(user, 1), "picks")
 
         elif (reaction.emoji == "2️⃣"):
@@ -136,55 +157,30 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
                 await reaction.message.delete()
                 await sendMessage(channel, SixMans.pick(user, 2), "active")
                 await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
-            elif (len(blueTeam) == 0):
-                return
             else:
                 await reaction.message.delete()
                 await sendMessage(channel, SixMans.pick(user, 2), "picks")
 
         elif (reaction.emoji == "3️⃣"):
-            if (len(blueTeam) == 0):
-                return
             await reaction.message.delete()
             await sendMessage(channel, SixMans.pick(user, 3), "picks")
 
         elif (reaction.emoji == "4️⃣"):
-            if (len(blueTeam) == 0):
-                return
             await reaction.message.delete()
             await sendMessage(channel, SixMans.pick(user, 4), "picks")
 
         elif (reaction.emoji == "🔷"):
-            embedMsg = await SixMans.report(user, LB_CHANNEL, "blue")
-            if (embedMsg):
-                embedMsg.add_field(
-                    name="Current Queue 0/6",
-                    value="Queue is empty."
-                )
-                await sendMessage(channel, embedMsg, "queue")
+            response = await SixMans.report(user, LB_CHANNEL, "blue")
+            if (response):
+                await reaction.message.add_reaction("👍")
 
         elif (reaction.emoji == "🔶"):
-            embedMsg = await SixMans.report(user, LB_CHANNEL, "orange")
-            if (embedMsg):
-                embedMsg.add_field(
-                    name="Current Queue 0/6",
-                    value="Queue is empty."
-                )
-                await sendMessage(channel, embedMsg, "queue")
+            response = await SixMans.report(user, LB_CHANNEL, "orange")
+            if (response):
+                await reaction.message.add_reaction("👍")
 
         elif (reaction.emoji == "💔" and reaction.count >= 5):  # majority vote is 4 + 1 for the bot reaction
             await sendMessage(channel, SixMans.brokenQueue(user), "queue")
-
-        # regional indicator b
-        elif (reaction.emoji == "\U0001F1E7" and Queue.isBotAdmin(user.roles)):
-            await reaction.message.delete()
-            await sendMessage(channel, Admin.brokenQueue(user, user.roles), None)
-            await sendMessage(channel, SixMans.listQueue(user), "queue")
-
-        elif (reaction.emoji == "🛑" and Queue.isBotAdmin(user.roles)):
-            await reaction.message.delete()
-            await sendMessage(channel, Admin.clear(user.roles), None)
-            await sendMessage(channel, SixMans.listQueue(user), "queue")
 
 
 @client.event
