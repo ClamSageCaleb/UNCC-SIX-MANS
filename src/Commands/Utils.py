@@ -1,4 +1,4 @@
-from discord import Embed, Member, channel as Channel
+from discord import Embed, channel as Channel
 from EmbedHelper import ErrorEmbed, QueueUpdateEmbed, InfoEmbed, PlayersSetEmbed
 import Queue
 import Leaderboard

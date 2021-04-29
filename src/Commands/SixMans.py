@@ -1,7 +1,7 @@
 from discord import Embed, Member, channel as Channel
 import Queue
 import Leaderboard
-from typing import List
+from typing import List, Literal
 from Types import Team
 from math import ceil
 from EmbedHelper import \
@@ -200,26 +200,6 @@ def listQueue(player: Member):
     )
 
 
-def reacts(player: Member):
-    """
-        Sends the message with reaction roles attached to q or leave.
-
-        Parameters:
-            player: dicord.Member - The author of the message.
-
-        Returns:
-            discord.Embed - The embedded message to respond with.
-    """
-    if (Queue.getQueueLength() == 0):
-        return QueueUpdateEmbed(
-            title="Queue is Empty",
-            desc="Join the queue by reacting to the roles.\n"
-            "You can also join the queue by typing **!q**"
-        )
-    if (Queue.getQueueLength() > 0 or Queue.getQueueLength() == 6):
-        return listQueue(player)
-
-
 def captains(player: Member):
     """
         Pops the queue and randomly assigns two captains. Will show captains if captains are already set.
@@ -367,7 +347,7 @@ def leaderboard(author: Member, mentions: List[Member], lbChannelId: int, *arg) 
     )
 
 
-async def report(player: Member, lbChannel: Channel, winningTeam: "blue" or "orange") -> Embed or None:
+async def report(player: Member, lbChannel: Channel, winningTeam: Literal["blue", "orange"]) -> Embed or None:
     """
         Used to report the winning team of the series.
 
@@ -492,6 +472,10 @@ def checkQueueTimes() -> List[Embed] or None:
             title="Stale Player Queue Warning",
             desc=warn_str + " will be removed from the queue in 5 minutes.\n\n"
             "To stay in the queue, react to the ✅"
+        ).add_field(
+            name="Current Queue",
+            value=Queue.getQueueList(),
+            inline=False
         ))
 
     if (len(removed_players) > 0):

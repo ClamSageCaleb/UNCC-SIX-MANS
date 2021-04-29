@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from typing import List, Union
+from typing import Union, Literal
 import Queue
 
 reactions = {
@@ -30,11 +30,13 @@ reactions = {
     ],
 }
 
+REACTION_GROUPS = Literal["queue", "popped", "active", "picks"]
+
 
 async def sendMessage(
     channel: Union[commands.context.Context, discord.TextChannel],
     content: Union[str, discord.Embed],
-    add_reaction_group: Union["queue", "popped", "active", "picks", None]
+    add_reaction_group: Union[REACTION_GROUPS, None]
 ) -> None:
 
     blueTeam, orangeTeam = Queue.getTeamList()

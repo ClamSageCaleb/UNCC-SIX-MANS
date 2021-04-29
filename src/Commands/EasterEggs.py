@@ -6,39 +6,73 @@ from EmbedHelper import ErrorEmbed, QueueUpdateEmbed
 
 pikaO = 0
 
+egg_commands = [
+    "twan",
+    "sad",
+    "smh",
+    "turhols",
+    "pika",
+    "zappa",
+    "duis",
+    "normq",
+    "teams",
+    "8ball",
+    "fuck",
+    "help",
+    "oops",
+    "h",
+    "<:twantheswan:540327706076905472>",
+    ":(",
+    "myhead",
+    "<:IncognitoTurhol:540327644089155639>",
+    "<:pika:538182616965447706>",
+    "zapp",
+    "zac",
+    "<:zappa:632813684678197268>",
+    "<:zapp:632813709579911179>",
+    "uncc",
+    "norm",
+    "asknorm",
+    "eight_ball",
+    "eightball",
+    "8-ball",
+    "f",
+    "frick",
+]
+
 
 def EightBall(author: Member):
     possible_responses = [
-        'That is a resounding no',
-        'It is not looking likely',
-        'Too hard to tell',
-        'It is quite possible',
-        'Definitely',
-        'Ask papa Duis',
-        'As I see it, yes',
-        'Ask again later',
-        'Better not tell you now',
-        'Cannot predict now',
-        'Concentrate and ask again',
-        'Don’t count on it',
-        'It is certain',
-        'It is decidedly so',
-        'Most likely',
-        'My reply is no',
-        'My sources say no',
-        'Outlook not so good',
-        'Reply hazy try again',
-        'Signs point to yes',
-        'Very doubtful',
-        'Without a doubt',
-        'Yes',
-        'Yes, definitely',
-        'You may rely on it',
-        'shut up',
-        'Some questions are best left unanswered...',
-        'no',
-        'Absolutely not',
-        'h',
+        "That is a resounding no",
+        "It is not looking likely",
+        "Too hard to tell",
+        "It is quite possible",
+        "Definitely",
+        "Ask papa Duis",
+        "As I see it, yes",
+        "Ask again later",
+        "Better not tell you now",
+        "Cannot predict now",
+        "Concentrate and ask again",
+        "Don’t count on it",
+        "It is certain",
+        "It is decidedly so",
+        "Most likely",
+        "My reply is no",
+        "My sources say no",
+        "Outlook not so good",
+        "Reply hazy try again",
+        "Signs point to yes",
+        "Very doubtful",
+        "Without a doubt",
+        "Yes",
+        "Yes, definitely",
+        "You may rely on it",
+        "shut up",
+        "Some questions are best left unanswered...",
+        "no",
+        "Absolutely not",
+        "h",
     ]
     return choice(possible_responses) + ", " + author.mention
 
@@ -116,7 +150,7 @@ def Smh() -> str:
 
 
 def Twan() -> str:
-    return ("<:twantheswan:540327706076905472> twantheswan is probably the greatest Rocket League (tm) player to have"
+    return ("<:twantheswan:540327706076905472> twantheswan is probably the greatest Rocket League © player to have"
             " ever walked the face of this planet. When he tries, no one ever beats him. If you beat him in a game, he"
             " was letting you win just to make you feel better. ur fkn trash at rl unless u r twantheswan. sub to him"
             " on twitch <:twantheswan:540327706076905472>")

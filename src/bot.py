@@ -9,7 +9,7 @@ __email__ = "caleb.benjamin9799@gmail.com / unavailable / mattwells878@gmail.com
 
 import AWSHelper as AWS
 from DataFiles import getDiscordToken, updateDiscordToken, getChannelIds
-from EmbedHelper import ErrorEmbed, AdminEmbed, HelpEmbed
+from EmbedHelper import AdminEmbed, HelpEmbed
 from SendMessageHelper import sendMessage
 from asyncio import sleep as asyncsleep
 import discord
@@ -47,7 +47,14 @@ LB_CHANNEL: discord.channel = None
 @client.event
 async def on_message(message: discord.Message):
     if (message.author != client.user):
-        await client.process_commands(message)
+        if (message.reference is not None):
+            replied_to_msg = await message.channel.fetch_message(message.reference.message_id)
+            await replied_to_msg.delete()
+            await client.process_commands(message)
+            await message.delete()
+        elif (any(cmd in message.content for cmd in EasterEggs.egg_commands)):
+            await client.process_commands(message)
+            
 
 
 @client.event
@@ -117,7 +124,7 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
         elif (reaction.emoji == "\U0001F1F7"):
             await reaction.message.delete()
             await sendMessage(channel, SixMans.random(user), "active")
-            await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
+            await sendMessage(channel, SixMans.listQueue(client.user.name), "queue")
 
         # regional indicator L
         elif (reaction.emoji == "\U0001F1F1"):
@@ -128,7 +135,7 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
             await reaction.message.delete()
             if (len(orangeTeam) == 2 and Queue.validateOrangePick(user)):
                 await sendMessage(channel, SixMans.pick(user, 1), "active")
-                await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
+                await sendMessage(channel, SixMans.listQueue(client.user.name), "queue")
             else:
                 await sendMessage(channel, SixMans.pick(user, 1), "picks")
 
@@ -136,7 +143,7 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
             if (len(orangeTeam) == 2 and Queue.validateOrangePick(user)):
                 await reaction.message.delete()
                 await sendMessage(channel, SixMans.pick(user, 2), "active")
-                await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
+                await sendMessage(channel, SixMans.listQueue(client.user.name), "queue")
             else:
                 await reaction.message.delete()
                 await sendMessage(channel, SixMans.pick(user, 2), "picks")
@@ -176,7 +183,7 @@ async def on_ready():
             title="Norm Started",
             desc="Current version: v{0}".format(__version__)
         ), None)
-        await sendMessage(channel, SixMans.reacts(client.user.name), "queue")
+        await sendMessage(channel, SixMans.listQueue(client.user.name), "queue")
 
     except Exception as e:
         print("! Norm does not have access to post in the queue channel.", e)
@@ -203,7 +210,7 @@ async def stale_queue_timer():
         if (embeds is not None):
             try:
                 for embed in embeds:
-                    await channel.send(embed=embed)
+                    await sendMessage(channel, embed, "queue")
             except Exception as e:
                 print("! Norm does not have access to post in the queue channel.", e)
                 return
@@ -217,7 +224,7 @@ async def stale_queue_timer():
 
 @client.command(name='q', aliases=['addmepapanorm', 'Q', 'addmebitch', 'queue', 'join'], pass_context=True)
 async def q(ctx, *arg):
-    messages = SixMans.playerQueue(ctx.message.author, REPORT_CH_IDS[0] if (len(REPORT_CH_IDS) > 0) else -1, *arg)
+    messages = SixMans.playerQueue(ctx.message.author, *arg)
     for msg in messages:
         if (msg.title == "Queue Popped!"):
             await sendMessage(ctx, msg, "popped")
@@ -227,12 +234,7 @@ async def q(ctx, *arg):
 
 @client.command(name='qq', aliases=['quietq', 'QQ', 'quietqueue', 'shh', 'dontping'], pass_context=True)
 async def qq(ctx, *arg):
-    messages = SixMans.playerQueue(
-        ctx.message.author,
-        REPORT_CH_IDS[0] if (len(REPORT_CH_IDS) > 0) else -1,
-        *arg,
-        quiet=True
-    )
+    messages = SixMans.playerQueue(ctx.message.author, *arg, quiet=True)
     for msg in messages:
         if (msg.title == "Queue Popped!"):
             await sendMessage(ctx, msg, "popped")
@@ -341,37 +343,37 @@ async def update(ctx):
 
 @client.command(name='twan', aliases=['<:twantheswan:540327706076905472>'], pass_context=True)
 async def twan(ctx):
-    await ctx.send(EasterEggs.Twan())
+    await ctx.reply(EasterEggs.Twan())
 
 
 @client.command(name='sad', aliases=[':('], pass_context=True)
 async def sad(ctx):
-    await ctx.send(EasterEggs.Sad())
+    await ctx.reply(EasterEggs.Sad())
 
 
 @client.command(name='smh', aliases=['myhead'], pass_context=True)
 async def smh(ctx):
-    await ctx.send(EasterEggs.Smh())
+    await ctx.reply(EasterEggs.Smh())
 
 
 @client.command(name='turhols', aliases=['<:IncognitoTurhol:540327644089155639>'], pass_context=True)
 async def turhols(ctx):
-    await ctx.send(EasterEggs.Turhols())
+    await ctx.reply(EasterEggs.Turhols())
 
 
 @client.command(name='pika', aliases=['<:pika:538182616965447706>'], pass_context=True)
 async def pika(ctx):
-    await ctx.send(EasterEggs.Pika())
+    await ctx.reply(EasterEggs.Pika())
 
 
 @client.command(name='zappa', aliases=['zapp', 'zac', '<:zappa:632813684678197268>', '<:zapp:632813709579911179>'], pass_context=True)  # noqa
 async def zappa(ctx):
-    await ctx.send(EasterEggs.Zappa())
+    await ctx.reply(EasterEggs.Zappa())
 
 
 @client.command(name='duis', pass_context=True)
 async def duis(ctx):
-    await ctx.send(EasterEggs.Duis())
+    await ctx.reply(EasterEggs.Duis())
 
 
 @client.command(name='normq', pass_context=True)
@@ -382,22 +384,22 @@ async def normq(ctx):
             await ctx.send(embed=msg)
             await sendMessage(ctx, SixMans.reacts(client.user.name), "queue")
         else:
-            await ctx.send(msg)
+            await ctx.reply(msg)
 
 
 @client.command(name='teams', aliases=['uncc'], pass_context=True)
 async def teams(ctx):
-    await ctx.send(EasterEggs.Teams())
+    await ctx.reply(EasterEggs.Teams())
 
 
 @client.command(name='8ball', aliases=['norm', 'asknorm', 'eight_ball', 'eightball', '8-ball'], pass_context=True)
 async def eight_ball(ctx):
-    await ctx.send(EasterEggs.EightBall(ctx.message.author))
+    await ctx.reply(EasterEggs.EightBall(ctx.message.author))
 
 
 @client.command(name='fuck', aliases=['f', 'frick'], pass_context=True)
 async def fuck(ctx):
-    await ctx.send("u")
+    await ctx.reply("u")
 
 
 @client.command(name="help", pass_context=True)
@@ -407,12 +409,12 @@ async def help(ctx):
 
 @client.command(name="oops", pass_context=True)
 async def oops(ctx):
-    await ctx.send("I didn't think the queue would pop...")
+    await ctx.reply("I didn't think the queue would pop...")
 
 
 @client.command(name="h", pass_contex=True)
 async def h(ctx):
-    await ctx.send("h")
+    await ctx.reply("h")
 
 
 """
