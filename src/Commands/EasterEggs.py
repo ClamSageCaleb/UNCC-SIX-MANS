@@ -42,6 +42,8 @@ egg_commands = [
     "don",
     "daffy",
     "giddy",
+    "nodought",
+    "coolio",
 ]
 
 
@@ -86,7 +88,7 @@ def Teams() -> str:
             "A team: doesn't practice but somehow is good"
             "\nB team: everyone hates how their teamates play but don't talk it out to resolve issues"
             "\nC team: who?"
-            "\nD team: best team"
+            "\nD team: H Team, Best Team™"
             "\nE team: surprisingly solid"
             "\nF team: how many fkn teams do we have"
             "\nGG team: originally g team")
@@ -155,6 +157,16 @@ def Daffy() -> str:
 
 def Giddy() -> str:
     return("Most Saves CRL")
+
+
+def NoDought() -> str:
+    return("Who?")
+
+
+def Coolio() -> str:
+    return("The “Whiff” of WallStreet."
+           " “Plays Rocket League like the ball is supposed to be on the hood of his car...” - Don.\n"
+           " Ultimately came to college to play Rocket League.")
 
 
 def Pika() -> str:

@@ -290,17 +290,17 @@ async def pick(ctx):
         await ctx.send(embed=embed)
 
 
-@client.command(name="report", pass_contex=True)
+@client.command(name="report", pass_context=True)
 async def reportMatch(ctx, *arg):
     await ctx.send(embed=await SixMans.report(ctx.message.author, LB_CHANNEL, *arg))
 
 
-@client.command(name="leaderboard", aliases=["lb", "standings", "rank", "rankings", "stonks"], pass_contex=True)
+@client.command(name="leaderboard", aliases=["lb", "standings", "rank", "rankings", "stonks"], pass_context=True)
 async def showLeaderboard(ctx, *arg):
     await ctx.send(embed=SixMans.leaderboard(ctx.message.author, ctx.message.mentions, LEADERBOARD_CH_ID, *arg))
 
 
-@client.command(name="brokenq", aliases=["requeue", "re-q"], pass_contex=True)
+@client.command(name="brokenq", aliases=["requeue", "re-q"], pass_context=True)
 async def removeLastPoppedQueue(ctx):
     await sendMessage(ctx, Admin.brokenQueue(ctx.message.author, ctx.message.author.roles), "queue")
 
@@ -400,8 +400,18 @@ async def daffy(ctx):
 
 
 @client.command(name='giddy', pass_context=True)
-async def diddy(ctx):
+async def giddy(ctx):
     await ctx.reply(EasterEggs.Giddy())
+
+
+@client.command(name='nodought', pass_context=True)
+async def nodought(ctx):
+    await ctx.reply(EasterEggs.NoDought())
+
+
+@client.command(name='coolio', pass_context=True)
+async def coolio(ctx):
+    await ctx.reply(EasterEggs.Coolio())
 
 
 @client.command(name='normq', pass_context=True)
