@@ -399,16 +399,61 @@ def pick(player: Member, reactionNumber: int) -> Embed:
 
     blueCap, orangeCap = Queue.captainsPop()
 
-    blueTeam, _ = Queue.getTeamList()
-    if (Queue.validateBluePick(player)):
-        availablePicks = Queue.getAvailablePicks()
-        return blueTeamPick(availablePicks[reactionNumber - 1], blueCap, orangeCap)
-    if (len(blueTeam) == 1):
-        if (Queue.validateBluePick(player) == False):
+    blueTeam, orangeTeam = Queue.getTeamList()
+
+    if (Queue.isPlayerInQueue(player)):
+        if (Queue.validateBluePick(player)):
+            availablePicks = Queue.getAvailablePicks()
+            return blueTeamPick(availablePicks[reactionNumber - 1], blueCap, orangeCap)
+        if (len(blueTeam) == 1):
+            if (Queue.validateBluePick(player) == False):
+                return ErrorEmbed(
+                    title="Not the Blue Captain",
+                    desc="You are not 🔷 BLUE Team Captain 🔷\n\n"
+                    "🔷 BLUE Team Captain 🔷 is: " + blueCap.mention
+                ).add_field(
+                    name="🔷 " + blueCap.name.split('#')[0] + " 🔷 picks first. \n"
+                    "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.name.split('#')[0],
+                    value="Pick a player from the list below by reacting to the numbers.\n",
+                    inline=False
+                ).add_field(
+                    name="\u200b",
+                    value="\u200b",
+                    inline=False
+                ).add_field(
+                    name="Available picks",
+                    value=Queue.getQueueList(includeTimes=False, includeLetters=True),
+                    inline=False
+                )
+
+        if (Queue.validateOrangePick(player)):
+            availablePicks = Queue.getAvailablePicks()
+            return orangeTeamPick(availablePicks[reactionNumber - 1], orangeTeam, blueCap, orangeCap)
+        if (len(blueTeam) == 2):
+            if (Queue.validateOrangePick(player) == False):
+                return ErrorEmbed(
+                    title="Not the Orange Captain",
+                    desc="You are not 🔶 ORANGE Team Captain 🔶 \n\n"
+                    "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.mention
+                ).add_field(
+                    name="🔶 " + orangeCap.name.split('#')[0] + " 🔶 picks second. \n"
+                    "🔷 BLUE Team Captain 🔷 is: " + blueCap.name.split('#')[0],
+                    value="Pick a player from the list below by reacting to the numbers.\n",
+                    inline=False
+                ).add_field(
+                    name="\u200b",
+                    value="\u200b",
+                    inline=False
+                ).add_field(
+                    name="Available picks",
+                    value=Queue.getQueueList(includeTimes=False, includeLetters=True),
+                    inline=False
+                )
+    else:
+        if (len(blueTeam) == 1):
             return ErrorEmbed(
-                title="Not the Blue Captain",
-                desc="You are not 🔷 BLUE Team Captain 🔷\n\n"
-                "🔷 BLUE Team Captain 🔷 is: " + blueCap.mention
+                title="Not in Queue",
+                desc="You are not in the queue!\n",
             ).add_field(
                 name="🔷 " + blueCap.name.split('#')[0] + " 🔷 picks first. \n"
                 "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.name.split('#')[0],
@@ -423,17 +468,10 @@ def pick(player: Member, reactionNumber: int) -> Embed:
                 value=Queue.getQueueList(includeTimes=False, includeLetters=True),
                 inline=False
             )
-
-    _, orangeTeam = Queue.getTeamList()
-    if (Queue.validateOrangePick(player)):
-        availablePicks = Queue.getAvailablePicks()
-        return orangeTeamPick(availablePicks[reactionNumber - 1], orangeTeam, blueCap, orangeCap)
-    if (len(blueTeam) == 2):
-        if (Queue.validateOrangePick(player) == False):
+        if (len(blueTeam) == 2):
             return ErrorEmbed(
-                title="Not the Orange Captain",
-                desc="You are not 🔶 ORANGE Team Captain 🔶 \n\n"
-                "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.mention
+                title="Not in Queue",
+                desc="You are not in the queue!\n",
             ).add_field(
                 name="🔶 " + orangeCap.name.split('#')[0] + " 🔶 picks second. \n"
                 "🔷 BLUE Team Captain 🔷 is: " + blueCap.name.split('#')[0],
