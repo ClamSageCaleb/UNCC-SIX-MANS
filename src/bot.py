@@ -123,6 +123,18 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
                 "popped" if Queue.getQueueLength() == 6 else "queue"
             )
 
+        elif (reaction.emoji == "❓"):
+            await reaction.message.delete()
+            if (len(blueTeam) >= 1):
+                await sendMessage(channel, HelpEmbed(), None)
+                await sendMessage(channel, SixMans.listQueue(user), "picks")
+            elif (Queue.getQueueLength() == 6 and len(blueTeam) == 0):
+                await sendMessage(channel, HelpEmbed(), None)
+                await sendMessage(channel, SixMans.listQueue(user), "popped")
+            else:
+                await sendMessage(channel, HelpEmbed(), None)
+                await sendMessage(channel, SixMans.listQueue(user), "queue")
+
         # regional indicator C
         elif (reaction.emoji == "\U0001F1E8"):
             await reaction.message.delete()

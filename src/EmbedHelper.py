@@ -128,33 +128,47 @@ def HelpEmbed() -> Embed:
         description="https://clamsagecaleb.github.io/UNCC-SIX-MANS",
         color=0x38761D
     ).add_field(
-        name="!q",
+        name="✅",
         value="Adds you to the queue",
         inline=False
     ).add_field(
-        name="!leave",
+        name="🤫",
+        value="Adds you to the queue *quietly* 🤫",
+        inline=False
+    ).add_field(
+        name="❌",
         value="Removes you from the queue",
         inline=False
     ).add_field(
-        name="!list",
+        name="\U0001F1F1",
         value="Lists the current queue",
         inline=False
     ).add_field(
-        name="!random",
+        name="\U0001F1F7",
         value="Randomly picks teams (Requires 6 players in queue)",
         inline=False
     ).add_field(
-        name="!captains",
+        name="\U0001F1E8",
         value="Randomly selects captains (Requires 6 players in queue)."
         "\nFirst captain picks 1 \nSecond captain picks the next two",
         inline=False
     ).add_field(
-        name="!report",
-        value="Reports the result of your queue. Use this command followed by the color of the winning team.",
+        name="🔷 or 🔶",
+        value="Reports the result of your queue. React to the color of the winning team.",
         inline=False
     ).add_field(
-        name="!leaderboard",
+        name="💔",
+        value="Broken Queue's the current match (Requires 4 players as majority vote).",
+        inline=False
+    ).add_field(
+        name="🔢",
         value="Shows the top 5 players on the leaderboard.",
+        inline=False
+    ).add_field(
+        name="\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501"
+        "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501",
+        value="For all `!` commands, you must **reply** to a message sent by Norm for it to work.\n"
+        "This does not apply to Easter Egg commands.",
         inline=False
     ).add_field(
         name="!leaderboard me",
@@ -165,11 +179,11 @@ def HelpEmbed() -> Embed:
         value='Will respond to a yes/no question. Good for predictions',
         inline=False
     ).add_field(
-        name="!help",
-        value="This command :O",
+        name="❓",
+        value="This is the help command :O",
         inline=False
     ).set_thumbnail(
         url="https://raw.githubusercontent.com/ClamSageCaleb/UNCC-SIX-MANS/master/media/49ers.png"
     ).set_footer(
-        text="Developed by Twan, Clam, and Tux"
+        text="Developed by Twan, Clam, Tux, and h"
     )
