@@ -262,11 +262,6 @@ async def qq(ctx, *arg):
             await sendMessage(ctx, msg, "queue")
 
 
-@client.command(name='leave', aliases=['yoink', 'gtfo', 'getmethefuckouttahere'], pass_context=True)
-async def leave(ctx):
-    await sendMessage(ctx, SixMans.leave(ctx.message.author), "queue")
-
-
 @client.command(name='kick', aliases=['remove', 'yeet'], pass_context=True)
 async def kick(ctx):
     await sendMessage(ctx, Admin.kick(ctx.message.mentions, ctx.message.author.roles), "queue")
@@ -277,34 +272,7 @@ async def coinFlip(ctx):
     if (randint(1, 2) == 1):
         await q(ctx)
     else:
-        await leave(ctx)
-
-
-@client.command(name='listq', aliases=['list', 'listqueue', 'show', 'showq', 'showqueue', 'inq', 'sq', 'lq', 'status', 'showmethefknqueue', '<:who:599055076639899648>'], pass_context=True)  # noqa
-async def listq(ctx):
-    await sendMessage(ctx, SixMans.listQueue(ctx.message.author), "queue")
-
-
-@client.command(name='rnd', aliases=['random', 'idontwanttopickteams', 'fuckcaptains'], pass_context=True)
-async def random(ctx):
-    await ctx.send(embed=SixMans.random(ctx.message.author))
-
-
-@client.command(name='captains', aliases=['cap', 'iwanttopickteams', 'fuckrandom', 'Captains', 'captain', 'Captain', 'Cap'], pass_context=True)  # noqa
-async def captains(ctx):
-    await ctx.send(embed=SixMans.captains(ctx.message.author))
-
-
-@client.command(name='pick', aliases=['add', 'choose', '<:pick:628999871554387969>'], pass_context=True)
-async def pick(ctx):
-    embeds = SixMans.pick(ctx.message.author, ctx.message.mentions)
-    for embed in embeds:
-        await ctx.send(embed=embed)
-
-
-@client.command(name="report", pass_context=True)
-async def reportMatch(ctx, *arg):
-    await ctx.send(embed=await SixMans.report(ctx.message.author, LB_CHANNEL, *arg))
+        await sendMessage(ctx, SixMans.leave(ctx.author), "queue")
 
 
 @client.command(name="leaderboard", aliases=["lb", "standings", "rank", "rankings", "stonks"], pass_context=True)
