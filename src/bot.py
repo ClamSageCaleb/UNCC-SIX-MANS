@@ -52,7 +52,7 @@ async def on_message(message: discord.Message):
             await replied_to_msg.delete()
             await client.process_commands(message)
             await message.delete()
-        elif (any(cmd in message.content for cmd in EasterEggs.egg_commands)):
+        elif (any(cmd == message.content.split(" ")[0][1:] for cmd in EasterEggs.egg_commands)):
             await client.process_commands(message)
 
 
