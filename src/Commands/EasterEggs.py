@@ -194,3 +194,7 @@ def Twan() -> str:
 
 def Sad() -> str:
     return "This is so sad :frowning: in the chat pls"
+
+
+def Fuck() -> str:
+    return "u"

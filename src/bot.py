@@ -47,13 +47,13 @@ LB_CHANNEL: discord.channel = None
 @client.event
 async def on_message(message: discord.Message):
     if (message.author != client.user):
-        if (message.reference is not None):
+        if (any(cmd == message.content.split(" ")[0][1:] for cmd in EasterEggs.egg_commands)):
+            await client.process_commands(message)
+        elif (message.reference is not None):
             replied_to_msg = await message.channel.fetch_message(message.reference.message_id)
             await replied_to_msg.delete()
             await client.process_commands(message)
             await message.delete()
-        elif (any(cmd == message.content.split(" ")[0][1:] for cmd in EasterEggs.egg_commands)):
-            await client.process_commands(message)
 
 
 @client.event
@@ -417,7 +417,7 @@ async def eight_ball(ctx):
 
 @client.command(name='fuck', aliases=['f', 'frick'], pass_context=True)
 async def fuck(ctx):
-    await ctx.reply("u")
+    await ctx.reply(EasterEggs.Fuck())
 
 
 @client.command(name="help", pass_context=True)
