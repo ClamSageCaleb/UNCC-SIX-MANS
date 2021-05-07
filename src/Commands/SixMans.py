@@ -2,13 +2,11 @@ from discord import Embed, Member, channel as Channel
 import Queue
 import Leaderboard
 from typing import List, Literal
-from Types import Team
 from math import ceil
 from EmbedHelper import \
     ErrorEmbed,\
     QueueUpdateEmbed,\
     InfoEmbed,\
-    CaptainsAlreadySetEmbed,\
     CaptainsPopEmbed,\
     PlayersSetEmbed
 from Commands.Utils import updateLeaderboardChannel, orangeTeamPick, blueTeamPick
@@ -228,10 +226,9 @@ def captains(player: Member):
     if (Queue.queueAlreadyPopped()):
         blueTeam, _ = Queue.getTeamList()
 
-        return CaptainsAlreadySetEmbed(
+        return CaptainsPopEmbed(
             blueCap,
             orangeCap,
-            Team.BLUE if len(blueTeam) == 1 else Team.ORANGE,
             playerList
         )
 
@@ -314,9 +311,9 @@ def leaderboard(author: Member, mentions: List[Member], lbChannelId: int, *arg) 
             dicord.Embed - The embedded message to respond with.
     """
     playerMentioned: bool = len(mentions) == 1
-    selfRank: bool = len(arg) == 1 and arg[0] == "me"
+    # selfRank: bool = len(arg) == 1 and arg[0] == "me"
 
-    if (playerMentioned or selfRank):
+    if (playerMentioned):
 
         player = mentions[0] if playerMentioned else author
 

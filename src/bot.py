@@ -75,6 +75,12 @@ valid_commands = [
     "flipCap",
     "flipReport",
     "update",
+    "leaderboard",
+    "lb",
+    "standings",
+    "rank",
+    "rankings",
+    "stonks",
 ]
 
 

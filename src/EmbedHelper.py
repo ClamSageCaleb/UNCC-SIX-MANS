@@ -1,6 +1,7 @@
 from discord import Color, Embed
-from Types import BallChaser, Team
+from Types import BallChaser
 from typing import List
+import Queue
 
 
 def BaseEmbed(title: str, description: str, color: Color) -> Embed:
@@ -45,9 +46,9 @@ def InfoEmbed(title: str, desc: str) -> Embed:
     )
 
 
-def CaptainsAlreadySetEmbed(blueCap: BallChaser, orangeCap: BallChaser, teamToPick: Team, playerList: str) -> Embed:
-    embed = InfoEmbed(
-        title="Captains Already Set",
+def CaptainsPopEmbed(blueCap: BallChaser, orangeCap: BallChaser, playerList: str) -> Embed:
+    embed = QueueUpdateEmbed(
+        title="Captains Have Been Set",
         desc="🔷 Blue Team Captain 🔷: " + blueCap.mention +
         "\n\n🔶 Orange Team Captain 🔶: " + orangeCap.mention
     ).add_field(
@@ -56,7 +57,8 @@ def CaptainsAlreadySetEmbed(blueCap: BallChaser, orangeCap: BallChaser, teamToPi
         inline=False
     )
 
-    if (teamToPick == Team.BLUE):
+    blueTeam, _ = Queue.getTeamList()
+    if (len(blueTeam) == 1):
         embed.add_field(
             name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
             value="Pick a player from the list below by reacting to the numbers.\n",
@@ -81,30 +83,6 @@ def CaptainsAlreadySetEmbed(blueCap: BallChaser, orangeCap: BallChaser, teamToPi
     )
 
     return embed
-
-
-def CaptainsPopEmbed(blueCap: BallChaser, orangeCap: BallChaser, playerList: str) -> Embed:
-    return QueueUpdateEmbed(
-        title="Captains",
-        desc="🔷 BLUE Team Captain 🔷: " + blueCap.mention +
-        "\n\n🔶 ORANGE Team Captain 🔶: " + orangeCap.mention
-    ).add_field(
-        name="\u200b",
-        value="\u200b",
-        inline=False
-    ).add_field(
-        name="🔷 " + blueCap.mention + " 🔷 picks first",
-        value="Pick a player from the list below by reacting to the numbers.\n",
-        inline=False
-    ).add_field(
-        name="\u200b",
-        value="\u200b",
-        inline=False
-    ).add_field(
-        name="Available picks",
-        value=playerList,
-        inline=False
-    )
 
 
 def PlayersSetEmbed(blueTeam: List[BallChaser], orangeTeam: List[BallChaser]) -> Embed:
@@ -166,7 +144,7 @@ def HelpEmbed() -> Embed:
         inline=False
     ).add_field(
         name="\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501"
-        "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501",
+        "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501",
         value="For all `!` commands, you must **reply** to a message sent by Norm for it to work.\n"
         "This does not apply to Easter Egg commands.",
         inline=False
