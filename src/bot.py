@@ -43,17 +43,65 @@ LB_CHANNEL: discord.channel = None
     Discord Events
 """
 
+# Valid Command List that has reactions sent upon being called.
+valid_commands = [
+    "q",
+    "addmepapanorm",
+    "Q",
+    "addmebitch",
+    "queue",
+    "join",
+    "qq",
+    "quietq",
+    "QQ",
+    "quietqueue",
+    "shh",
+    "dontping",
+    "kick",
+    "remove",
+    "yeet",
+    "flip",
+    "coinflip",
+    "chance",
+    "coin",
+    "brokenq",
+    "requeue",
+    "re-q",
+    "clear",
+    "clr",
+    "reset",
+    "fill",
+    "fillCap",
+    "flipCap",
+    "flipReport",
+    "update",
+]
+
 
 @client.event
 async def on_message(message: discord.Message):
     if (message.author != client.user):
-        if (any(cmd == message.content.split(" ")[0][1:] for cmd in EasterEggs.egg_commands)):
-            await client.process_commands(message)
-        elif (message.reference is not None):
+        if (message.reference is not None):
             replied_to_msg = await message.channel.fetch_message(message.reference.message_id)
-            await replied_to_msg.delete()
-            await client.process_commands(message)
-            await message.delete()
+            replied_to_msg_author = replied_to_msg.author
+            if (replied_to_msg_author == discord.User.bot):
+                return
+            else:
+                if (any(queue_cmd == message.content.split(" ")[0][1:] for queue_cmd in valid_commands)):
+                    replied_to_msg_embed = replied_to_msg.embeds
+                    if (any(embed.title == "Teams are Set!" for embed in replied_to_msg_embed)):
+                        await client.process_commands(message)
+                        await message.delete()
+                    else:
+                        await replied_to_msg.delete()
+                        await client.process_commands(message)
+                        await message.delete()
+                elif (any(cmd == message.content.split(" ")[0][1:] for cmd in EasterEggs.egg_commands)):
+                    await client.process_commands(message)
+        elif (message.reference is None):
+            if (any(cmd == message.content.split(" ")[0][1:] for cmd in EasterEggs.egg_commands)):
+                await client.process_commands(message)
+                return
 
 
 @client.event
