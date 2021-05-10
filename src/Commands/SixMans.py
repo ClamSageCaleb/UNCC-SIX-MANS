@@ -311,9 +311,8 @@ def leaderboard(author: Member, mentions: List[Member], lbChannelId: int, *arg) 
             dicord.Embed - The embedded message to respond with.
     """
     playerMentioned: bool = len(mentions) == 1
-    # selfRank: bool = len(arg) == 1 and arg[0] == "me"
-
-    if (playerMentioned):
+    selfRank: bool = len(arg) == 1 and arg[0] == "me"
+    if (playerMentioned or selfRank):
 
         player = mentions[0] if playerMentioned else author
 

@@ -89,21 +89,17 @@ async def on_message(message: discord.Message):
     if (message.author != client.user):
         if (message.reference is not None):
             replied_to_msg = await message.channel.fetch_message(message.reference.message_id)
-            replied_to_msg_author = replied_to_msg.author
-            if (replied_to_msg_author == discord.User.bot):
-                return
-            else:
-                if (any(queue_cmd == message.content.split(" ")[0][1:] for queue_cmd in valid_commands)):
-                    replied_to_msg_embed = replied_to_msg.embeds
-                    if (any(embed.title == "Teams are Set!" for embed in replied_to_msg_embed)):
-                        await client.process_commands(message)
-                        await message.delete()
-                    else:
-                        await replied_to_msg.delete()
-                        await client.process_commands(message)
-                        await message.delete()
-                elif (any(cmd == message.content.split(" ")[0][1:] for cmd in EasterEggs.egg_commands)):
+            if (any(queue_cmd == message.content.split(" ")[0][1:] for queue_cmd in valid_commands)):
+                replied_to_msg_embed = replied_to_msg.embeds
+                if (any(embed.title == "Teams are Set!" for embed in replied_to_msg_embed)):
                     await client.process_commands(message)
+                    await message.delete()
+                else:
+                    await replied_to_msg.delete()
+                    await client.process_commands(message)
+                    await message.delete()
+            elif (any(cmd == message.content.split(" ")[0][1:] for cmd in EasterEggs.egg_commands)):
+                await client.process_commands(message)
         elif (message.reference is None):
             if (any(cmd == message.content.split(" ")[0][1:] for cmd in EasterEggs.egg_commands)):
                 await client.process_commands(message)
@@ -203,7 +199,12 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
         # regional indicator L
         elif (reaction.emoji == "\U0001F1F1"):
             await reaction.message.delete()
-            await sendMessage(channel, SixMans.listQueue(user), "queue" if len(blueTeam) == 0 else "picks")
+            if (len(blueTeam) == 0 and Queue.getQueueLength() != 6):
+                await sendMessage(channel, SixMans.listQueue(user), "queue")
+            elif (Queue.getQueueLength() == 6 and len(blueTeam) == 0):
+                await sendMessage(channel, SixMans.listQueue(user), "popped")
+            else:
+                await sendMessage(channel, SixMans.listQueue(user), "picks")
 
         elif (reaction.emoji == "1️⃣"):
             await reaction.message.delete()
@@ -331,7 +332,14 @@ async def coinFlip(ctx):
 
 @client.command(name="leaderboard", aliases=["lb", "standings", "rank", "rankings", "stonks"], pass_context=True)
 async def showLeaderboard(ctx, *arg):
-    await ctx.send(embed=SixMans.leaderboard(ctx.message.author, ctx.message.mentions, LEADERBOARD_CH_ID, *arg))
+    blueTeam, _ = Queue.getTeamList()
+    lb = SixMans.leaderboard(ctx.message.author, ctx.message.mentions, LEADERBOARD_CH_ID, *arg)
+    if (len(blueTeam) == 0 and Queue.getQueueLength() != 6):
+        await sendMessage(ctx, lb, "queue")
+    elif (Queue.getQueueLength() == 6 and len(blueTeam) == 0):
+        await sendMessage(ctx, lb, "popped")
+    else:
+        await sendMessage(ctx, lb, "picks")
 
 
 @client.command(name="brokenq", aliases=["requeue", "re-q"], pass_context=True)
