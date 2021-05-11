@@ -313,13 +313,20 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
     """
     if (len(arg) > 0):
         if ("<@!" in arg[0]):
-            playerMentioned: bool = True
-            selfRank: bool = False
             split = mentions.split("<@!")
             player_id = split[1][:-1]
+            if (player_id.isdigit()):
+                playerMentioned: bool = True
+                selfRank: bool = False
+            else:
+                playerMentioned: bool = False
+                selfRank: bool = False
         elif (arg[0] == "me"):
             selfRank: bool = True
             playerMentioned: bool = False
+        else:
+            playerMentioned: bool = False
+            selfRank: bool = False
     else:
         playerMentioned: bool = False
         selfRank: bool = False
@@ -328,8 +335,7 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
         player = player_id if playerMentioned else str(author.id)
         member = DataFiles.leaderboard.get(doc_id=int(player))
         players_rank = Leaderboard.showLeaderboard(player)
-
-        if (type(players_rank) == str):
+        if (type(players_rank) == str and member):
             return InfoEmbed(
                 title="Leaderboard Placement for {0}".format(member["Name"].split("#")[0]),
                 desc=players_rank
@@ -338,10 +344,9 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
                 value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
                 inline=False
             )
-
         return ErrorEmbed(
             title="No Matches Played",
-            desc="{0} hasn't played any matches and won't show up on the leaderboard.".format(players_rank.mention)
+            desc="{0} hasn't played any matches and won't show up on the leaderboard.".format(arg[0])
         ).add_field(
             name="Current Queue",
             value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
