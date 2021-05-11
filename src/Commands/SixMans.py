@@ -10,6 +10,7 @@ from EmbedHelper import \
     CaptainsPopEmbed,\
     PlayersSetEmbed
 from Commands.Utils import updateLeaderboardChannel, orangeTeamPick, blueTeamPick
+import DataFiles
 
 
 def playerQueue(player: Member, *arg, quiet: bool = False) -> List[str or Embed]:
@@ -298,7 +299,7 @@ def brokenQueue(player: Member) -> Embed:
     )
 
 
-def leaderboard(author: Member, mentions: List[Member], lbChannelId: int, *arg) -> Embed:
+def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
     """
         Shows the leaderboard. Shows top 5 if no one mentioned. Shows player stats if mentioned or used keyword "me".
 
@@ -310,33 +311,51 @@ def leaderboard(author: Member, mentions: List[Member], lbChannelId: int, *arg) 
         Returns:
             dicord.Embed - The embedded message to respond with.
     """
-    playerMentioned: bool = len(mentions) == 1
-    selfRank: bool = len(arg) == 1 and arg[0] == "me"
+    if (len(arg) > 0):
+        if ("<@!" in arg[0]):
+            playerMentioned: bool = True
+            selfRank: bool = False
+            split = mentions.split("<@!")
+            player_id = split[1][:-1]
+        elif (arg[0] == "me"):
+            selfRank: bool = True
+            playerMentioned: bool = False
+    else:
+        playerMentioned: bool = False
+        selfRank: bool = False
+
     if (playerMentioned or selfRank):
-
-        player = mentions[0] if playerMentioned else author
-
+        player = player_id if playerMentioned else str(author.id)
+        member = DataFiles.leaderboard.get(doc_id=int(player))
         players_rank = Leaderboard.showLeaderboard(player)
 
         if (type(players_rank) == str):
             return InfoEmbed(
-                title="Leaderboard Placement for {0}".format(player.name),
+                title="Leaderboard Placement for {0}".format(member["Name"].split("#")[0]),
                 desc=players_rank
+            ).add_field(
+                name="Current Queue",
+                value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
+                inline=False
             )
 
         return ErrorEmbed(
             title="No Matches Played",
             desc="{0} hasn't played any matches and won't show up on the leaderboard.".format(players_rank.mention)
+        ).add_field(
+            name="Current Queue",
+            value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
+            inline=False
         )
 
-    if (len(arg) == 0 and len(mentions) == 0):
+    if (len(arg) == 0 and playerMentioned == False):
         viewFullLb = "\nTo see the full leaderboard, visit <#{0}>.".format(lbChannelId) if (lbChannelId != -1) else ""
         return InfoEmbed(
             title="UNCC 6 Mans | Top 5",
             desc=Leaderboard.showLeaderboard(limit=5) + viewFullLb
         ).add_field(
             name="Current Queue",
-            value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅.", # noqa
+            value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
             inline=False
         )
 
@@ -344,6 +363,10 @@ def leaderboard(author: Member, mentions: List[Member], lbChannelId: int, *arg) 
         title="Leaderboard Command Help",
         desc="Mention someone to see their rank, use 'me' to see your rank,"
         " include nothing to see the top 5 on the leaderboard."
+    ).add_field(
+        name="Current Queue",
+        value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
+        inline=False
     )
 
 

@@ -144,13 +144,13 @@ def makePretty(player_index: int, player: BallChaser) -> str:
     return msg
 
 
-def showLeaderboard(player: Member = None, limit: int = None) -> str or List[str]:
+def showLeaderboard(player: str = None, limit: int = None) -> str or List[str]:
     global sorted_lb
     if (not sorted_lb):
         sorted_lb = sorted(leaderboard.all(), key=lambda x: (x[LbKey.WINS], x[LbKey.WIN_PERC]), reverse=True)
 
     if (player):
-        player_data = leaderboard.get(doc_id=player.id)
+        player_data = leaderboard.get(doc_id=int(player))
 
         if (not player_data):
             return player

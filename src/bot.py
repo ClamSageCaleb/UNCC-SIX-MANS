@@ -333,7 +333,7 @@ async def coinFlip(ctx):
 @client.command(name="leaderboard", aliases=["lb", "standings", "rank", "rankings", "stonks"], pass_context=True)
 async def showLeaderboard(ctx, *arg):
     blueTeam, _ = Queue.getTeamList()
-    lb = SixMans.leaderboard(ctx.message.author, ctx.message.mentions, LEADERBOARD_CH_ID, *arg)
+    lb = SixMans.leaderboard(ctx.message.author, ctx.message.content, LEADERBOARD_CH_ID, *arg)
     if (len(blueTeam) == 0 and Queue.getQueueLength() != 6):
         await sendMessage(ctx, lb, "queue")
     elif (Queue.getQueueLength() == 6 and len(blueTeam) == 0):
