@@ -331,48 +331,169 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
         playerMentioned: bool = False
         selfRank: bool = False
 
+    blueCap, orangeCap = Queue.captainsPop()
+    blueTeam, orangeTeam = Queue.getTeamList()
+
     if (playerMentioned or selfRank):
         player = player_id if playerMentioned else str(author.id)
         member = DataFiles.leaderboard.get(doc_id=int(player))
         players_rank = Leaderboard.showLeaderboard(player)
         if (type(players_rank) == str and member):
-            return InfoEmbed(
+            embed = InfoEmbed(
                 title="Leaderboard Placement for {0}".format(member["Name"].split("#")[0]),
                 desc=players_rank
-            ).add_field(
+            )
+            if (len(blueTeam) == 1):
+                embed.add_field(
+                    name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
+                    value="Pick a player from the list below by reacting to the numbers.\n",
+                    inline=False
+                )
+            elif (len(blueTeam) == 2 and len(orangeTeam) == 1):
+                embed.add_field(
+                    name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
+                    value="Please pick two players.\n"
+                    "React to the numbers to select a player.",
+                    inline=False
+                )
+            elif (len(orangeTeam) == 2):
+                embed.add_field(
+                    name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
+                    value="Please pick one player.\n"
+                    "React to the numbers to select a player.",
+                    inline=False
+                )
+            if (len(blueTeam) >= 1):
+                embed.add_field(
+                    name="Available Picks",
+                    value=Queue.getQueueList(includeTimes=False, includeLetters=True),
+                    inline=False
+                )
+            else:
+                embed.add_field(
+                    name="Current Queue",
+                    value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
+                    inline=False
+                )
+            return embed
+
+        embed = ErrorEmbed(
+            title="No Matches Played",
+            desc="{0} hasn't played any matches and won't show up on the leaderboard.".format(arg[0])
+        )
+        if (len(blueTeam) == 1):
+            embed.add_field(
+                name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
+                value="Pick a player from the list below by reacting to the numbers.\n",
+                inline=False
+            )
+        elif (len(blueTeam) == 2 and len(orangeTeam) == 1):
+            embed.add_field(
+                name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
+                value="Please pick two players.\n"
+                "React to the numbers to select a player.",
+                inline=False
+            )
+        elif (len(orangeTeam) == 2):
+            embed.add_field(
+                name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
+                value="Please pick one player.\n"
+                "React to the numbers to select a player.",
+                inline=False
+            )
+        if (len(blueTeam) >= 1):
+            embed.add_field(
+                name="Available Picks",
+                value=Queue.getQueueList(includeTimes=False, includeLetters=True),
+                inline=False
+            )
+        else:
+            embed.add_field(
                 name="Current Queue",
                 value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
                 inline=False
             )
-        return ErrorEmbed(
-            title="No Matches Played",
-            desc="{0} hasn't played any matches and won't show up on the leaderboard.".format(arg[0])
-        ).add_field(
-            name="Current Queue",
-            value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
-            inline=False
-        )
+        return embed
 
-    if (len(arg) == 0 and playerMentioned == False):
+    elif (len(arg) == 0 and playerMentioned == False):
         viewFullLb = "\nTo see the full leaderboard, visit <#{0}>.".format(lbChannelId) if (lbChannelId != -1) else ""
-        return InfoEmbed(
+        embed = InfoEmbed(
             title="UNCC 6 Mans | Top 5",
             desc=Leaderboard.showLeaderboard(limit=5) + viewFullLb
-        ).add_field(
-            name="Current Queue",
-            value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
-            inline=False
         )
+        if (len(blueTeam) == 1):
+            embed.add_field(
+                name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
+                value="Pick a player from the list below by reacting to the numbers.\n",
+                inline=False
+            )
+        elif (len(blueTeam) == 2 and len(orangeTeam) == 1):
+            embed.add_field(
+                name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
+                value="Please pick two players.\n"
+                "React to the numbers to select a player.",
+                inline=False
+            )
+        elif (len(orangeTeam) == 2):
+            embed.add_field(
+                name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
+                value="Please pick one player.\n"
+                "React to the numbers to select a player.",
+                inline=False
+            )
+        if (len(blueTeam) >= 1):
+            embed.add_field(
+                name="Available Picks",
+                value=Queue.getQueueList(includeTimes=False, includeLetters=True),
+                inline=False
+            )
+        else:
+            embed.add_field(
+                name="Current Queue",
+                value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
+                inline=False
+            )
+        return embed
 
-    return ErrorEmbed(
-        title="Leaderboard Command Help",
-        desc="Mention someone to see their rank, use 'me' to see your rank,"
-        " include nothing to see the top 5 on the leaderboard."
-    ).add_field(
-        name="Current Queue",
-        value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
-        inline=False
-    )
+    else:
+        embed = ErrorEmbed(
+            title="Leaderboard Command Help",
+            desc="Mention someone to see their rank, use 'me' to see your rank,"
+            " include nothing to see the top 5 on the leaderboard."
+        )
+        if (len(blueTeam) == 1):
+            embed.add_field(
+                name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
+                value="Pick a player from the list below by reacting to the numbers.\n",
+                inline=False
+            )
+        elif (len(blueTeam) == 2 and len(orangeTeam) == 1):
+            embed.add_field(
+                name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
+                value="Please pick two players.\n"
+                "React to the numbers to select a player.",
+                inline=False
+            )
+        elif (len(orangeTeam) == 2):
+            embed.add_field(
+                name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
+                value="Please pick one player.\n"
+                "React to the numbers to select a player.",
+                inline=False
+            )
+        if (len(blueTeam) >= 1):
+            embed.add_field(
+                name="Available Picks",
+                value=Queue.getQueueList(includeTimes=False, includeLetters=True),
+                inline=False
+            )
+        else:
+            embed.add_field(
+                name="Current Queue",
+                value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
+                inline=False
+            )
+        return embed
 
 
 async def report(player: Member, lbChannel: Channel, winningTeam: Literal["blue", "orange"]) -> Embed or None:
