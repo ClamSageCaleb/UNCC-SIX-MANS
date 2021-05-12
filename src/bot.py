@@ -187,6 +187,7 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
 
         # regional indicator C
         elif (reaction.emoji == "\U0001F1E8"):
+            await reaction.message.delete()
             if (Queue.isPlayerInQueue(user)):
                 await sendMessage(channel, SixMans.captains(user), "picks")
             elif (not Queue.isPlayerInQueue(user) and Queue.getQueueLength() == 6):
