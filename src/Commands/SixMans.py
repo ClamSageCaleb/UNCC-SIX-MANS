@@ -48,15 +48,28 @@ def playerQueue(player: Member, *arg, quiet: bool = False) -> List[str or Embed]
             desc="Please wait until current lobby has been set.",
         )]
 
-    if (Queue.isPlayerInQueue(player)):
+    if (Queue.isPlayerInQueue(player) and Queue.getQueueLength() != 6):
         Queue.resetPlayerQueueTime(player, queueTime)
         playerList = Queue.getQueueList()
         return [QueueUpdateEmbed(
             title="Already in Queue, Queue Time Reset",
             desc="You're already in the queue, but your queue time has been reset to {0} minutes.".format(queueTime),
         ).add_field(
-            name="Current Queue " + str(queue_length) + "/6",
+            name="Current Queue (" + str(queue_length) + "/6)",
             value=playerList
+        )]
+
+    if (Queue.isPlayerInQueue(player) and Queue.getQueueLength() == 6):
+        Queue.resetPlayerQueueTime(player, queueTime)
+        playerList = Queue.getQueueList()
+        return [QueueUpdateEmbed(
+            title="Already in Queue, Queue Time Reset",
+            desc="You're already in the queue, but your queue time has been reset to {0} minutes.".format(queueTime),
+        ).add_field(
+            name="Queue Popped!",
+            value="**React to the \U0001F1E8 or \U0001F1F7 for captains or random.**\n\n"
+            "**Current Queue (" + str(queue_length) + "/6)**\n" + playerList,
+            inline=False
         )]
 
     if (Leaderboard.getActiveMatch(player) is not None):
@@ -94,6 +107,10 @@ def playerQueue(player: Member, *arg, quiet: bool = False) -> List[str or Embed]
             title="Queue Already Full",
             desc="Queue is already full, please wait until the current queue is set and try again.",
         ).add_field(
+            name="Queue Popped!",
+            value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
+            inline=False
+        ).add_field(
             name="Current Queue " + str(queue_length) + "/6",
             value=playerList
         )]
@@ -107,7 +124,7 @@ def playerQueue(player: Member, *arg, quiet: bool = False) -> List[str or Embed]
             title="Queue Popped!",
             desc=player.mention + " has been added to the queue for " + str(queueTime) + " minutes.\n\n"
             "**Queue is now full!** \n\n"
-            "Or react to the \U0001F1E8 or \U0001F1F7 for captains or random.\n"
+            "React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n"
         ).add_field(
             name="Current Queue " + str(queue_length + 1) + "/6",
             value=playerList
@@ -165,13 +182,22 @@ def leave(player: Member) -> Embed:
         )
 
     playerList = Queue.getQueueList()
-    return ErrorEmbed(
+    embed = ErrorEmbed(
         title="Not in Queue",
-        desc="You are not in the queue, react to the ✅ to join.\n"
-    ).add_field(
-        name="Remaining Players (" + str(Queue.getQueueLength()) + "/6)",
+        desc="You are not in the queue, react to the ✅ to join if there is space.\n"
+    )
+    if (Queue.getQueueLength() == 6):
+        embed.add_field(
+            name="Queue Popped!",
+            value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
+            inline=False
+        )
+    embed.add_field(
+        name="Queued Players (" + str(Queue.getQueueLength()) + "/6)",
         value="Queue is empty." if playerList == "" else playerList
     )
+
+    return embed
 
 
 def listQueue(player: Member):
@@ -191,6 +217,15 @@ def listQueue(player: Member):
         )
     if (Queue.queueAlreadyPopped()):
         return captains(player)
+    if (Queue.getQueueLength() == 6):
+        return QueueUpdateEmbed(
+            title="Current Queue (" + str(Queue.getQueueLength()) + "/6)\n\n"
+            "Queue Popped!",
+            desc=""
+        ).add_field(
+            name="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
+            value=Queue.getQueueList()
+        )
 
     playerList = Queue.getQueueList()
     return QueueUpdateEmbed(
@@ -221,7 +256,7 @@ def captains(player: Member):
             desc="You are not in the queue, therefore you cannot pop the queue."
         ).add_field(
             name="Queue Popped!",
-            value="Or react to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
+            value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
             inline=False
         ).add_field(
             name="Current Queue " + str(Queue.getQueueLength()) + "/6",
@@ -276,7 +311,7 @@ def random(player: Member):
             desc="You are not in the queue, therefore you cannot pop the queue."
         ).add_field(
             name="Queue Popped!",
-            value="Or react to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
+            value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
             inline=False
         ).add_field(
             name="Current Queue " + str(Queue.getQueueLength()) + "/6",
@@ -347,8 +382,11 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
         playerMentioned: bool = False
         selfRank: bool = False
 
-    blueCap, orangeCap = Queue.captainsPop()
-    blueTeam, orangeTeam = Queue.getTeamList()
+    if (not Queue.queueAlreadyPopped()):
+        blueTeam, orangeTeam = Queue.getTeamList()
+    else:
+        blueTeam, orangeTeam = Queue.getTeamList()
+        blueCap, orangeCap = Queue.captainsPop()
 
     if (playerMentioned or selfRank):
         player = player_id if playerMentioned else str(author.id)
@@ -386,6 +424,12 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
                     inline=False
                 )
             else:
+                if (Queue.getQueueLength() == 6):
+                    embed.add_field(
+                        name="Queue Popped!",
+                        value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
+                        inline=False
+                    )
                 embed.add_field(
                     name="Current Queue",
                     value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
@@ -424,6 +468,12 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
                 inline=False
             )
         else:
+            if (Queue.getQueueLength() == 6):
+                embed.add_field(
+                    name="Queue Popped!",
+                    value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
+                    inline=False
+                )
             embed.add_field(
                 name="Current Queue",
                 value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
@@ -464,6 +514,12 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
                 inline=False
             )
         else:
+            if (Queue.getQueueLength() == 6):
+                embed.add_field(
+                    name="Queue Popped!",
+                    value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
+                    inline=False
+                )
             embed.add_field(
                 name="Current Queue",
                 value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
@@ -504,6 +560,12 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
                 inline=False
             )
         else:
+            if (Queue.getQueueLength() == 6):
+                embed.add_field(
+                    name="Queue Popped!",
+                    value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
+                    inline=False
+                )
             embed.add_field(
                 name="Current Queue",
                 value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa

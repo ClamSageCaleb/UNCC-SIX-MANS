@@ -152,7 +152,7 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
 
         elif (reaction.emoji == "❌"):
             await reaction.message.delete()
-            await sendMessage(channel, SixMans.leave(user), "queue")
+            await sendMessage(channel, SixMans.leave(user), "queue" if Queue.getQueueLength() < 6 else "popped")
 
         elif (reaction.emoji == "🤫"):
             await reaction.message.delete()
