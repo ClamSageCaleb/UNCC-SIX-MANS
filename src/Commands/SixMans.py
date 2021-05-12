@@ -219,6 +219,14 @@ def captains(player: Member):
         return ErrorEmbed(
             title="Not in Queue",
             desc="You are not in the queue, therefore you cannot pop the queue."
+        ).add_field(
+            name="Queue Popped!",
+            value="Or react to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
+            inline=False
+        ).add_field(
+            name="Current Queue " + str(Queue.getQueueLength()) + "/6",
+            value=Queue.getQueueList(),
+            inline=False
         )
 
     blueCap, orangeCap = Queue.captainsPop()
@@ -266,6 +274,14 @@ def random(player: Member):
         return ErrorEmbed(
             title="Not in Queue",
             desc="You are not in the queue, therefore you cannot pop the queue."
+        ).add_field(
+            name="Queue Popped!",
+            value="Or react to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
+            inline=False
+        ).add_field(
+            name="Current Queue " + str(Queue.getQueueLength()) + "/6",
+            value=Queue.getQueueList(),
+            inline=False
         )
 
     blueTeam, orangeTeam = Queue.randomPop()

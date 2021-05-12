@@ -187,14 +187,22 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
 
         # regional indicator C
         elif (reaction.emoji == "\U0001F1E8"):
-            await reaction.message.delete()
-            await sendMessage(channel, SixMans.captains(user), "picks")
+            if (Queue.isPlayerInQueue(user)):
+                await sendMessage(channel, SixMans.captains(user), "picks")
+            elif (not Queue.isPlayerInQueue(user) and Queue.getQueueLength() == 6):
+                await sendMessage(channel, SixMans.captains(user), "popped")
+            else:
+                await sendMessage(channel, SixMans.listQueue(user), "queue")
 
         # regional indicator R
         elif (reaction.emoji == "\U0001F1F7"):
             await reaction.message.delete()
-            await sendMessage(channel, SixMans.random(user), "active")
-            await sendMessage(channel, SixMans.listQueue(client.user.name), "queue")
+            if (Queue.isPlayerInQueue(user)):
+                await sendMessage(channel, SixMans.random(user), "active")
+            elif (not Queue.isPlayerInQueue(user) and Queue.getQueueLength() == 6):
+                await sendMessage(channel, SixMans.random(user), "popped")
+            else:
+                await sendMessage(channel, SixMans.listQueue(user), "queue")
 
         # regional indicator L
         elif (reaction.emoji == "\U0001F1F1"):
@@ -210,7 +218,7 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
             await reaction.message.delete()
             if (len(orangeTeam) == 2 and Queue.validateOrangePick(user)):
                 await sendMessage(channel, SixMans.pick(user, 1), "active")
-                await sendMessage(channel, SixMans.listQueue(client.user.name), "queue")
+                await sendMessage(channel, SixMans.listQueue(user), "queue")
             else:
                 await sendMessage(channel, SixMans.pick(user, 1), "picks")
 
@@ -218,7 +226,7 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
             if (len(orangeTeam) == 2 and Queue.validateOrangePick(user)):
                 await reaction.message.delete()
                 await sendMessage(channel, SixMans.pick(user, 2), "active")
-                await sendMessage(channel, SixMans.listQueue(client.user.name), "queue")
+                await sendMessage(channel, SixMans.listQueue(user), "queue")
             else:
                 await reaction.message.delete()
                 await sendMessage(channel, SixMans.pick(user, 2), "picks")
