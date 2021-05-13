@@ -19,10 +19,6 @@ def update(roles: List[Role]) -> Embed:
             dicord.Embed - The embedded message to respond with.
     """
     if(Queue.isBotAdmin(roles)):
-        return AdminEmbed(
-            title="Checking For Updates",
-            desc="Please hang tight."
-        )
         updateBot()
         return AdminEmbed(
             title="Already Up to Date",
