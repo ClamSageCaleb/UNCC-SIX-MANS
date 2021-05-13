@@ -200,6 +200,7 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
             await reaction.message.delete()
             if (Queue.isPlayerInQueue(user)):
                 await sendMessage(channel, SixMans.random(user), "active")
+                await sendMessage(channel, SixMans.listQueue(user), "queue")
             elif (not Queue.isPlayerInQueue(user) and Queue.getQueueLength() == 6):
                 await sendMessage(channel, SixMans.random(user), "popped")
             else:
