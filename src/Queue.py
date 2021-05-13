@@ -32,7 +32,10 @@ def isPlayerInQueue(player: Union[Member, str]) -> bool:
         return currQueue.contains(where(BallChaserKey.ID) == player.id)
     elif (isinstance(player, str)):
         member = DataFiles.currQueue.get(doc_id=int(player))
-        return currQueue.contains(where(BallChaserKey.ID) == member["id"])
+        if (member):
+            return currQueue.contains(where(BallChaserKey.ID) == member["id"])
+        else:
+            return False
 
 
 def clearQueue() -> None:

@@ -100,6 +100,55 @@ def PlayersSetEmbed(blueTeam: List[BallChaser], orangeTeam: List[BallChaser]) ->
     )
 
 
+def captainsRandomHelpEmbed(embed: Embed, blueTeam: List[BallChaser],
+                            orangeTeam: List[BallChaser], blueCap: BallChaser,
+                            orangeCap: BallChaser) -> Embed:
+    if (not Queue.queueAlreadyPopped()):
+        blueTeam, orangeTeam = Queue.getTeamList()
+        if (len(blueTeam) >= 1):
+            embed.add_field(
+                name="Available Picks",
+                value=Queue.getQueueList(includeTimes=False, includeLetters=True),
+                inline=False
+            )
+        else:
+            if (Queue.getQueueLength() == 6):
+                embed.add_field(
+                    name="Queue Popped!",
+                    value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
+                    inline=False
+                )
+            embed.add_field(
+                name="Current Queue",
+                value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
+                inline=False
+            )
+        return embed
+    else:
+        blueTeam, orangeTeam = Queue.getTeamList()
+        blueCap, orangeCap = Queue.captainsPop()
+        if (len(blueTeam) == 1):
+            embed.add_field(
+                name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
+                value="Pick a player from the list below by reacting to the numbers.\n",
+                inline=False
+            )
+        elif (len(blueTeam) == 2 and len(orangeTeam) == 1):
+            embed.add_field(
+                name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
+                value="Please pick two players.\n"
+                "React to the numbers to select a player.",
+                inline=False
+            )
+        elif (len(orangeTeam) == 2):
+            embed.add_field(
+                name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
+                value="Please pick one player.\n"
+                "React to the numbers to select a player.",
+                inline=False
+            )
+
+
 def HelpEmbed() -> Embed:
     return Embed(
         title="Norm Commands",

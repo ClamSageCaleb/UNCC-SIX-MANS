@@ -1,5 +1,5 @@
 from CheckForUpdates import updateBot
-from EmbedHelper import AdminEmbed, ErrorEmbed, QueueUpdateEmbed
+from EmbedHelper import AdminEmbed, ErrorEmbed, QueueUpdateEmbed, captainsRandomHelpEmbed
 from Leaderboard import brokenQueue as lbBrokenQueue
 from typing import List
 from bot import __version__
@@ -80,44 +80,10 @@ def kick(mentions: str, roles: List[Role], *arg) -> Embed:
                         title="Permission Denied",
                         desc="You do not have the leg strength to kick other players."
                     )
-                    if (len(blueTeam) == 1):
-                        embed.add_field(
-                            name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
-                            value="Pick a player from the list below by reacting to the numbers.\n",
-                            inline=False
-                        )
-                    elif (len(blueTeam) == 2 and len(orangeTeam) == 1):
-                        embed.add_field(
-                            name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                            value="Please pick two players.\n"
-                            "React to the numbers to select a player.",
-                            inline=False
-                        )
-                    elif (len(orangeTeam) == 2):
-                        embed.add_field(
-                            name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                            value="Please pick one player.\n"
-                            "React to the numbers to select a player.",
-                            inline=False
-                        )
-                    if (len(blueTeam) >= 1):
-                        embed.add_field(
-                            name="Available Picks",
-                            value=Queue.getQueueList(includeTimes=False, includeLetters=True),
-                            inline=False
-                        )
+                    if (len(blueTeam) == 0):
+                        captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
                     else:
-                        if (Queue.getQueueLength() == 6):
-                            embed.add_field(
-                                name="Queue Popped!",
-                                value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
-                                inline=False
-                            )
-                        embed.add_field(
-                            name="Current Queue",
-                            value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
-                            inline=False
-                        )
+                        captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
                     return embed
 
                 if (Queue.queueAlreadyPopped()):
@@ -125,44 +91,7 @@ def kick(mentions: str, roles: List[Role], *arg) -> Embed:
                         title="Queue Already Popped",
                         desc="Can't kick players while picking teams."
                     )
-                    if (len(blueTeam) == 1):
-                        embed.add_field(
-                            name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
-                            value="Pick a player from the list below by reacting to the numbers.\n",
-                            inline=False
-                        )
-                    elif (len(blueTeam) == 2 and len(orangeTeam) == 1):
-                        embed.add_field(
-                            name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                            value="Please pick two players.\n"
-                            "React to the numbers to select a player.",
-                            inline=False
-                        )
-                    elif (len(orangeTeam) == 2):
-                        embed.add_field(
-                            name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                            value="Please pick one player.\n"
-                            "React to the numbers to select a player.",
-                            inline=False
-                        )
-                    if (len(blueTeam) >= 1):
-                        embed.add_field(
-                            name="Available Picks",
-                            value=Queue.getQueueList(includeTimes=False, includeLetters=True),
-                            inline=False
-                        )
-                    else:
-                        if (Queue.getQueueLength() == 6):
-                            embed.add_field(
-                                name="Queue Popped!",
-                                value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
-                                inline=False
-                            )
-                        embed.add_field(
-                            name="Current Queue",
-                            value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
-                            inline=False
-                        )
+                    captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
                     return embed
 
                 if (Queue.getQueueLength() == 0):
@@ -170,44 +99,7 @@ def kick(mentions: str, roles: List[Role], *arg) -> Embed:
                         title="Queue is Empty",
                         desc="The queue is empty, what are you doing?"
                     )
-                    if (len(blueTeam) == 1):
-                        embed.add_field(
-                            name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
-                            value="Pick a player from the list below by reacting to the numbers.\n",
-                            inline=False
-                        )
-                    elif (len(blueTeam) == 2 and len(orangeTeam) == 1):
-                        embed.add_field(
-                            name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                            value="Please pick two players.\n"
-                            "React to the numbers to select a player.",
-                            inline=False
-                        )
-                    elif (len(orangeTeam) == 2):
-                        embed.add_field(
-                            name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                            value="Please pick one player.\n"
-                            "React to the numbers to select a player.",
-                            inline=False
-                        )
-                    if (len(blueTeam) >= 1):
-                        embed.add_field(
-                            name="Available Picks",
-                            value=Queue.getQueueList(includeTimes=False, includeLetters=True),
-                            inline=False
-                        )
-                    else:
-                        if (Queue.getQueueLength() == 6):
-                            embed.add_field(
-                                name="Queue Popped!",
-                                value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
-                                inline=False
-                            )
-                        embed.add_field(
-                            name="Current Queue",
-                            value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
-                            inline=False
-                        )
+                    captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
                     return embed
 
                 member = DataFiles.leaderboard.get(doc_id=int(player_id))
@@ -217,44 +109,10 @@ def kick(mentions: str, roles: List[Role], *arg) -> Embed:
                         title="Kicked Player",
                         desc="Removed {0} from the queue".format(member["Name"].split("#")[0])
                     )
-                    if (len(blueTeam) == 1):
-                        embed.add_field(
-                            name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
-                            value="Pick a player from the list below by reacting to the numbers.\n",
-                            inline=False
-                        )
-                    elif (len(blueTeam) == 2 and len(orangeTeam) == 1):
-                        embed.add_field(
-                            name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                            value="Please pick two players.\n"
-                            "React to the numbers to select a player.",
-                            inline=False
-                        )
-                    elif (len(orangeTeam) == 2):
-                        embed.add_field(
-                            name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                            value="Please pick one player.\n"
-                            "React to the numbers to select a player.",
-                            inline=False
-                        )
-                    if (len(blueTeam) >= 1):
-                        embed.add_field(
-                            name="Available Picks",
-                            value=Queue.getQueueList(includeTimes=False, includeLetters=True),
-                            inline=False
-                        )
+                    if (len(blueTeam) == 0):
+                        captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
                     else:
-                        if (Queue.getQueueLength() == 6):
-                            embed.add_field(
-                                name="Queue Popped!",
-                                value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
-                                inline=False
-                            )
-                        embed.add_field(
-                            name="Current Queue",
-                            value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
-                            inline=False
-                        )
+                        captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
                     return embed
 
                 if (not Queue.isPlayerInQueue(player_id)):
@@ -262,44 +120,10 @@ def kick(mentions: str, roles: List[Role], *arg) -> Embed:
                         title="User Not in Queue",
                         desc="To see who is in current queue, type: **!list**"
                     )
-                    if (len(blueTeam) == 1):
-                        embed.add_field(
-                            name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
-                            value="Pick a player from the list below by reacting to the numbers.\n",
-                            inline=False
-                        )
-                    elif (len(blueTeam) == 2 and len(orangeTeam) == 1):
-                        embed.add_field(
-                            name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                            value="Please pick two players.\n"
-                            "React to the numbers to select a player.",
-                            inline=False
-                        )
-                    elif (len(orangeTeam) == 2):
-                        embed.add_field(
-                            name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                            value="Please pick one player.\n"
-                            "React to the numbers to select a player.",
-                            inline=False
-                        )
-                    if (len(blueTeam) >= 1):
-                        embed.add_field(
-                            name="Available Picks",
-                            value=Queue.getQueueList(includeTimes=False, includeLetters=True),
-                            inline=False
-                        )
+                    if (len(blueTeam) == 0):
+                        captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
                     else:
-                        if (Queue.getQueueLength() == 6):
-                            embed.add_field(
-                                name="Queue Popped!",
-                                value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
-                                inline=False
-                            )
-                        embed.add_field(
-                            name="Current Queue",
-                            value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
-                            inline=False
-                        )
+                        captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
                     return embed
 
                 else:
@@ -307,176 +131,40 @@ def kick(mentions: str, roles: List[Role], *arg) -> Embed:
                         title="Did Not Mention a Player",
                         desc="Please mention a player in the queue to kick."
                     )
-                    if (len(blueTeam) == 1):
-                        embed.add_field(
-                            name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
-                            value="Pick a player from the list below by reacting to the numbers.\n",
-                            inline=False
-                        )
-                    elif (len(blueTeam) == 2 and len(orangeTeam) == 1):
-                        embed.add_field(
-                            name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                            value="Please pick two players.\n"
-                            "React to the numbers to select a player.",
-                            inline=False
-                        )
-                    elif (len(orangeTeam) == 2):
-                        embed.add_field(
-                            name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                            value="Please pick one player.\n"
-                            "React to the numbers to select a player.",
-                            inline=False
-                        )
-                    if (len(blueTeam) >= 1):
-                        embed.add_field(
-                            name="Available Picks",
-                            value=Queue.getQueueList(includeTimes=False, includeLetters=True),
-                            inline=False
-                        )
+                    if (len(blueTeam) == 0):
+                        captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
                     else:
-                        if (Queue.getQueueLength() == 6):
-                            embed.add_field(
-                                name="Queue Popped!",
-                                value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
-                                inline=False
-                            )
-                        embed.add_field(
-                            name="Current Queue",
-                            value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
-                            inline=False
-                        )
+                        captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
                     return embed
             else:
                 embed = ErrorEmbed(
                     title="Did Not Mention a Player",
                     desc="Please mention a player in the queue to kick."
                 )
-                if (len(blueTeam) == 1):
-                    embed.add_field(
-                        name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
-                        value="Pick a player from the list below by reacting to the numbers.\n",
-                        inline=False
-                    )
-                elif (len(blueTeam) == 2 and len(orangeTeam) == 1):
-                    embed.add_field(
-                        name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                        value="Please pick two players.\n"
-                        "React to the numbers to select a player.",
-                        inline=False
-                    )
-                elif (len(orangeTeam) == 2):
-                    embed.add_field(
-                        name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                        value="Please pick one player.\n"
-                        "React to the numbers to select a player.",
-                        inline=False
-                    )
-                if (len(blueTeam) >= 1):
-                    embed.add_field(
-                        name="Available Picks",
-                        value=Queue.getQueueList(includeTimes=False, includeLetters=True),
-                        inline=False
-                    )
+                if (len(blueTeam) == 0):
+                    captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
                 else:
-                    if (Queue.getQueueLength() == 6):
-                        embed.add_field(
-                            name="Queue Popped!",
-                            value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
-                            inline=False
-                        )
-                    embed.add_field(
-                        name="Current Queue",
-                        value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
-                        inline=False
-                    )
+                    captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
                 return embed
         else:
             embed = ErrorEmbed(
                 title="Did Not Mention a Player",
                 desc="Please mention a player in the queue to kick."
             )
-            if (len(blueTeam) == 1):
-                embed.add_field(
-                    name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
-                    value="Pick a player from the list below by reacting to the numbers.\n",
-                    inline=False
-                )
-            elif (len(blueTeam) == 2 and len(orangeTeam) == 1):
-                embed.add_field(
-                    name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                    value="Please pick two players.\n"
-                    "React to the numbers to select a player.",
-                    inline=False
-                )
-            elif (len(orangeTeam) == 2):
-                embed.add_field(
-                    name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                    value="Please pick one player.\n"
-                    "React to the numbers to select a player.",
-                    inline=False
-                )
-            if (len(blueTeam) >= 1):
-                embed.add_field(
-                    name="Available Picks",
-                    value=Queue.getQueueList(includeTimes=False, includeLetters=True),
-                    inline=False
-                )
+            if (len(blueTeam) == 0):
+                captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
             else:
-                if (Queue.getQueueLength() == 6):
-                    embed.add_field(
-                        name="Queue Popped!",
-                        value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
-                        inline=False
-                    )
-                embed.add_field(
-                    name="Current Queue",
-                    value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
-                    inline=False
-                )
+                captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
             return embed
     else:
         embed = ErrorEmbed(
             title="Did Not Mention a Player",
             desc="Please mention a player in the queue to kick."
         )
-        if (len(blueTeam) == 1):
-            embed.add_field(
-                name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
-                value="Pick a player from the list below by reacting to the numbers.\n",
-                inline=False
-            )
-        elif (len(blueTeam) == 2 and len(orangeTeam) == 1):
-            embed.add_field(
-                name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                value="Please pick two players.\n"
-                "React to the numbers to select a player.",
-                inline=False
-            )
-        elif (len(orangeTeam) == 2):
-            embed.add_field(
-                name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                value="Please pick one player.\n"
-                "React to the numbers to select a player.",
-                inline=False
-            )
-        if (len(blueTeam) >= 1):
-            embed.add_field(
-                name="Available Picks",
-                value=Queue.getQueueList(includeTimes=False, includeLetters=True),
-                inline=False
-            )
+        if (len(blueTeam) == 0):
+            captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
         else:
-            if (Queue.getQueueLength() == 6):
-                embed.add_field(
-                    name="Queue Popped!",
-                    value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
-                    inline=False
-                )
-            embed.add_field(
-                name="Current Queue",
-                value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
-                inline=False
-            )
+            captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
         return embed
 
 

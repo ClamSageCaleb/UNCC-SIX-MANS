@@ -8,7 +8,8 @@ from EmbedHelper import \
     QueueUpdateEmbed,\
     InfoEmbed,\
     CaptainsPopEmbed,\
-    PlayersSetEmbed
+    PlayersSetEmbed,\
+    captainsRandomHelpEmbed
 from Commands.Utils import updateLeaderboardChannel, orangeTeamPick, blueTeamPick
 import DataFiles
 
@@ -397,88 +398,20 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
                 title="Leaderboard Placement for {0}".format(member["Name"].split("#")[0]),
                 desc=players_rank
             )
-            if (len(blueTeam) == 1):
-                embed.add_field(
-                    name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
-                    value="Pick a player from the list below by reacting to the numbers.\n",
-                    inline=False
-                )
-            elif (len(blueTeam) == 2 and len(orangeTeam) == 1):
-                embed.add_field(
-                    name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                    value="Please pick two players.\n"
-                    "React to the numbers to select a player.",
-                    inline=False
-                )
-            elif (len(orangeTeam) == 2):
-                embed.add_field(
-                    name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                    value="Please pick one player.\n"
-                    "React to the numbers to select a player.",
-                    inline=False
-                )
-            if (len(blueTeam) >= 1):
-                embed.add_field(
-                    name="Available Picks",
-                    value=Queue.getQueueList(includeTimes=False, includeLetters=True),
-                    inline=False
-                )
+            if (len(blueTeam) == 0):
+                captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
             else:
-                if (Queue.getQueueLength() == 6):
-                    embed.add_field(
-                        name="Queue Popped!",
-                        value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
-                        inline=False
-                    )
-                embed.add_field(
-                    name="Current Queue",
-                    value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
-                    inline=False
-                )
+                captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
             return embed
 
         embed = ErrorEmbed(
             title="No Matches Played",
             desc="{0} hasn't played any matches and won't show up on the leaderboard.".format(arg[0])
         )
-        if (len(blueTeam) == 1):
-            embed.add_field(
-                name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
-                value="Pick a player from the list below by reacting to the numbers.\n",
-                inline=False
-            )
-        elif (len(blueTeam) == 2 and len(orangeTeam) == 1):
-            embed.add_field(
-                name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                value="Please pick two players.\n"
-                "React to the numbers to select a player.",
-                inline=False
-            )
-        elif (len(orangeTeam) == 2):
-            embed.add_field(
-                name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                value="Please pick one player.\n"
-                "React to the numbers to select a player.",
-                inline=False
-            )
-        if (len(blueTeam) >= 1):
-            embed.add_field(
-                name="Available Picks",
-                value=Queue.getQueueList(includeTimes=False, includeLetters=True),
-                inline=False
-            )
+        if (len(blueTeam) == 0):
+            captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
         else:
-            if (Queue.getQueueLength() == 6):
-                embed.add_field(
-                    name="Queue Popped!",
-                    value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
-                    inline=False
-                )
-            embed.add_field(
-                name="Current Queue",
-                value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
-                inline=False
-            )
+            captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
         return embed
 
     elif (len(arg) == 0 and playerMentioned == False):
@@ -487,44 +420,10 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
             title="UNCC 6 Mans | Top 5",
             desc=Leaderboard.showLeaderboard(limit=5) + viewFullLb
         )
-        if (len(blueTeam) == 1):
-            embed.add_field(
-                name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
-                value="Pick a player from the list below by reacting to the numbers.\n",
-                inline=False
-            )
-        elif (len(blueTeam) == 2 and len(orangeTeam) == 1):
-            embed.add_field(
-                name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                value="Please pick two players.\n"
-                "React to the numbers to select a player.",
-                inline=False
-            )
-        elif (len(orangeTeam) == 2):
-            embed.add_field(
-                name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                value="Please pick one player.\n"
-                "React to the numbers to select a player.",
-                inline=False
-            )
-        if (len(blueTeam) >= 1):
-            embed.add_field(
-                name="Available Picks",
-                value=Queue.getQueueList(includeTimes=False, includeLetters=True),
-                inline=False
-            )
+        if (len(blueTeam) == 0):
+            captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
         else:
-            if (Queue.getQueueLength() == 6):
-                embed.add_field(
-                    name="Queue Popped!",
-                    value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
-                    inline=False
-                )
-            embed.add_field(
-                name="Current Queue",
-                value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
-                inline=False
-            )
+            captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
         return embed
 
     else:
@@ -533,44 +432,10 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
             desc="Mention someone to see their rank, use 'me' to see your rank,"
             " include nothing to see the top 5 on the leaderboard."
         )
-        if (len(blueTeam) == 1):
-            embed.add_field(
-                name="It is 🔷 " + blueCap.name + "'s 🔷 turn to pick",
-                value="Pick a player from the list below by reacting to the numbers.\n",
-                inline=False
-            )
-        elif (len(blueTeam) == 2 and len(orangeTeam) == 1):
-            embed.add_field(
-                name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                value="Please pick two players.\n"
-                "React to the numbers to select a player.",
-                inline=False
-            )
-        elif (len(orangeTeam) == 2):
-            embed.add_field(
-                name="It is 🔶 " + orangeCap.name + "'s 🔶 turn to pick",
-                value="Please pick one player.\n"
-                "React to the numbers to select a player.",
-                inline=False
-            )
-        if (len(blueTeam) >= 1):
-            embed.add_field(
-                name="Available Picks",
-                value=Queue.getQueueList(includeTimes=False, includeLetters=True),
-                inline=False
-            )
+        if (len(blueTeam) == 0):
+            captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
         else:
-            if (Queue.getQueueLength() == 6):
-                embed.add_field(
-                    name="Queue Popped!",
-                    value="React to the \U0001F1E8 or \U0001F1F7 for captains or random.\n",
-                    inline=False
-                )
-            embed.add_field(
-                name="Current Queue",
-                value=Queue.getQueueList() if Queue.getQueueLength() >= 1 else "Current Queue 0/6\n Queue is empty.\n Join the queue by reacting to the ✅", # noqa
-                inline=False
-            )
+            captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
         return embed
 
 
