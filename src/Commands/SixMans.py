@@ -363,25 +363,16 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
         Returns:
             dicord.Embed - The embedded message to respond with.
     """
+    playerMentioned: bool = False
+    selfRank: bool = False
     if (len(arg) > 0):
         if ("<@!" in arg[0]):
             split = mentions.split("<@!")
             player_id = split[1][:-1]
             if (player_id.isdigit()):
                 playerMentioned: bool = True
-                selfRank: bool = False
-            else:
-                playerMentioned: bool = False
-                selfRank: bool = False
         elif (arg[0] == "me"):
             selfRank: bool = True
-            playerMentioned: bool = False
-        else:
-            playerMentioned: bool = False
-            selfRank: bool = False
-    else:
-        playerMentioned: bool = False
-        selfRank: bool = False
 
     if (not Queue.queueAlreadyPopped()):
         blueTeam, orangeTeam = Queue.getTeamList()
