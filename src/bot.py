@@ -327,8 +327,15 @@ async def qq(ctx, *arg):
 
 
 @client.command(name='kick', aliases=['remove', 'yeet'], pass_context=True)
-async def kick(ctx):
-    await sendMessage(ctx, Admin.kick(ctx.message.mentions, ctx.message.author.roles), "queue")
+async def kick(ctx, *arg):
+    blueTeam, _ = Queue.getTeamList()
+    kicking = Admin.kick(ctx.message.content, ctx.message.author.roles, *arg)
+    if (len(blueTeam) == 0 and Queue.getQueueLength() != 6):
+        await sendMessage(ctx, kicking, "queue")
+    elif (Queue.getQueueLength() == 6 and len(blueTeam) == 0):
+        await sendMessage(ctx, kicking, "popped")
+    elif (len(blueTeam) >= 1):
+        await sendMessage(ctx, kicking, "picks")
 
 
 @client.command(name='flip', aliases=['coinflip', 'chance', 'coin'], pass_context=True)

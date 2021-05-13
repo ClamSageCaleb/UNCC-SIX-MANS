@@ -4,9 +4,10 @@ from datetime import datetime, timedelta
 from discord import Role, Member
 from math import ceil
 import random
+import DataFiles
 from tinydb import where
 from tinydb.table import Document
-from typing import Tuple, List
+from typing import Tuple, List, Union
 
 
 '''
@@ -26,8 +27,12 @@ def getQueueLength() -> int:
     return currQueue.count(where(BallChaserKey.ID).exists())
 
 
-def isPlayerInQueue(player: Member) -> bool:
-    return currQueue.contains(where(BallChaserKey.ID) == player.id)
+def isPlayerInQueue(player: Union[Member, str]) -> bool:
+    if (isinstance(player, Member)):
+        return currQueue.contains(where(BallChaserKey.ID) == player.id)
+    elif (isinstance(player, str)):
+        member = DataFiles.currQueue.get(doc_id=int(player))
+        return currQueue.contains(where(BallChaserKey.ID) == member["id"])
 
 
 def clearQueue() -> None:
@@ -76,8 +81,11 @@ def addToQueue(player: Member, mins_to_queue_for: int = 60) -> None:
     currQueue.insert(Document(new_player.toJSON(), doc_id=new_player.id))
 
 
-def removeFromQueue(player: Member) -> None:
-    currQueue.remove(doc_ids=[player.id])
+def removeFromQueue(player: Union[Member, str]) -> None:
+    if(isinstance(player, Member)):
+        currQueue.remove(doc_ids=[player.id])
+    elif(isinstance(player, str)):
+        currQueue.remove(doc_ids=[int(player)])
 
 
 def resetPlayerQueueTime(player: Member, mins_to_queue_for: int = 60) -> None:
