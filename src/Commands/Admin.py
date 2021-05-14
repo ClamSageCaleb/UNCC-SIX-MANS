@@ -102,12 +102,12 @@ def kick(mentions: str, roles: List[Role], *arg) -> Embed:
                     captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
                     return embed
 
-                member = DataFiles.leaderboard.get(doc_id=int(player_id))
+                member = DataFiles.currQueue.get(doc_id=int(player_id))
                 if (Queue.isPlayerInQueue(player_id)):
                     Queue.removeFromQueue(player_id)
                     embed = AdminEmbed(
                         title="Kicked Player",
-                        desc="Removed {0} from the queue".format(member["Name"].split("#")[0])
+                        desc="Removed {0} from the queue".format(member["name"].split("#")[0])
                     )
                     if (len(blueTeam) == 0):
                         captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)

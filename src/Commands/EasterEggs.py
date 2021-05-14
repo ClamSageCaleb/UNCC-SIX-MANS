@@ -97,13 +97,10 @@ def Teams() -> str:
 def NormQ() -> List[str or Embed]:
     playerList = Queue.getQueueList()
     queueSize = Queue.getQueueLength()
-    if (not Queue.queueAlreadyPopped()):
-        blueTeam, orangeTeam = Queue.getTeamList()
-    else:
-        blueTeam, orangeTeam = Queue.getTeamList()
-        blueCap, orangeCap = Queue.captainsPop()
 
     if (Queue.queueAlreadyPopped() or queueSize == 6):
+        blueTeam, orangeTeam = Queue.getTeamList()
+        blueCap, orangeCap = Queue.captainsPop()
         embed = ErrorEmbed(
             title="Current Lobby Not Set",
             desc="Whoa there Norm! You can't queue until the current queue has finished popping."
