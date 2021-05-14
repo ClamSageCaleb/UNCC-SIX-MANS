@@ -85,9 +85,9 @@ def addToQueue(player: Member, mins_to_queue_for: int = 60) -> None:
 
 
 def removeFromQueue(player: Union[Member, str]) -> None:
-    if(isinstance(player, Member)):
+    if (isinstance(player, Member)):
         currQueue.remove(doc_ids=[player.id])
-    elif(isinstance(player, str)):
+    elif (isinstance(player, str)):
         currQueue.remove(doc_ids=[int(player)])
 
 

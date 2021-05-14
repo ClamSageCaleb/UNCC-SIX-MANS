@@ -479,13 +479,18 @@ async def coolio(ctx):
 
 @client.command(name='normq', pass_context=True)
 async def normq(ctx):
-    messages: List[str or Embed] = EasterEggs.NormQ()
-    for msg in messages:
-        if (isinstance(msg, Embed)):
-            await ctx.send(embed=msg)
-            await sendMessage(ctx, SixMans.reacts(client.user.name), "queue")
-        else:
-            await ctx.reply(msg)
+    blueTeam, _ = Queue.getTeamList()
+    if (len(blueTeam) >= 1):
+        await ctx.send("Duis says I am not supposed to queue, but I don't listen to players worse than me...")
+        await ctx.send("!q")
+        await sendMessage(ctx, EasterEggs.NormQ(), "active")
+    else:
+        await ctx.send("Duis says I am not supposed to queue, but I don't listen to players worse than me...")
+        await ctx.send("!q")
+        await sendMessage(ctx, EasterEggs.NormQ(),
+                          "queue" if len(blueTeam) == 0 and
+                          Queue.getQueueLength() != 6
+                          else "popped")
 
 
 @client.command(name='teams', aliases=['uncc'], pass_context=True)

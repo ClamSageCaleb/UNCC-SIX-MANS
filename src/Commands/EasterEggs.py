@@ -2,7 +2,7 @@ from discord import Member, Embed
 from typing import List
 from random import choice
 import Queue
-from EmbedHelper import ErrorEmbed, QueueUpdateEmbed
+from EmbedHelper import ErrorEmbed, QueueUpdateEmbed, captainsRandomHelpEmbed
 
 pikaO = 0
 
@@ -95,32 +95,36 @@ def Teams() -> str:
 
 
 def NormQ() -> List[str or Embed]:
-    messages: List[str or Embed] = []
     playerList = Queue.getQueueList()
     queueSize = Queue.getQueueLength()
-
-    messages.append("Duis says I am not supposed to queue, but I don't listen to players worse than me...")
-    messages.append("!q")
+    if (not Queue.queueAlreadyPopped()):
+        blueTeam, orangeTeam = Queue.getTeamList()
+    else:
+        blueTeam, orangeTeam = Queue.getTeamList()
+        blueCap, orangeCap = Queue.captainsPop()
 
     if (Queue.queueAlreadyPopped() or queueSize == 6):
-        messages.append(ErrorEmbed(
+        embed = ErrorEmbed(
             title="Current Lobby Not Set",
             desc="Whoa there Norm! You can't queue until the current queue has finished popping."
-        ))
+        )
+        captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
+
     elif (len(playerList) == 0):
-        messages.append(QueueUpdateEmbed(
+        embed = QueueUpdateEmbed(
             title="Norm has Started the Queue!",
             desc="<@629502587963572225> wants to queue!\n\nQueued for 0 minutes.\n\nType **!q** to join",
-        ))
+        )
+
     else:
-        messages.append(QueueUpdateEmbed(
+        embed = QueueUpdateEmbed(
             title="Norm Added to Queue",
             desc="<@629502587963572225> has been added to the queue for 0 minutes.\n\n"
-            "Queue size: " + str(queueSize + 1) + "/6\n\n"
-            "Current queue:\nNorm" + (" " if len(playerList) == 0 else ", ") + playerList
-        ))
+            "**Queue size: " + str(queueSize + 1) + "/6**\n\n"
+            "**Current queue:**\nNorm (0 mins)\n" + playerList
+        )
 
-    return messages
+    return embed
 
 
 def Duis() -> str:

@@ -198,6 +198,9 @@ def HelpEmbed() -> Embed:
         "This does not apply to Easter Egg commands.",
         inline=False
     ).add_field(
+        name="!q <time>",
+        value="Queue for a certain amount of time, 10 - 60 minutes"
+    ).add_field(
         name="!leaderboard me",
         value="Shows your rank on the leaderboard.",
         inline=False
