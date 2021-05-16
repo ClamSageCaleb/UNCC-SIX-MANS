@@ -84,8 +84,8 @@ def addToQueue(player: Member, mins_to_queue_for: int = 60) -> None:
     currQueue.insert(Document(new_player.toJSON(), doc_id=new_player.id))
 
 
-def removeFromQueue(player: Union[Member, str]) -> None:
-    if (isinstance(player, Member)):
+def removeFromQueue(player: Union[Member, BallChaser, str]) -> None:
+    if (isinstance(player, Member) or isinstance(player, BallChaser)):
         currQueue.remove(doc_ids=[player.id])
     elif (isinstance(player, str)):
         currQueue.remove(doc_ids=[int(player)])

@@ -17,9 +17,7 @@ from discord.ext.commands import Bot, CommandNotFound
 from os import name as osName, system as osSystem
 from random import randint
 from time import sleep
-from typing import List
 from Commands import EasterEggs, SixMans, Testing, Admin, Utils
-from discord.embeds import Embed
 import Queue
 
 # Bot prefix and Discord Bot token
