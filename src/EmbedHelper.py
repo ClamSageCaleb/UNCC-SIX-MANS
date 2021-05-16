@@ -10,7 +10,7 @@ def BaseEmbed(title: str, description: str, color: Color) -> Embed:
         description=description,
         color=color,
     ).set_thumbnail(
-        url="https://raw.githubusercontent.com/ClamSageCaleb/UNCC-SIX-MANS/master/media/norm_masked.png"
+        url="https://raw.githubusercontent.com/ClamSageCaleb/UNCC-SIX-MANS/master/media/norm_still.png"
     )
 
 
