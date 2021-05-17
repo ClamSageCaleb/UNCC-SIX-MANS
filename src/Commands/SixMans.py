@@ -471,7 +471,7 @@ def pick(player: Member, reactionNumber: int) -> Embed:
             availablePicks = Queue.getAvailablePicks()
             return blueTeamPick(availablePicks[reactionNumber - 1], blueCap, orangeCap)
         if (len(blueTeam) == 1):
-            if (Queue.validateBluePick(player) == False):
+            if (not Queue.validateBluePick(player)):
                 return ErrorEmbed(
                     title="Not the Blue Captain",
                     desc="You are not 🔷 BLUE Team Captain 🔷\n\n"
@@ -495,7 +495,7 @@ def pick(player: Member, reactionNumber: int) -> Embed:
             availablePicks = Queue.getAvailablePicks()
             return orangeTeamPick(availablePicks[reactionNumber - 1], orangeTeam, blueCap, orangeCap)
         if (len(blueTeam) == 2):
-            if (Queue.validateOrangePick(player) == False):
+            if (not Queue.validateOrangePick(player)):
                 return ErrorEmbed(
                     title="Not the Orange Captain",
                     desc="You are not 🔶 ORANGE Team Captain 🔶 \n\n"
