@@ -179,11 +179,16 @@ def HelpEmbed() -> Embed:
     ).add_field(
         name="\U0001F1E8",
         value="Randomly selects captains (Requires 6 players in queue)."
-        "\nFirst captain picks 1 \nSecond captain picks the next two",
+        "\nFirst captain picks __ONE__ player \nSecond captain picks the next __two__ players",
+        inline=False
+    ).add_field(
+        name="1️⃣ 2️⃣ 3️⃣ 4️⃣",
+        value="Picks the corresponding player to add to your team.",
         inline=False
     ).add_field(
         name="🔷 or 🔶",
-        value="Reports the result of your queue. React to the color of the winning team.",
+        value="Reports the result of your queue. React to the color of the winning team.\n"
+        "When the match is reported successfully, Norm will react to the same message with 👍",
         inline=False
     ).add_field(
         name="💔",
@@ -197,14 +202,19 @@ def HelpEmbed() -> Embed:
         name="\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501"
         "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501",
         value="For all `!` commands, you must **reply** to a message sent by Norm for it to work.\n"
-        "This does not apply to Easter Egg commands.",
+        "This __does not__ apply to Easter Egg commands.",
         inline=False
     ).add_field(
         name="!q <time>",
-        value="Queue for a certain amount of time, 10 - 60 minutes"
+        value="Queue for a certain amount of time, 10 - 60 minutes.",
+        inline=False
     ).add_field(
         name="!leaderboard me",
-        value="Shows your rank on the leaderboard.",
+        value="Shows your stats in the leaderboard.",
+        inline=False
+    ).add_field(
+        name="!leaderboard <player>",
+        value="Mention a player to show that player's stats on the leaderboard.",
         inline=False
     ).add_field(
         name="!norm, !asknorm, or !8ball",
