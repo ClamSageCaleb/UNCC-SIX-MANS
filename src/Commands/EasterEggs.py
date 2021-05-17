@@ -1,8 +1,8 @@
-from discord import Member, Embed
+from discord import Member, Embed, Message
 from typing import List
 from random import choice
 import Queue
-from EmbedHelper import ErrorEmbed, QueueUpdateEmbed, captainsRandomHelpEmbed
+from EmbedHelper import ErrorEmbed, QueueUpdateEmbed, CaptainsRandomHelpEmbed
 
 pikaO = 0
 
@@ -45,6 +45,10 @@ egg_commands = [
     "nodought",
     "coolio",
 ]
+
+
+def commandIsEasterEgg(message: Message) -> bool:
+    return any(cmd == message.content.split(" ")[0][1:] for cmd in egg_commands)
 
 
 def EightBall(author: Member):
@@ -105,7 +109,7 @@ def NormQ() -> List[str or Embed]:
             title="Current Lobby Not Set",
             desc="Whoa there Norm! You can't queue until the current queue has finished popping."
         )
-        captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
+        CaptainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
 
     elif (len(playerList) == 0):
         embed = QueueUpdateEmbed(
@@ -173,7 +177,7 @@ def Coolio() -> str:
 def Pika() -> str:
     global pikaO
     pikaO += 1
-    return '<:pika:538182616965447706>' * pikaO
+    return "<:pika:538182616965447706>" * pikaO
 
 
 def Turhols() -> str:

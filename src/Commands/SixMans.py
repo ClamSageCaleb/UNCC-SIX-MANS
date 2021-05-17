@@ -9,7 +9,7 @@ from EmbedHelper import \
     InfoEmbed,\
     CaptainsPopEmbed,\
     PlayersSetEmbed,\
-    captainsRandomHelpEmbed
+    CaptainsRandomHelpEmbed
 from Commands.Utils import updateLeaderboardChannel, orangeTeamPick, blueTeamPick
 import DataFiles
 
@@ -201,7 +201,7 @@ def leave(player: Member) -> Embed:
     return embed
 
 
-def listQueue(player: Member):
+def listQueue(player: Member) -> Embed:
     """
         Lists the players currently in the queue with timestamps. Will show captains if captains are set.
 
@@ -235,7 +235,7 @@ def listQueue(player: Member):
     )
 
 
-def captains(player: Member):
+def captains(player: Member) -> Embed:
     """
         Pops the queue and randomly assigns two captains. Will show captains if captains are already set.
 
@@ -284,7 +284,7 @@ def captains(player: Member):
     )
 
 
-def random(player: Member):
+def random(player: Member) -> Embed:
     """
         Pops the queue and randomly assigns players to teams.
 
@@ -357,7 +357,7 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
 
         Parameters:
             author: discord.Member - The author of the message
-            mentions: List[discord.Member] - The mentions in the message.
+            mentions: str - The content in the message.
             *arg - The rest of the args in the message.
 
         Returns:
@@ -370,15 +370,12 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
             split = mentions.split("<@!")
             player_id = split[1][:-1]
             if (player_id.isdigit()):
-                playerMentioned: bool = True
+                playerMentioned = True
         elif (arg[0] == "me"):
-            selfRank: bool = True
+            selfRank = True
 
-    if (not Queue.queueAlreadyPopped()):
-        blueTeam, orangeTeam = Queue.getTeamList()
-    else:
-        blueTeam, orangeTeam = Queue.getTeamList()
-        blueCap, orangeCap = Queue.captainsPop()
+    blueTeam, orangeTeam = Queue.getTeamList()
+    blueCap, orangeCap = Queue.getCaptains()
 
     if (playerMentioned or selfRank):
         player = player_id if playerMentioned else str(author.id)
@@ -389,21 +386,15 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
                 title="Leaderboard Placement for {0}".format(member["Name"].split("#")[0]),
                 desc=players_rank
             )
-            if (len(blueTeam) == 0):
-                captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
-            else:
-                captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
-            return embed
+            edited_embed = CaptainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
+            return edited_embed
 
         embed = ErrorEmbed(
             title="No Matches Played",
             desc="{0} hasn't played any matches and won't show up on the leaderboard.".format(arg[0])
         )
-        if (len(blueTeam) == 0):
-            captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
-        else:
-            captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
-        return embed
+        edited_embed = CaptainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
+        return edited_embed
 
     elif (len(arg) == 0 and playerMentioned == False):
         viewFullLb = "\nTo see the full leaderboard, visit <#{0}>.".format(lbChannelId) if (lbChannelId != -1) else ""
@@ -411,11 +402,8 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
             title="UNCC 6 Mans | Top 5",
             desc=Leaderboard.showLeaderboard(limit=5) + viewFullLb
         )
-        if (len(blueTeam) == 0):
-            captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
-        else:
-            captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
-        return embed
+        edited_embed = CaptainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
+        return edited_embed
 
     else:
         embed = ErrorEmbed(
@@ -423,11 +411,8 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
             desc="Mention someone to see their rank, use 'me' to see your rank,"
             " include nothing to see the top 5 on the leaderboard."
         )
-        if (len(blueTeam) == 0):
-            captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
-        else:
-            captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
-        return embed
+        edited_embed = CaptainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
+        return edited_embed
 
 
 async def report(player: Member, lbChannel: Channel, winningTeam: Literal["blue", "orange"]) -> Embed or None:
@@ -437,9 +422,10 @@ async def report(player: Member, lbChannel: Channel, winningTeam: Literal["blue"
         Parameters:
             player: discord.Member - The author of the message.
             lbChannel: discord.Channel - The specified leaderboard channel object
+            winningTeam: str - The reported winning team
 
         Returns:
-            dicord.Embed - The embedded message to respond with.
+            dicord.Embed - The embedded message to respond with or sends nothing.
     """
     msg = Leaderboard.reportMatch(player, winningTeam)
 
@@ -465,10 +451,10 @@ def pick(player: Member, reactionNumber: int) -> Embed:
 
         Parameters:
             player: discord.Member - The author of the message
-            mentions: List[discord.Member] - The mentions in the message. The players picked.
+            reactionNumber: int - The picked player by reaction.
 
         Returns:
-            List[dicord.Embed] - A list of embedded messages to respond with.
+            dicord.Embed - The embedded message to respond with.
     """
     if (not Queue.queueAlreadyPopped()):
         return ErrorEmbed(
@@ -491,8 +477,8 @@ def pick(player: Member, reactionNumber: int) -> Embed:
                     desc="You are not 🔷 BLUE Team Captain 🔷\n\n"
                     "🔷 BLUE Team Captain 🔷 is: " + blueCap.mention
                 ).add_field(
-                    name="🔷 " + blueCap.name.split('#')[0] + " 🔷 picks first. \n"
-                    "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.name.split('#')[0],
+                    name="🔷 " + blueCap.name.split("#")[0] + " 🔷 picks first. \n"
+                    "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.name.split("#")[0],
                     value="Pick a player from the list below by reacting to the numbers.\n",
                     inline=False
                 ).add_field(
@@ -515,8 +501,8 @@ def pick(player: Member, reactionNumber: int) -> Embed:
                     desc="You are not 🔶 ORANGE Team Captain 🔶 \n\n"
                     "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.mention
                 ).add_field(
-                    name="🔶 " + orangeCap.name.split('#')[0] + " 🔶 picks second. \n"
-                    "🔷 BLUE Team Captain 🔷 is: " + blueCap.name.split('#')[0],
+                    name="🔶 " + orangeCap.name.split("#")[0] + " 🔶 picks second. \n"
+                    "🔷 BLUE Team Captain 🔷 is: " + blueCap.name.split("#")[0],
                     value="Pick a player from the list below by reacting to the numbers.\n",
                     inline=False
                 ).add_field(
@@ -534,8 +520,8 @@ def pick(player: Member, reactionNumber: int) -> Embed:
                 title="Not in Queue",
                 desc="You are not in the queue!\n",
             ).add_field(
-                name="🔷 " + blueCap.name.split('#')[0] + " 🔷 picks first. \n"
-                "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.name.split('#')[0],
+                name="🔷 " + blueCap.name.split("#")[0] + " 🔷 picks first. \n"
+                "🔶 ORANGE Team Captain 🔶 is: " + orangeCap.name.split("#")[0],
                 value="Pick a player from the list below by reacting to the numbers.\n",
                 inline=False
             ).add_field(
@@ -552,8 +538,8 @@ def pick(player: Member, reactionNumber: int) -> Embed:
                 title="Not in Queue",
                 desc="You are not in the queue!\n",
             ).add_field(
-                name="🔶 " + orangeCap.name.split('#')[0] + " 🔶 picks second. \n"
-                "🔷 BLUE Team Captain 🔷 is: " + blueCap.name.split('#')[0],
+                name="🔶 " + orangeCap.name.split("#")[0] + " 🔶 picks second. \n"
+                "🔷 BLUE Team Captain 🔷 is: " + blueCap.name.split("#")[0],
                 value="Pick a player from the list below by reacting to the numbers.\n",
                 inline=False
             ).add_field(

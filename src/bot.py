@@ -23,9 +23,9 @@ import Queue
 # Bot prefix and Discord Bot token
 BOT_PREFIX = ("!")
 
-# Creates the Bot with name 'client'
+# Creates the Bot with name "client"
 client = Bot(command_prefix=BOT_PREFIX)
-client.remove_command('help')
+client.remove_command("help")
 
 pikaO = 1
 
@@ -85,23 +85,24 @@ valid_commands = [
 @client.event
 async def on_message(message: discord.Message):
     if (message.author != client.user):
+        # message was a reply
         if (message.reference is not None):
-            replied_to_msg = await message.channel.fetch_message(message.reference.message_id)
             if (any(queue_cmd == message.content.split(" ")[0][1:] for queue_cmd in valid_commands)):
-                replied_to_msg_embed = replied_to_msg.embeds
-                if (any(embed.title == "Teams are Set!" for embed in replied_to_msg_embed)):
-                    await client.process_commands(message)
-                    await message.delete()
-                else:
+                replied_to_msg = await message.channel.fetch_message(message.reference.message_id)
+                replied_to_msg_embeds = replied_to_msg.embeds
+
+                if (not any(embed.title == "Teams are Set!" for embed in replied_to_msg_embeds)):
                     await replied_to_msg.delete()
-                    await client.process_commands(message)
-                    await message.delete()
-            elif (any(cmd == message.content.split(" ")[0][1:] for cmd in EasterEggs.egg_commands)):
+
                 await client.process_commands(message)
-        elif (message.reference is None):
-            if (any(cmd == message.content.split(" ")[0][1:] for cmd in EasterEggs.egg_commands)):
+                await message.delete()
+
+            elif (EasterEggs.commandIsEasterEgg(message)):
                 await client.process_commands(message)
-                return
+
+        elif (EasterEggs.commandIsEasterEgg(message)):
+            await client.process_commands(message)
+            return
 
 
 @client.event
@@ -145,7 +146,7 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
                 await sendMessage(
                     channel,
                     msg,
-                    "popped" if msg.title == "Queue Popped!" or Queue.getQueueLength() == 6 else "queue"
+                    "popped" if Queue.getQueueLength() == 6 else "queue"
                 )
 
         elif (reaction.emoji == "❌"):
@@ -159,50 +160,42 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
                 await sendMessage(
                     channel,
                     msg,
-                    "popped" if msg.title == "Queue Popped!" or Queue.getQueueLength() == 6 else "queue"
+                    "popped" if Queue.getQueueLength() == 6 else "queue"
                 )
 
         elif (reaction.emoji == "🔢"):
             await reaction.message.delete()
-            top_5 = []
             await sendMessage(
                 channel,
-                SixMans.leaderboard(client.user.name, top_5, LEADERBOARD_CH_ID),
+                SixMans.leaderboard(client.user.name, "", LEADERBOARD_CH_ID),
                 "popped" if Queue.getQueueLength() == 6 else "queue"
             )
 
         elif (reaction.emoji == "❓"):
             await reaction.message.delete()
+            await sendMessage(channel, HelpEmbed(), None)
+
             if (len(blueTeam) >= 1):
-                await sendMessage(channel, HelpEmbed(), None)
                 await sendMessage(channel, SixMans.listQueue(user), "picks")
             elif (Queue.getQueueLength() == 6 and len(blueTeam) == 0):
-                await sendMessage(channel, HelpEmbed(), None)
                 await sendMessage(channel, SixMans.listQueue(user), "popped")
             else:
-                await sendMessage(channel, HelpEmbed(), None)
                 await sendMessage(channel, SixMans.listQueue(user), "queue")
 
         # regional indicator C
         elif (reaction.emoji == "\U0001F1E8"):
             await reaction.message.delete()
-            if (Queue.isPlayerInQueue(user)):
-                await sendMessage(channel, SixMans.captains(user), "picks")
-            elif (not Queue.isPlayerInQueue(user) and Queue.getQueueLength() == 6):
-                await sendMessage(channel, SixMans.captains(user), "popped")
-            else:
-                await sendMessage(channel, SixMans.listQueue(user), "queue")
+            await sendMessage(channel, SixMans.captains(user), "picks" if Queue.isPlayerInQueue(user) else "popped")
 
         # regional indicator R
         elif (reaction.emoji == "\U0001F1F7"):
             await reaction.message.delete()
+
             if (Queue.isPlayerInQueue(user)):
                 await sendMessage(channel, SixMans.random(user), "active")
                 await sendMessage(channel, SixMans.listQueue(user), "queue")
-            elif (not Queue.isPlayerInQueue(user) and Queue.getQueueLength() == 6):
-                await sendMessage(channel, SixMans.random(user), "popped")
             else:
-                await sendMessage(channel, SixMans.listQueue(user), "queue")
+                await sendMessage(channel, SixMans.random(user), "popped")
 
         # regional indicator L
         elif (reaction.emoji == "\U0001F1F1"):
@@ -216,27 +209,28 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
 
         elif (reaction.emoji == "1️⃣"):
             await reaction.message.delete()
-            if (len(orangeTeam) == 2 and Queue.validateOrangePick(user)):
+            if (Queue.validateOrangePick(user) and len(orangeTeam) == 2):
                 await sendMessage(channel, SixMans.pick(user, 1), "active")
                 await sendMessage(channel, SixMans.listQueue(user), "queue")
             else:
                 await sendMessage(channel, SixMans.pick(user, 1), "picks")
 
         elif (reaction.emoji == "2️⃣"):
-            if (len(orangeTeam) == 2 and Queue.validateOrangePick(user)):
-                await reaction.message.delete()
+            await reaction.message.delete()
+            if (Queue.validateOrangePick(user) and len(orangeTeam) == 2):
                 await sendMessage(channel, SixMans.pick(user, 2), "active")
                 await sendMessage(channel, SixMans.listQueue(user), "queue")
             else:
-                await reaction.message.delete()
                 await sendMessage(channel, SixMans.pick(user, 2), "picks")
 
         elif (reaction.emoji == "3️⃣"):
             await reaction.message.delete()
+            # if checks not needed here since 3 can never be last pick
             await sendMessage(channel, SixMans.pick(user, 3), "picks")
 
         elif (reaction.emoji == "4️⃣"):
             await reaction.message.delete()
+            # if checks not needed here since 4 can never be last pick
             await sendMessage(channel, SixMans.pick(user, 4), "picks")
 
         elif (reaction.emoji == "🔷"):
@@ -305,7 +299,7 @@ async def stale_queue_timer():
 """
 
 
-@client.command(name='q', aliases=['addmepapanorm', 'Q', 'addmebitch', 'queue', 'join'], pass_context=True)
+@client.command(name="q", aliases=["addmepapanorm", "Q", "addmebitch", "queue", "join"], pass_context=True)
 async def q(ctx, *arg):
     messages = SixMans.playerQueue(ctx.message.author, *arg)
     for msg in messages:
@@ -315,7 +309,7 @@ async def q(ctx, *arg):
             await sendMessage(ctx, msg, "queue")
 
 
-@client.command(name='qq', aliases=['quietq', 'QQ', 'quietqueue', 'shh', 'dontping'], pass_context=True)
+@client.command(name="qq", aliases=["quietq", "QQ", "quietqueue", "shh", "dontping"], pass_context=True)
 async def qq(ctx, *arg):
     messages = SixMans.playerQueue(ctx.message.author, *arg, quiet=True)
     for msg in messages:
@@ -325,7 +319,7 @@ async def qq(ctx, *arg):
             await sendMessage(ctx, msg, "queue")
 
 
-@client.command(name='kick', aliases=['remove', 'yeet'], pass_context=True)
+@client.command(name="kick", aliases=["remove", "yeet"], pass_context=True)
 async def kick(ctx, *arg):
     blueTeam, _ = Queue.getTeamList()
     kicking = Admin.kick(ctx.message.content, ctx.message.author.roles, *arg)
@@ -337,7 +331,7 @@ async def kick(ctx, *arg):
         await sendMessage(ctx, kicking, "picks")
 
 
-@client.command(name='flip', aliases=['coinflip', 'chance', 'coin'], pass_context=True)
+@client.command(name="flip", aliases=["coinflip", "chance", "coin"], pass_context=True)
 async def coinFlip(ctx):
     if (randint(1, 2) == 1):
         await q(ctx)
@@ -362,7 +356,7 @@ async def removeLastPoppedQueue(ctx):
     await sendMessage(ctx, Admin.brokenQueue(ctx.message.author, ctx.message.author.roles), "queue")
 
 
-@client.command(name='clear', aliases=['clr', 'reset'], pass_context=True)
+@client.command(name="clear", aliases=["clr", "reset"], pass_context=True)
 async def clear(ctx):
     await sendMessage(ctx, Admin.clear(ctx.message.author.roles), "queue")
 
@@ -391,12 +385,12 @@ async def flipReport(ctx):
         await ctx.send(embed=Testing.flipReport(ctx.message.author.roles))
 
 
-@client.command(name='restart', aliases=['restartbot'], pass_context=True)
+@client.command(name="restart", aliases=["restartbot"], pass_context=True)
 async def restart(ctx):
     await ctx.send(embed=Admin.restart())
 
 
-@client.command(name='update', pass_context=True)
+@client.command(name="update", pass_context=True)
 async def update(ctx):
     await ctx.send(AdminEmbed(
         title="Checking For Updates",
@@ -410,72 +404,72 @@ async def update(ctx):
 """
 
 
-@client.command(name='twan', aliases=['<:twantheswan:540327706076905472>'], pass_context=True)
+@client.command(name="twan", aliases=["<:twantheswan:540327706076905472>"], pass_context=True)
 async def twan(ctx):
     await ctx.reply(EasterEggs.Twan())
 
 
-@client.command(name='sad', aliases=[':('], pass_context=True)
+@client.command(name="sad", aliases=[":("], pass_context=True)
 async def sad(ctx):
     await ctx.reply(EasterEggs.Sad())
 
 
-@client.command(name='smh', aliases=['myhead'], pass_context=True)
+@client.command(name="smh", aliases=["myhead"], pass_context=True)
 async def smh(ctx):
     await ctx.reply(EasterEggs.Smh())
 
 
-@client.command(name='turhols', aliases=['<:IncognitoTurhol:540327644089155639>'], pass_context=True)
+@client.command(name="turhols", aliases=["<:IncognitoTurhol:540327644089155639>"], pass_context=True)
 async def turhols(ctx):
     await ctx.reply(EasterEggs.Turhols())
 
 
-@client.command(name='pika', aliases=['<:pika:538182616965447706>'], pass_context=True)
+@client.command(name="pika", aliases=["<:pika:538182616965447706>"], pass_context=True)
 async def pika(ctx):
     await ctx.reply(EasterEggs.Pika())
 
 
-@client.command(name='zappa', aliases=['zapp', 'zac', '<:zappa:632813684678197268>', '<:zapp:632813709579911179>'], pass_context=True)  # noqa
+@client.command(name="zappa", aliases=["zapp", "zac", "<:zappa:632813684678197268>", "<:zapp:632813709579911179>"], pass_context=True)  # noqa
 async def zappa(ctx):
     await ctx.reply(EasterEggs.Zappa())
 
 
-@client.command(name='duis', pass_context=True)
+@client.command(name="duis", pass_context=True)
 async def duis(ctx):
     await ctx.reply(EasterEggs.Duis())
 
 
-@client.command(name='furry', pass_context=True)
+@client.command(name="furry", pass_context=True)
 async def furry(ctx):
     await ctx.reply(EasterEggs.Furry())
 
 
-@client.command(name='don', pass_context=True)
+@client.command(name="don", pass_context=True)
 async def don(ctx):
     await ctx.reply(EasterEggs.Don())
 
 
-@client.command(name='daffy', pass_context=True)
+@client.command(name="daffy", pass_context=True)
 async def daffy(ctx):
     await ctx.reply(EasterEggs.Daffy())
 
 
-@client.command(name='giddy', pass_context=True)
+@client.command(name="giddy", pass_context=True)
 async def giddy(ctx):
     await ctx.reply(EasterEggs.Giddy())
 
 
-@client.command(name='nodought', pass_context=True)
+@client.command(name="nodought", pass_context=True)
 async def nodought(ctx):
     await ctx.reply(EasterEggs.NoDought())
 
 
-@client.command(name='coolio', pass_context=True)
+@client.command(name="coolio", pass_context=True)
 async def coolio(ctx):
     await ctx.reply(EasterEggs.Coolio())
 
 
-@client.command(name='normq', pass_context=True)
+@client.command(name="normq", pass_context=True)
 async def normq(ctx):
     blueTeam, _ = Queue.getTeamList()
     if (len(blueTeam) >= 1):
@@ -491,17 +485,17 @@ async def normq(ctx):
                           else "popped")
 
 
-@client.command(name='teams', aliases=['uncc'], pass_context=True)
+@client.command(name="teams", aliases=["uncc"], pass_context=True)
 async def teams(ctx):
     await ctx.reply(EasterEggs.Teams())
 
 
-@client.command(name='8ball', aliases=['norm', 'asknorm', 'eight_ball', 'eightball', '8-ball'], pass_context=True)
+@client.command(name="8ball", aliases=["norm", "asknorm", "eight_ball", "eightball", "8-ball"], pass_context=True)
 async def eight_ball(ctx):
     await ctx.reply(EasterEggs.EightBall(ctx.message.author))
 
 
-@client.command(name='fuck', aliases=['f', 'frick'], pass_context=True)
+@client.command(name="fuck", aliases=["f", "frick"], pass_context=True)
 async def fuck(ctx):
     await ctx.reply(EasterEggs.Fuck())
 
@@ -536,10 +530,10 @@ def main():
         )
 
     # clear screen to hide token
-    if osName == 'nt':
-        _ = osSystem('cls')
+    if osName == "nt":
+        _ = osSystem("cls")
     else:
-        _ = osSystem('clear')
+        _ = osSystem("clear")
 
     AWS.init()
 

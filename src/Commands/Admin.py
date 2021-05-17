@@ -1,11 +1,10 @@
 from CheckForUpdates import updateBot
-from EmbedHelper import AdminEmbed, ErrorEmbed, QueueUpdateEmbed, captainsRandomHelpEmbed
+from EmbedHelper import AdminEmbed, ErrorEmbed, QueueUpdateEmbed, CaptainsRandomHelpEmbed
 from Leaderboard import brokenQueue as lbBrokenQueue
 from typing import List
 from bot import __version__
 from discord import Role, Embed, Member
 import Queue
-import DataFiles
 
 
 def update(roles: List[Role]) -> Embed:
@@ -59,113 +58,64 @@ def kick(mentions: str, roles: List[Role], *arg) -> Embed:
         Kicks the mentioned player from the queue. Requires Bot Admin role.
 
         Parameters:
-            mentions: List[discord.Member] - The mentions in the message.
+            mentions: str - The content of the message.
             roles: List[discord.Role] - The roles of the author of the message.
+            *arg: - The arguments in the message.
 
         Returns:
-            dicord.Embed - The embedded message to respond with.
+            discord.Embed - The embedded message to respond with.
     """
-    if (not Queue.queueAlreadyPopped()):
-        blueTeam, orangeTeam = Queue.getTeamList()
-    else:
-        blueTeam, orangeTeam = Queue.getTeamList()
-        blueCap, orangeCap = Queue.captainsPop()
-    if (len(arg) > 0):
-        if ("<@!" in arg[0]):
-            split = mentions.split("<@!")
-            player_id = split[1][:-1]
-            if (player_id.isdigit()):
-                if (not Queue.isBotAdmin(roles)):
-                    embed = ErrorEmbed(
-                        title="Permission Denied",
-                        desc="You do not have the leg strength to kick other players."
-                    )
-                    if (len(blueTeam) == 0):
-                        captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
-                    else:
-                        captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
-                    return embed
+    blueTeam, orangeTeam = Queue.getTeamList()
+    blueCap, orangeCap = Queue.getCaptains()
 
-                if (Queue.queueAlreadyPopped()):
-                    embed = ErrorEmbed(
-                        title="Queue Already Popped",
-                        desc="Can't kick players while picking teams."
-                    )
-                    captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
-                    return embed
+    if (len(arg) > 0 and "<@!" in arg[0]):
+        split = mentions.split("<@!")
+        player_id = split[1][:-1]
 
-                if (Queue.getQueueLength() == 0):
-                    embed = ErrorEmbed(
-                        title="Queue is Empty",
-                        desc="The queue is empty, what are you doing?"
-                    )
-                    captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
-                    return embed
+        if (player_id.isdigit()):
+            embed = None
 
-                member = DataFiles.currQueue.get(doc_id=int(player_id))
-                if (Queue.isPlayerInQueue(player_id)):
-                    Queue.removeFromQueue(player_id)
-                    embed = AdminEmbed(
-                        title="Kicked Player",
-                        desc="Removed {0} from the queue".format(member["name"].split("#")[0])
-                    )
-                    if (len(blueTeam) == 0):
-                        captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
-                    else:
-                        captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
-                    return embed
-
-                if (not Queue.isPlayerInQueue(player_id)):
-                    embed = ErrorEmbed(
-                        title="User Not in Queue",
-                        desc="To see who is in current queue, type: **!list**"
-                    )
-                    if (len(blueTeam) == 0):
-                        captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
-                    else:
-                        captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
-                    return embed
-
-                else:
-                    embed = ErrorEmbed(
-                        title="Did Not Mention a Player",
-                        desc="Please mention a player in the queue to kick."
-                    )
-                    if (len(blueTeam) == 0):
-                        captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
-                    else:
-                        captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
-                    return embed
-            else:
+            if (not Queue.isBotAdmin(roles)):
                 embed = ErrorEmbed(
-                    title="Did Not Mention a Player",
-                    desc="Please mention a player in the queue to kick."
+                    title="Permission Denied",
+                    desc="You do not have the leg strength to kick other players."
                 )
-                if (len(blueTeam) == 0):
-                    captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
-                else:
-                    captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
-                return embed
-        else:
-            embed = ErrorEmbed(
-                title="Did Not Mention a Player",
-                desc="Please mention a player in the queue to kick."
-            )
-            if (len(blueTeam) == 0):
-                captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
+
+            elif (Queue.queueAlreadyPopped()):
+                embed = ErrorEmbed(
+                    title="Queue Already Popped",
+                    desc="Can't kick players while picking teams."
+                )
+
+            elif (Queue.getQueueLength() == 0):
+                embed = ErrorEmbed(
+                    title="Queue is Empty",
+                    desc="The queue is empty, what are you doing?"
+                )
+
+            elif (not Queue.isPlayerInQueue(player_id)):
+                embed = ErrorEmbed(
+                    title="User Not in Queue",
+                    desc="To see who is in current queue, type: **!list**"
+                )
+
             else:
-                captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
-            return embed
-    else:
-        embed = ErrorEmbed(
-            title="Did Not Mention a Player",
-            desc="Please mention a player in the queue to kick."
-        )
-        if (len(blueTeam) == 0):
-            captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, None, None)
-        else:
-            captainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
-        return embed
+                member = Queue.getPlayerFromQueue(player_id)
+                Queue.removeFromQueue(player_id)
+                embed = AdminEmbed(
+                    title="Kicked Player",
+                    desc="Removed {0} from the queue".format(member["name"].split("#")[0])
+                )
+
+            edited_embed = CaptainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
+            return edited_embed
+
+    embed = ErrorEmbed(
+        title="Did Not Mention a Player",
+        desc="Please mention a player in the queue to kick."
+    )
+    edited_embed = CaptainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
+    return edited_embed
 
 
 def brokenQueue(player: Member, roles: List[Role]) -> Embed:

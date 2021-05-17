@@ -38,6 +38,10 @@ def isPlayerInQueue(player: Union[Member, str]) -> bool:
             return False
 
 
+def getPlayerFromQueue(player: str) -> Union[BallChaser, None]:
+    return DataFiles.currQueue.get(doc_id=int(player))
+
+
 def clearQueue() -> None:
     currQueue.truncate()
 
@@ -96,6 +100,19 @@ def resetPlayerQueueTime(player: Member, mins_to_queue_for: int = 60) -> None:
     addToQueue(player, mins_to_queue_for)
 
 
+def getCaptains() -> Union[Tuple[BallChaser, BallChaser], Tuple[None, None]]:
+    if (queueAlreadyPopped()):
+        orangeCap = BallChaser.fromDocument(
+            currQueue.get((where(BallChaserKey.TEAM) == Team.ORANGE) & (where(BallChaserKey.IS_CAP) == True))
+        )
+        blueCap = BallChaser.fromDocument(
+            currQueue.get((where(BallChaserKey.TEAM) == Team.BLUE) & (where(BallChaserKey.IS_CAP) == True))
+        )
+        return blueCap, orangeCap
+    else:
+        return None, None
+
+
 def getQueueList(mentionPlayers: bool = False, includeTimes: bool = True, separator: str = "\n", includeLetters=False) -> str:  # noqa
     playerList = []
     letters = [
@@ -147,7 +164,7 @@ def randomPop() -> Tuple[List[BallChaser], List[BallChaser]]:
     return blueTeam, orangeTeam
 
 
-def captainsPop() -> Tuple[List[BallChaser], List[BallChaser]]:
+def captainsPop() -> Tuple[BallChaser, BallChaser]:
     if (not queueAlreadyPopped()):
         orangeCapDoc = random.sample(currQueue.all(), 1)[0]
         orangeCap = BallChaser.fromDocument(orangeCapDoc)

@@ -51,12 +51,10 @@ async def sendMessage(
         if (add_reaction_group):
             if (len(blueTeam) == 2):
                 for reaction in reactions[add_reaction_group]:
-                    if (reaction == "4️⃣"):
+                    if (reaction == "4️⃣" or (len(orangeTeam) == 2 and reaction == "3️⃣")):
                         break
-                    if (len(orangeTeam) == 2):
-                        if (reaction == "3️⃣"):
-                            break
-                    await embedMsg.add_reaction(reaction)
+                    else:
+                        await embedMsg.add_reaction(reaction)
             else:
                 for reaction in reactions[add_reaction_group]:
                     await embedMsg.add_reaction(reaction)

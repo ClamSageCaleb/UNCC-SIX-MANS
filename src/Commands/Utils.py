@@ -40,7 +40,9 @@ def blueTeamPick(pickedPlayer: BallChaser, blueCap: BallChaser, orangeCap: BallC
         Helper function for the !pick command when blue team is picking.
 
         Parameters:
-            mentions: List[discord.Member] - The mentions in the sent message.
+            pickedPlayer: discord.Member - The player that has been picked.
+            blueCap: discord.Member - The blue team captain.
+            orangeCap: discord.Member - The orange team captain.
 
         Returns:
             discord.Embed - An embedded message to send.
@@ -83,10 +85,13 @@ def orangeTeamPick(pickedPlayer: BallChaser, orangeTeam: List[BallChaser], blueC
         Helper function for the !pick command when orange team is picking.
 
         Parameters:
-            mentions: List[discord.Member] - The mentions in the sent message.
+            pickedPlayer: discord.Member - The player that has been picked.
+            orangeTeam: List[discord.Member] - The list of players on the orange team.
+            blueCap: discord.Member - The blue team captain.
+            orangeCap: discord.Member - The orange team captain.
 
         Returns:
-            List[discord.Embed] - A list of embedded messages to send.
+            [discord.Embed - The embedded message to send.
 
     """
     Queue.pick(pickedPlayer)
@@ -112,7 +117,7 @@ def orangeTeamPick(pickedPlayer: BallChaser, orangeTeam: List[BallChaser], blueC
             inline=False
         ).add_field(
             name="Orange Captain Picked",
-            value=pickedPlayer.name.split('#')[0],
+            value=pickedPlayer.name.split("#")[0],
             inline=False
         )
 

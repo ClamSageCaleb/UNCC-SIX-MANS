@@ -13,7 +13,7 @@ def updateBot() -> None:
     if (release_version[1:] > bot.__version__):
         print("A new version is available")
 
-        if os.name == 'nt':
+        if os.name == "nt":
             print("Getting new Windows binary...")
 
             newFile = wget.download(
