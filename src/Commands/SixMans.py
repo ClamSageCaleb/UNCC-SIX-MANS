@@ -428,21 +428,17 @@ async def report(player: Member, lbChannel: Channel, winningTeam: Literal["blue"
             dicord.Embed - The embedded message to respond with or sends nothing.
     """
     msg = Leaderboard.reportMatch(player, winningTeam)
-    print("2")
+
     if (msg):
-        print("1")
         try:
             # if match was reported successfully, update leaderboard channel
             await updateLeaderboardChannel(lbChannel)
-            print("3")
         except Exception as e:
             print("! Norm does not have access to update the leaderboard.", e)
 
-        print("4")
         return msg
 
     else:
-        print("5")
         return None
 
 
