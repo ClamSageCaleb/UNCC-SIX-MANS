@@ -85,7 +85,7 @@ def reportMatch(player: Member, whoWon: Team) -> bool:
         team=foundPlayer[MatchKey.TEAM]
     )
     msg = reportConfirm(player, match, whoWon)
-    if (msg == False):
+    if (not msg):
         return msg
 
     for key in match:
