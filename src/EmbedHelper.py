@@ -153,12 +153,12 @@ def CaptainsRandomHelpEmbed(embed: Embed, blueTeam: List[BallChaser],
 
 def HelpEmbed() -> Embed:
     return Embed(
-        title="Norm Commands",
+        title="Norm Help",
         description="https://clamsagecaleb.github.io/UNCC-SIX-MANS",
         color=0x38761D
     ).add_field(
         name="✅",
-        value="Adds you to the queue",
+        value="Adds you to the queue.",
         inline=False
     ).add_field(
         name="🤫",
@@ -166,20 +166,20 @@ def HelpEmbed() -> Embed:
         inline=False
     ).add_field(
         name="❌",
-        value="Removes you from the queue",
+        value="Removes you from the queue.",
         inline=False
     ).add_field(
         name="\U0001F1F1",
-        value="Lists the current queue",
+        value="Lists the current queue.",
         inline=False
     ).add_field(
         name="\U0001F1F7",
-        value="Randomly picks teams (Requires 6 players in queue)",
+        value="Randomly picks teams. (Requires 6 players in queue)",
         inline=False
     ).add_field(
         name="\U0001F1E8",
-        value="Randomly selects captains (Requires 6 players in queue)."
-        "\nFirst captain picks __ONE__ player \nSecond captain picks the next __two__ players",
+        value="Randomly selects captains. (Requires 6 players in queue)"
+        "\nFirst captain picks __ONE__ player. \nSecond captain picks the next __TWO__ players.",
         inline=False
     ).add_field(
         name="1️⃣ 2️⃣ 3️⃣ 4️⃣",
@@ -218,10 +218,10 @@ def HelpEmbed() -> Embed:
         inline=False
     ).add_field(
         name="!norm, !asknorm, or !8ball",
-        value="Will respond to a yes/no question. Good for predictions",
+        value="Will respond to a yes/no question. Good for predictions.",
         inline=False
     ).add_field(
-        name="❓",
+        name="!help or ❓",
         value="This is the help command :O",
         inline=False
     ).set_thumbnail(
