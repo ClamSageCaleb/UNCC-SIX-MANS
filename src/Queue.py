@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from discord import Role, Member
 from math import ceil
 import random
-import DataFiles
 from tinydb import where
 from tinydb.table import Document
 from typing import Tuple, List, Union
@@ -31,15 +30,11 @@ def isPlayerInQueue(player: Union[Member, str]) -> bool:
     if (isinstance(player, Member)):
         return currQueue.contains(where(BallChaserKey.ID) == player.id)
     elif (isinstance(player, str)):
-        member = DataFiles.currQueue.get(doc_id=int(player))
-        if (member):
-            return currQueue.contains(where(BallChaserKey.ID) == member["id"])
-        else:
-            return False
+        return currQueue.contains(where(BallChaserKey.ID) == currQueue.get(doc_id=int(player))["id"])
 
 
 def getPlayerFromQueue(player: str) -> Union[BallChaser, None]:
-    return DataFiles.currQueue.get(doc_id=int(player))
+    return currQueue.get(doc_id=int(player))
 
 
 def clearQueue() -> None:

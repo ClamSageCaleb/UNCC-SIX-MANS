@@ -43,7 +43,12 @@ def getActiveMatch(player: Member) -> Document or None:
     return activeMatches.get(where(str(player.id)).exists())
 
 
-def reportConfirm(player: BallChaser, match: Document, whoWon: Team) -> str:
+def getBallChaser(player: int) -> BallChaser:
+    member = leaderboard.get(doc_id=int(player))
+    return member
+
+
+def reportConfirm(player: BallChaser, match: Document, whoWon: Team) -> bool:
     # If first responder or a winning team disagreement, we update the report
     if (
         match[MatchKey.REPORTED_WINNER][MatchKey.WINNING_TEAM] is None or
@@ -57,24 +62,21 @@ def reportConfirm(player: BallChaser, match: Document, whoWon: Team) -> str:
             }
         }, doc_ids=[match.doc_id])
 
-        return "Match reported, awaiting confirmation from other team."
+        return False
 
     # Make sure second reported is on the other team
     if (player.team == match[MatchKey.REPORTED_WINNER][MatchKey.REPORTER][MatchKey.TEAM]):
-        return (
-            ":x: Your team has already reported the match."
-            " One person from the other team must now confirm."
-        )
+        return False
 
-    return ""
+    return True
 
 
-def reportMatch(player: Member, whoWon: Team) -> str:
+def reportMatch(player: Member, whoWon: Team) -> bool:
     global sorted_lb
     match = getActiveMatch(player)
 
     if (not match):
-        return ":x: Match not found"
+        return False
 
     foundPlayer = match[str(player.id)]
     player = BallChaser(
@@ -83,7 +85,7 @@ def reportMatch(player: Member, whoWon: Team) -> str:
         team=foundPlayer[MatchKey.TEAM]
     )
     msg = reportConfirm(player, match, whoWon)
-    if (msg != ""):
+    if (msg == False):
         return msg
 
     for key in match:
@@ -130,7 +132,7 @@ def reportMatch(player: Member, whoWon: Team) -> str:
     with concurrent.futures.ThreadPoolExecutor() as executor:
         executor.submit(AWS.writeRemoteLeaderboard, dumps(sorted_lb))
 
-    return ":white_check_mark: Match has been reported successfully."
+    return True
 
 
 def makePretty(player_index: int, player: BallChaser) -> str:

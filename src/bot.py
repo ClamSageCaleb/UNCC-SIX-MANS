@@ -472,13 +472,11 @@ async def coolio(ctx):
 @client.command(name="normq", pass_context=True)
 async def normq(ctx):
     blueTeam, _ = Queue.getTeamList()
+    await ctx.send("Duis says I am not supposed to queue, but I don't listen to players worse than me...")
+    await ctx.send("!q")
     if (len(blueTeam) >= 1):
-        await ctx.send("Duis says I am not supposed to queue, but I don't listen to players worse than me...")
-        await ctx.send("!q")
         await sendMessage(ctx, EasterEggs.NormQ(), "active")
     else:
-        await ctx.send("Duis says I am not supposed to queue, but I don't listen to players worse than me...")
-        await ctx.send("!q")
         await sendMessage(ctx, EasterEggs.NormQ(),
                           "queue" if len(blueTeam) == 0 and
                           Queue.getQueueLength() != 6
@@ -507,12 +505,12 @@ async def help(ctx):
 
 @client.command(name="oops", pass_context=True)
 async def oops(ctx):
-    await ctx.reply("I didn't think the queue would pop...")
+    await ctx.send(EasterEggs.Oops())
 
 
 @client.command(name="h", pass_contex=True)
 async def h(ctx):
-    await ctx.reply("h")
+    await ctx.send(EasterEggs.H())
 
 
 """

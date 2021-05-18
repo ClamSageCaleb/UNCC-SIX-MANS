@@ -11,7 +11,6 @@ from EmbedHelper import \
     PlayersSetEmbed,\
     CaptainsRandomHelpEmbed
 from Commands.Utils import updateLeaderboardChannel, orangeTeamPick, blueTeamPick
-import DataFiles
 
 
 def playerQueue(player: Member, *arg, quiet: bool = False) -> List[str or Embed]:
@@ -379,8 +378,9 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
 
     if (playerMentioned or selfRank):
         player = player_id if playerMentioned else str(author.id)
-        member = DataFiles.leaderboard.get(doc_id=int(player))
         players_rank = Leaderboard.showLeaderboard(player)
+        member = Leaderboard.getBallChaser(player)
+
         if (type(players_rank) == str and member):
             embed = InfoEmbed(
                 title="Leaderboard Placement for {0}".format(member["Name"].split("#")[0]),
@@ -415,7 +415,7 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
         return edited_embed
 
 
-async def report(player: Member, lbChannel: Channel, winningTeam: Literal["blue", "orange"]) -> Embed or None:
+async def report(player: Member, lbChannel: Channel, winningTeam: Literal["blue", "orange"]) -> bool or None:
     """
         Used to report the winning team of the series.
 
@@ -428,20 +428,21 @@ async def report(player: Member, lbChannel: Channel, winningTeam: Literal["blue"
             dicord.Embed - The embedded message to respond with or sends nothing.
     """
     msg = Leaderboard.reportMatch(player, winningTeam)
-
-    if (":white_check_mark:" in msg):
+    print("2")
+    if (msg):
+        print("1")
         try:
             # if match was reported successfully, update leaderboard channel
             await updateLeaderboardChannel(lbChannel)
+            print("3")
         except Exception as e:
             print("! Norm does not have access to update the leaderboard.", e)
 
-        return QueueUpdateEmbed(
-            title="Match Reported",
-            desc=msg[19:]
-        )
+        print("4")
+        return msg
 
     else:
+        print("5")
         return None
 
 

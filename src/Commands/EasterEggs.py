@@ -44,6 +44,7 @@ egg_commands = [
     "giddy",
     "nodought",
     "coolio",
+    "oops",
 ]
 
 
@@ -101,15 +102,15 @@ def Teams() -> str:
 def NormQ() -> List[str or Embed]:
     playerList = Queue.getQueueList()
     queueSize = Queue.getQueueLength()
+    blueTeam, orangeTeam = Queue.getTeamList()
+    blueCap, orangeCap = Queue.getCaptains()
+    embed = None
 
     if (Queue.queueAlreadyPopped() or queueSize == 6):
-        blueTeam, orangeTeam = Queue.getTeamList()
-        blueCap, orangeCap = Queue.captainsPop()
         embed = ErrorEmbed(
             title="Current Lobby Not Set",
             desc="Whoa there Norm! You can't queue until the current queue has finished popping."
         )
-        CaptainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
 
     elif (len(playerList) == 0):
         embed = QueueUpdateEmbed(
@@ -122,10 +123,13 @@ def NormQ() -> List[str or Embed]:
             title="Norm Added to Queue",
             desc="<@629502587963572225> has been added to the queue for 0 minutes.\n\n"
             "**Queue size: " + str(queueSize + 1) + "/6**\n\n"
-            "**Current queue:**\nNorm (0 mins)\n" + playerList
+            "**Current Queue:**\nNorm (0 mins)\n" + playerList
         )
+        return embed
 
-    return embed
+    edited_embed = CaptainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
+
+    return edited_embed
 
 
 def Duis() -> str:
@@ -203,3 +207,11 @@ def Sad() -> str:
 
 def Fuck() -> str:
     return "u"
+
+
+def Oops() -> str:
+    return "I didn't think the queue would pop..."
+
+
+def H() -> str:
+    return "h"
