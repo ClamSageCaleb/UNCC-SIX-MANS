@@ -1,4 +1,4 @@
-from discord import Embed, Member, channel as Channel
+from discord import Embed, channel as Channel
 from EmbedHelper import ErrorEmbed, QueueUpdateEmbed, InfoEmbed, PlayersSetEmbed
 import Queue
 import Leaderboard
@@ -35,44 +35,34 @@ async def updateLeaderboardChannel(lbChannel: Channel) -> None:
         ))
 
 
-def blueTeamPick(mentions: List[Member], blueCap: BallChaser, orangeCap: BallChaser) -> Embed:
+def blueTeamPick(pickedPlayer: BallChaser, blueCap: BallChaser, orangeCap: BallChaser) -> Embed:
     """
         Helper function for the !pick command when blue team is picking.
 
         Parameters:
-            mentions: List[discord.Member] - The mentions in the sent message.
+            pickedPlayer: BallChaser - The player that has been picked.
+            blueCap: BallChaser - The blue team captain.
+            orangeCap: BallChaser - The orange team captain.
 
         Returns:
             discord.Embed - An embedded message to send.
 
     """
-    if len(mentions) == 0:
-        return ErrorEmbed(
-            title="No Mentioned Player",
-            desc="No one was mentioned, please pick an available player."
-        )
 
-    if len(mentions) != 1:
-        return ErrorEmbed(
-            title="Too Many Mentioned Players",
-            desc="More than one player mentioned, please pick just one player."
-        )
-
-    errorMsg = Queue.pick(mentions[0])
+    errorMsg = Queue.pick(pickedPlayer)
 
     if (errorMsg == ""):
-        playerList = Queue.getQueueList(includeTimes=False)
 
         return QueueUpdateEmbed(
             title="Player Added to Team",
-            desc="🔷 " + blueCap.name + " 🔷 picked " + mentions[0].mention
+            desc="🔷 " + blueCap.name + " 🔷 picked " + pickedPlayer.mention
         ).add_field(
             name="\u200b",
             value="\u200b",
             inline=False
         ).add_field(
-            name="🔶 " + orangeCap.name + " 🔶 please pick TWO players.",
-            value="Ex: `!pick @Twan @Tux`",
+            name="🔶 " + orangeCap.name + " 🔶 please pick 2️⃣ players.",
+            value="Pick a player from the list below by reacting to the numbers.",
             inline=False
         ).add_field(
             name="\u200b",
@@ -80,7 +70,7 @@ def blueTeamPick(mentions: List[Member], blueCap: BallChaser, orangeCap: BallCha
             inline=False
         ).add_field(
             name="Available picks",
-            value=playerList,
+            value=Queue.getQueueList(includeTimes=False, includeLetters=True),
             inline=False
         )
 
@@ -90,49 +80,53 @@ def blueTeamPick(mentions: List[Member], blueCap: BallChaser, orangeCap: BallCha
     )
 
 
-def orangeTeamPick(mentions: List[Member], blueCap: BallChaser, orangeCap: BallChaser) -> List[Embed]:
+def orangeTeamPick(pickedPlayer: BallChaser, orangeTeam: List[BallChaser], blueCap: BallChaser, orangeCap: BallChaser) -> Embed: # noqa
     """
         Helper function for the !pick command when orange team is picking.
 
         Parameters:
-            mentions: List[discord.Member] - The mentions in the sent message.
+            pickedPlayer: BallChaser - The player that has been picked.
+            orangeTeam: List[BallChaser] - The list of players on the orange team.
+            blueCap: BallChaser - The blue team captain.
+            orangeCap: BallChaser - The orange team captain.
 
         Returns:
-            List[discord.Embed] - A list of embedded messages to send.
+            discord.Embed - The embedded message to send.
 
     """
-    if len(mentions) == 0:
-        return [ErrorEmbed(
-            title="No Mentioned Player",
-            desc="No one was mentioned, please pick an available player."
-        )]
-
-    if len(mentions) != 2:
-        return [ErrorEmbed(
-            title="Incorrect Format",
-            desc="Use format: `!pick @player1 @player2`"
-        )]
-
-    errorMsg = Queue.pick(mentions[0], mentions[1])
-
-    if (errorMsg == ""):
-        [player1, player2] = mentions
-        blueTeam, orangeTeam = Queue.getTeamList()
-
-        embed1 = QueueUpdateEmbed(
-            title="Final Players Added",
-            desc="🔶 " + orangeCap.name + " 🔶 picked " + player1.mention + " & " + player2.mention +
-            "\n\nLast player added to 🔷 Blue Team 🔷"
+    Queue.pick(pickedPlayer)
+    if (len(orangeTeam) == 1):
+        return QueueUpdateEmbed(
+            title="Player Added to Team",
+            desc="🔶 " + orangeCap.name + " 🔶 picked " + pickedPlayer.mention
+        ).add_field(
+            name="\u200b",
+            value="\u200b",
+            inline=False
+        ).add_field(
+            name="🔶 " + orangeCap.name + " 🔶 please pick 1️⃣ player.",
+            value="React to the number of the player that you'd like to pick.",
+            inline=False
+        ).add_field(
+            name="\u200b",
+            value="\u200b",
+            inline=False
+        ).add_field(
+            name="Available Picks",
+            value=Queue.getQueueList(includeTimes=False, includeLetters=True),
+            inline=False
+        ).add_field(
+            name="Orange Captain Picked",
+            value=pickedPlayer.name.split("#")[0],
+            inline=False
         )
 
-        embed2 = PlayersSetEmbed(blueTeam, orangeTeam)
+    else:
+        blueTeam, orangeTeam = Queue.getTeamList()
+
+        embed = PlayersSetEmbed(blueTeam, orangeTeam)
 
         Leaderboard.startMatch(blueTeam, orangeTeam)
         Queue.clearQueue()
 
-        return [embed1, embed2]
-
-    return [ErrorEmbed(
-        title="Player(s) Not Found",
-        desc="Either one or both of the players you mentioned is not in the queue. Try again."
-    )]
+        return embed

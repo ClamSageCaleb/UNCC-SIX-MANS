@@ -1,31 +1,31 @@
-__author__ = "Caleb Smith / Twan / Matt Wells (Tux)"
+__author__ = "Caleb Smith / Twan / Matt Wells (Tux) / Austin Baker (h)"
 __copyright__ = "Copyright 2019, MIT License"
-__credits__ = "Caleb Smith / Twan / Matt Wells (Tux)"
+__credits__ = "Caleb Smith / Twan / Matt Wells (Tux) / Austin Baker (h)"
 __license__ = "MIT"
-__version__ = "6.0.0"
-__maintainer__ = "Caleb Smith / Twan / Matt Wells (Tux)"
-__email__ = "caleb.benjamin9799@gmail.com / unavailable / mattwells878@gmail.com"
+__version__ = "7.0.0"
+__maintainer__ = "Caleb Smith / Twan / Matt Wells (Tux) / Austin Baker (h)"
+__email__ = "caleb.benjamin9799@gmail.com / unavailable / mattwells878@gmail.com / noise.9no@gmail.com"
 
 
 import AWSHelper as AWS
 from DataFiles import getDiscordToken, updateDiscordToken, getChannelIds
-from EmbedHelper import ErrorEmbed, AdminEmbed, HelpEmbed
+from EmbedHelper import AdminEmbed, HelpEmbed
+from SendMessageHelper import sendMessage
 from asyncio import sleep as asyncsleep
 import discord
 from discord.ext.commands import Bot, CommandNotFound
 from os import name as osName, system as osSystem
 from random import randint
 from time import sleep
-from typing import List
 from Commands import EasterEggs, SixMans, Testing, Admin, Utils
-from discord.embeds import Embed
+import Queue
 
 # Bot prefix and Discord Bot token
 BOT_PREFIX = ("!")
 
-# Creates the Bot with name 'client'
+# Creates the Bot with name "client"
 client = Bot(command_prefix=BOT_PREFIX)
-client.remove_command('help')
+client.remove_command("help")
 
 pikaO = 1
 
@@ -41,37 +41,68 @@ LB_CHANNEL: discord.channel = None
     Discord Events
 """
 
+# Valid Command List that has reactions sent upon being called.
+valid_commands = [
+    "q",
+    "addmepapanorm",
+    "Q",
+    "addmebitch",
+    "queue",
+    "join",
+    "qq",
+    "quietq",
+    "QQ",
+    "quietqueue",
+    "shh",
+    "dontping",
+    "kick",
+    "remove",
+    "yeet",
+    "flip",
+    "coinflip",
+    "chance",
+    "coin",
+    "brokenq",
+    "requeue",
+    "re-q",
+    "clear",
+    "clr",
+    "reset",
+    "fill",
+    "fillCap",
+    "flipCap",
+    "flipReport",
+    "update",
+    "leaderboard",
+    "lb",
+    "standings",
+    "rank",
+    "rankings",
+    "stonks",
+]
+
 
 @client.event
 async def on_message(message: discord.Message):
-    isReport = "report" in message.content.lower()
     if (message.author != client.user):
+        # message was a reply
+        if (message.reference is not None):
+            if (any(queue_cmd == message.content.split(" ")[0][1:] for queue_cmd in valid_commands)):
+                replied_to_msg = await message.channel.fetch_message(message.reference.message_id)
+                replied_to_msg_embeds = replied_to_msg.embeds
 
-        if (
-            isReport and
-            len(QUEUE_CH_IDS) > 0 and
-            message.channel.id in QUEUE_CH_IDS and
-            message.channel.id not in REPORT_CH_IDS
-        ):
-            channel = client.get_channel(message.channel.id)
-            await channel.send(embed=ErrorEmbed(
-                title="Can't Do That Here",
-                desc="You can only report matches in the <#{0}> channel.".format(REPORT_CH_IDS[0])
-            ))
+                if (not any(embed.title == "Teams are Set!" for embed in replied_to_msg_embeds)):
+                    await replied_to_msg.delete()
 
-        elif (
-            not isReport and
-            len(REPORT_CH_IDS) > 0 and
-            message.channel.id in REPORT_CH_IDS and
-            message.channel.id not in QUEUE_CH_IDS
-        ):
-            channel = client.get_channel(message.channel.id)
-            await channel.send(embed=ErrorEmbed(
-                title="Can't Do That Here",
-                desc="You can only use that command in the <#{0}> channel.".format(QUEUE_CH_IDS[0])
-            ))
-        else:
+                await client.process_commands(message)
+                await message.delete()
+
+            elif (EasterEggs.commandIsEasterEgg(message)):
+                await client.process_commands(message)
+
+        elif (EasterEggs.commandIsEasterEgg(message)):
             await client.process_commands(message)
+            return
 
 
 @client.event
@@ -79,6 +110,141 @@ async def on_command_error(ctx, error):
     if isinstance(error, CommandNotFound):
         return
     print(error)
+
+
+@client.event
+async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
+    global LB_CHANNEL
+
+    if (not user.bot):
+        channel = client.get_channel(QUEUE_CH_IDS[0])
+
+        # regional indicator b
+        if (reaction.emoji == "\U0001F1E7" and Queue.isBotAdmin(user.roles)):
+            await reaction.message.delete()
+            await sendMessage(channel, Admin.brokenQueue(user, user.roles), None)
+            await sendMessage(channel, SixMans.listQueue(user), "queue")
+            return
+
+        elif (reaction.emoji == "🛑" and Queue.isBotAdmin(user.roles)):
+            await reaction.message.delete()
+            await sendMessage(channel, Admin.clear(user.roles), None)
+            await sendMessage(channel, SixMans.listQueue(user), "queue")
+            return
+
+        # Check to validate reaction is valid by seeing if Norm also reacted with the same reaction
+        reacted_users = await reaction.users().flatten()
+        if (not any(reacted_user.id == client.user.id for reacted_user in reacted_users)):
+            return
+
+        blueTeam, orangeTeam = Queue.getTeamList()
+
+        if (reaction.emoji == "✅"):
+            await reaction.message.delete()
+            messages = SixMans.playerQueue(user)
+            for msg in messages:
+                await sendMessage(
+                    channel,
+                    msg,
+                    "popped" if Queue.getQueueLength() == 6 else "queue"
+                )
+
+        elif (reaction.emoji == "❌"):
+            await reaction.message.delete()
+            await sendMessage(channel, SixMans.leave(user), "queue" if Queue.getQueueLength() < 6 else "popped")
+
+        elif (reaction.emoji == "🤫"):
+            await reaction.message.delete()
+            messages = SixMans.playerQueue(user, quiet=True)
+            for msg in messages:
+                await sendMessage(
+                    channel,
+                    msg,
+                    "popped" if Queue.getQueueLength() == 6 else "queue"
+                )
+
+        elif (reaction.emoji == "🔢"):
+            await reaction.message.delete()
+            await sendMessage(
+                channel,
+                SixMans.leaderboard(client.user.name, "", LEADERBOARD_CH_ID),
+                "popped" if Queue.getQueueLength() == 6 else "queue"
+            )
+
+        elif (reaction.emoji == "❓"):
+            await reaction.message.delete()
+            await sendMessage(channel, HelpEmbed(), None)
+
+            if (len(blueTeam) >= 1):
+                await sendMessage(channel, SixMans.listQueue(user), "picks")
+            elif (Queue.getQueueLength() == 6 and len(blueTeam) == 0):
+                await sendMessage(channel, SixMans.listQueue(user), "popped")
+            else:
+                await sendMessage(channel, SixMans.listQueue(user), "queue")
+
+        # regional indicator C
+        elif (reaction.emoji == "\U0001F1E8"):
+            await reaction.message.delete()
+            await sendMessage(channel, SixMans.captains(user), "picks" if Queue.isPlayerInQueue(user) else "popped")
+
+        # regional indicator R
+        elif (reaction.emoji == "\U0001F1F7"):
+            await reaction.message.delete()
+
+            if (Queue.isPlayerInQueue(user)):
+                await sendMessage(channel, SixMans.random(user), "active")
+                await sendMessage(channel, SixMans.listQueue(user), "queue")
+            else:
+                await sendMessage(channel, SixMans.random(user), "popped")
+
+        # regional indicator L
+        elif (reaction.emoji == "\U0001F1F1"):
+            await reaction.message.delete()
+            if (len(blueTeam) == 0 and Queue.getQueueLength() != 6):
+                await sendMessage(channel, SixMans.listQueue(user), "queue")
+            elif (Queue.getQueueLength() == 6 and len(blueTeam) == 0):
+                await sendMessage(channel, SixMans.listQueue(user), "popped")
+            else:
+                await sendMessage(channel, SixMans.listQueue(user), "picks")
+
+        elif (reaction.emoji == "1️⃣"):
+            await reaction.message.delete()
+            if (Queue.validateOrangePick(user) and len(orangeTeam) == 2):
+                await sendMessage(channel, SixMans.pick(user, 1), "active")
+                await sendMessage(channel, SixMans.listQueue(user), "queue")
+            else:
+                await sendMessage(channel, SixMans.pick(user, 1), "picks")
+
+        elif (reaction.emoji == "2️⃣"):
+            await reaction.message.delete()
+            if (Queue.validateOrangePick(user) and len(orangeTeam) == 2):
+                await sendMessage(channel, SixMans.pick(user, 2), "active")
+                await sendMessage(channel, SixMans.listQueue(user), "queue")
+            else:
+                await sendMessage(channel, SixMans.pick(user, 2), "picks")
+
+        elif (reaction.emoji == "3️⃣"):
+            await reaction.message.delete()
+            # if checks not needed here since 3 can never be last pick
+            await sendMessage(channel, SixMans.pick(user, 3), "picks")
+
+        elif (reaction.emoji == "4️⃣"):
+            await reaction.message.delete()
+            # if checks not needed here since 4 can never be last pick
+            await sendMessage(channel, SixMans.pick(user, 4), "picks")
+
+        elif (reaction.emoji == "🔷"):
+            response = await SixMans.report(user, LB_CHANNEL, "blue")
+            if (response):
+                await reaction.message.add_reaction("👍")
+
+        elif (reaction.emoji == "🔶"):
+            response = await SixMans.report(user, LB_CHANNEL, "orange")
+            if (response):
+                await reaction.message.add_reaction("👍")
+
+        elif (reaction.emoji == "💔" and reaction.count >= 5):  # majority vote is 4 + 1 for the bot reaction
+            await sendMessage(channel, SixMans.brokenQueue(user), "queue")
 
 
 @client.event
@@ -90,10 +256,12 @@ async def on_ready():
 
     try:
         channel = client.get_channel(QUEUE_CH_IDS[0])
-        await channel.send(embed=AdminEmbed(
+        await sendMessage(channel, AdminEmbed(
             title="Norm Started",
             desc="Current version: v{0}".format(__version__)
-        ))
+        ), None)
+        await sendMessage(channel, SixMans.listQueue(client.user.name), "queue")
+
     except Exception as e:
         print("! Norm does not have access to post in the queue channel.", e)
 
@@ -119,7 +287,7 @@ async def stale_queue_timer():
         if (embeds is not None):
             try:
                 for embed in embeds:
-                    await channel.send(embed=embed)
+                    await sendMessage(channel, embed, "queue")
             except Exception as e:
                 print("! Norm does not have access to post in the queue channel.", e)
                 return
@@ -131,89 +299,66 @@ async def stale_queue_timer():
 """
 
 
-@client.command(name='q', aliases=['addmepapanorm', 'Q', 'addmebitch', 'queue', 'join'], pass_context=True)
+@client.command(name="q", aliases=["addmepapanorm", "Q", "addmebitch", "queue", "join"], pass_context=True)
 async def q(ctx, *arg):
-    messages = SixMans.playerQueue(ctx.message.author, REPORT_CH_IDS[0] if (len(REPORT_CH_IDS) > 0) else -1, *arg)
+    messages = SixMans.playerQueue(ctx.message.author, *arg)
     for msg in messages:
-        if (isinstance(msg, Embed)):
-            await ctx.send(embed=msg)
+        if (msg.title == "Queue Popped!"):
+            await sendMessage(ctx, msg, "popped")
         else:
-            await ctx.send(msg)
+            await sendMessage(ctx, msg, "queue")
 
 
-@client.command(name='qq', aliases=['quietq', 'QQ', 'quietqueue', 'shh', 'dontping'], pass_context=True)
+@client.command(name="qq", aliases=["quietq", "QQ", "quietqueue", "shh", "dontping"], pass_context=True)
 async def qq(ctx, *arg):
-    messages = SixMans.playerQueue(
-        ctx.message.author,
-        REPORT_CH_IDS[0] if (len(REPORT_CH_IDS) > 0) else -1,
-        *arg,
-        quiet=True
-    )
+    messages = SixMans.playerQueue(ctx.message.author, *arg, quiet=True)
     for msg in messages:
-        if (isinstance(msg, Embed)):
-            await ctx.send(embed=msg)
+        if (msg.title == "Queue Popped!"):
+            await sendMessage(ctx, msg, "popped")
         else:
-            await ctx.send(msg)
+            await sendMessage(ctx, msg, "queue")
 
 
-@client.command(name='leave', aliases=['yoink', 'gtfo', 'getmethefuckouttahere'], pass_context=True)
-async def leave(ctx):
-    await ctx.send(embed=SixMans.leave(ctx.message.author))
+@client.command(name="kick", aliases=["remove", "yeet"], pass_context=True)
+async def kick(ctx, *arg):
+    blueTeam, _ = Queue.getTeamList()
+    kicking = Admin.kick(ctx.message.content, ctx.message.author.roles, *arg)
+    if (len(blueTeam) == 0 and Queue.getQueueLength() != 6):
+        await sendMessage(ctx, kicking, "queue")
+    elif (Queue.getQueueLength() == 6 and len(blueTeam) == 0):
+        await sendMessage(ctx, kicking, "popped")
+    elif (len(blueTeam) >= 1):
+        await sendMessage(ctx, kicking, "picks")
 
 
-@client.command(name='kick', aliases=['remove', 'yeet'], pass_context=True)
-async def kick(ctx):
-    await ctx.send(embed=Admin.kick(ctx.message.mentions, ctx.message.author.roles))
-
-
-@client.command(name='flip', aliases=['coinflip', 'chance', 'coin'], pass_context=True)
+@client.command(name="flip", aliases=["coinflip", "chance", "coin"], pass_context=True)
 async def coinFlip(ctx):
     if (randint(1, 2) == 1):
         await q(ctx)
     else:
-        await leave(ctx)
+        await sendMessage(ctx, SixMans.leave(ctx.author), "queue")
 
 
-@client.command(name='listq', aliases=['list', 'listqueue', 'show', 'showq', 'showqueue', 'inq', 'sq', 'lq', 'status', 'showmethefknqueue', '<:who:599055076639899648>'], pass_context=True)  # noqa
-async def listq(ctx):
-    await ctx.send(embed=SixMans.listQueue(ctx.message.author))
-
-
-@client.command(name='rnd', aliases=['random', 'idontwanttopickteams', 'fuckcaptains'], pass_context=True)
-async def random(ctx):
-    await ctx.send(embed=SixMans.random(ctx.message.author))
-
-
-@client.command(name='captains', aliases=['cap', 'iwanttopickteams', 'Captains', 'captain', 'Captain', 'Cap'], pass_context=True)  # noqa
-async def captains(ctx):
-    await ctx.send(embed=SixMans.captains(ctx.message.author))
-
-
-@client.command(name='pick', aliases=['add', 'choose', '<:pick:628999871554387969>'], pass_context=True)
-async def pick(ctx):
-    embeds = SixMans.pick(ctx.message.author, ctx.message.mentions)
-    for embed in embeds:
-        await ctx.send(embed=embed)
-
-
-@client.command(name="report", pass_contex=True)
-async def reportMatch(ctx, *arg):
-    await ctx.send(embed=await SixMans.report(ctx.message.author, LB_CHANNEL, *arg))
-
-
-@client.command(name="leaderboard", aliases=["lb", "standings", "rank", "rankings", "stonks"], pass_contex=True)
+@client.command(name="leaderboard", aliases=["lb", "standings", "rank", "rankings", "stonks"], pass_context=True)
 async def showLeaderboard(ctx, *arg):
-    await ctx.send(embed=SixMans.leaderboard(ctx.message.author, ctx.message.mentions, LEADERBOARD_CH_ID, *arg))
+    blueTeam, _ = Queue.getTeamList()
+    lb = SixMans.leaderboard(ctx.message.author, ctx.message.content, LEADERBOARD_CH_ID, *arg)
+    if (len(blueTeam) == 0 and Queue.getQueueLength() != 6):
+        await sendMessage(ctx, lb, "queue")
+    elif (Queue.getQueueLength() == 6 and len(blueTeam) == 0):
+        await sendMessage(ctx, lb, "popped")
+    else:
+        await sendMessage(ctx, lb, "picks")
 
 
-@client.command(name="brokenq", aliases=["requeue", "re-q"], pass_contex=True)
+@client.command(name="brokenq", aliases=["requeue", "re-q"], pass_context=True)
 async def removeLastPoppedQueue(ctx):
-    await ctx.send(embed=SixMans.brokenQueue(ctx.message.author))
+    await sendMessage(ctx, Admin.brokenQueue(ctx.message.author, ctx.message.author.roles), "queue")
 
 
-@client.command(name='clear', aliases=['clr', 'reset'], pass_context=True)
+@client.command(name="clear", aliases=["clr", "reset"], pass_context=True)
 async def clear(ctx):
-    await ctx.send(embed=Admin.clear(ctx.message.author.roles))
+    await sendMessage(ctx, Admin.clear(ctx.message.author.roles), "queue")
 
 
 @client.command(name="fill", pass_context=True)
@@ -240,13 +385,17 @@ async def flipReport(ctx):
         await ctx.send(embed=Testing.flipReport(ctx.message.author.roles))
 
 
-@client.command(name='restart', aliases=['restartbot'], pass_context=True)
+@client.command(name="restart", aliases=["restartbot"], pass_context=True)
 async def restart(ctx):
     await ctx.send(embed=Admin.restart())
 
 
-@client.command(name='update', pass_context=True)
+@client.command(name="update", pass_context=True)
 async def update(ctx):
+    await ctx.send(AdminEmbed(
+        title="Checking For Updates",
+        desc="Please hang tight."
+    ))
     await ctx.send(embed=Admin.update())
 
 
@@ -255,69 +404,113 @@ async def update(ctx):
 """
 
 
-@client.command(name='twan', aliases=['<:twantheswan:540327706076905472>'], pass_context=True)
+@client.command(name="twan", aliases=["<:twantheswan:540327706076905472>"], pass_context=True)
 async def twan(ctx):
-    await ctx.send(EasterEggs.Twan())
+    await ctx.reply(EasterEggs.Twan())
 
 
-@client.command(name='sad', aliases=[':('], pass_context=True)
+@client.command(name="sad", aliases=[":("], pass_context=True)
 async def sad(ctx):
-    await ctx.send(EasterEggs.Sad())
+    await ctx.reply(EasterEggs.Sad())
 
 
-@client.command(name='smh', aliases=['myhead'], pass_context=True)
+@client.command(name="smh", aliases=["myhead"], pass_context=True)
 async def smh(ctx):
-    await ctx.send(EasterEggs.Smh())
+    await ctx.reply(EasterEggs.Smh())
 
 
-@client.command(name='turhols', aliases=['<:IncognitoTurhol:540327644089155639>'], pass_context=True)
+@client.command(name="turhols", aliases=["<:IncognitoTurhol:540327644089155639>"], pass_context=True)
 async def turhols(ctx):
-    await ctx.send(EasterEggs.Turhols())
+    await ctx.reply(EasterEggs.Turhols())
 
 
-@client.command(name='pika', aliases=['<:pika:538182616965447706>'], pass_context=True)
+@client.command(name="pika", aliases=["<:pika:538182616965447706>"], pass_context=True)
 async def pika(ctx):
-    await ctx.send(EasterEggs.Pika())
+    await ctx.reply(EasterEggs.Pika())
 
 
-@client.command(name='zappa', aliases=['zapp', 'zac', '<:zappa:632813684678197268>', '<:zapp:632813709579911179>'], pass_context=True)  # noqa
+@client.command(name="zappa", aliases=["zapp", "zac", "<:zappa:632813684678197268>", "<:zapp:632813709579911179>"], pass_context=True)  # noqa
 async def zappa(ctx):
-    await ctx.send(EasterEggs.Zappa())
+    await ctx.reply(EasterEggs.Zappa())
 
 
-@client.command(name='duis', pass_context=True)
+@client.command(name="duis", pass_context=True)
 async def duis(ctx):
-    await ctx.send(EasterEggs.Duis())
+    await ctx.reply(EasterEggs.Duis())
 
 
-@client.command(name='normq', pass_context=True)
+@client.command(name="furry", pass_context=True)
+async def furry(ctx):
+    await ctx.reply(EasterEggs.Furry())
+
+
+@client.command(name="don", pass_context=True)
+async def don(ctx):
+    await ctx.reply(EasterEggs.Don())
+
+
+@client.command(name="daffy", pass_context=True)
+async def daffy(ctx):
+    await ctx.reply(EasterEggs.Daffy())
+
+
+@client.command(name="giddy", pass_context=True)
+async def giddy(ctx):
+    await ctx.reply(EasterEggs.Giddy())
+
+
+@client.command(name="nodought", pass_context=True)
+async def nodought(ctx):
+    await ctx.reply(EasterEggs.NoDought())
+
+
+@client.command(name="coolio", pass_context=True)
+async def coolio(ctx):
+    await ctx.reply(EasterEggs.Coolio())
+
+
+@client.command(name="normq", pass_context=True)
 async def normq(ctx):
-    messages: List[str or Embed] = EasterEggs.NormQ()
-    for msg in messages:
-        if (isinstance(msg, Embed)):
-            await ctx.send(embed=msg)
-        else:
-            await ctx.send(msg)
+    blueTeam, _ = Queue.getTeamList()
+    await ctx.send("Duis says I am not supposed to queue, but I don't listen to players worse than me...")
+    await ctx.send("!q")
+    if (len(blueTeam) >= 1):
+        await sendMessage(ctx, EasterEggs.NormQ(), "active")
+    else:
+        await sendMessage(ctx, EasterEggs.NormQ(),
+                          "queue" if len(blueTeam) == 0 and
+                          Queue.getQueueLength() != 6
+                          else "popped")
 
 
-@client.command(name='teams', aliases=['uncc'], pass_context=True)
+@client.command(name="teams", aliases=["uncc"], pass_context=True)
 async def teams(ctx):
-    await ctx.send(EasterEggs.Teams())
+    await ctx.reply(EasterEggs.Teams())
 
 
-@client.command(name='8ball', aliases=['norm', 'asknorm', 'eight_ball', 'eightball', '8-ball'], pass_context=True)
+@client.command(name="8ball", aliases=["norm", "asknorm", "eight_ball", "eightball", "8-ball"], pass_context=True)
 async def eight_ball(ctx):
-    await ctx.send(EasterEggs.EightBall(ctx.message.author))
+    await ctx.reply(EasterEggs.EightBall(ctx.message.author))
 
 
-@client.command(name='fuck', aliases=['f', 'frick'], pass_context=True)
+@client.command(name="fuck", aliases=["f", "frick"], pass_context=True)
 async def fuck(ctx):
-    await ctx.send("u")
+    await ctx.reply(EasterEggs.Fuck())
 
 
 @client.command(name="help", pass_context=True)
 async def help(ctx):
     await ctx.send(embed=HelpEmbed())
+
+
+@client.command(name="oops", pass_context=True)
+async def oops(ctx):
+    await ctx.send(EasterEggs.Oops())
+
+
+@client.command(name="h", pass_contex=True)
+async def h(ctx):
+    await ctx.send(EasterEggs.H())
 
 
 """
@@ -335,10 +528,10 @@ def main():
         )
 
     # clear screen to hide token
-    if osName == 'nt':
-        _ = osSystem('cls')
+    if osName == "nt":
+        _ = osSystem("cls")
     else:
-        _ = osSystem('clear')
+        _ = osSystem("clear")
 
     AWS.init()
 
@@ -360,8 +553,8 @@ def main():
             "If you need help locating the token for your bot, visit https://www.writebots.com/discord-bot-token/"
         )
         sleep(5)
-    except Exception:
-        pass
+    except Exception as e:
+        print(e)
 
 
 if __name__ == "__main__":

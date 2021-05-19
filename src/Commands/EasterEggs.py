@@ -1,43 +1,89 @@
-from discord import Member, Embed
+from discord import Member, Embed, Message
 from typing import List
 from random import choice
 import Queue
-from EmbedHelper import ErrorEmbed, QueueUpdateEmbed
+from EmbedHelper import ErrorEmbed, QueueUpdateEmbed, CaptainsRandomHelpEmbed
 
 pikaO = 0
+
+egg_commands = [
+    "twan",
+    "sad",
+    "smh",
+    "turhols",
+    "pika",
+    "zappa",
+    "duis",
+    "normq",
+    "teams",
+    "8ball",
+    "fuck",
+    "help",
+    "oops",
+    "h",
+    "<:twantheswan:540327706076905472>",
+    ":(",
+    "myhead",
+    "<:IncognitoTurhol:540327644089155639>",
+    "<:pika:538182616965447706>",
+    "zapp",
+    "zac",
+    "<:zappa:632813684678197268>",
+    "<:zapp:632813709579911179>",
+    "uncc",
+    "norm",
+    "asknorm",
+    "eight_ball",
+    "eightball",
+    "8-ball",
+    "f",
+    "frick",
+    "furry",
+    "don",
+    "daffy",
+    "giddy",
+    "nodought",
+    "coolio",
+    "oops",
+]
+
+
+def commandIsEasterEgg(message: Message) -> bool:
+    return any(cmd == message.content.split(" ")[0][1:] for cmd in egg_commands)
 
 
 def EightBall(author: Member):
     possible_responses = [
-        'That is a resounding no',
-        'It is not looking likely',
-        'Too hard to tell',
-        'It is quite possible',
-        'Definitely',
-        'Ask papa Duis',
-        'As I see it, yes',
-        'Ask again later',
-        'Better not tell you now',
-        'Cannot predict now',
-        'Concentrate and ask again',
-        'Don’t count on it',
-        'It is certain',
-        'It is decidedly so',
-        'Most likely',
-        'My reply is no',
-        'My sources say no',
-        'Outlook not so good',
-        'Reply hazy try again',
-        'Signs point to yes',
-        'Very doubtful',
-        'Without a doubt',
-        'Yes',
-        'Yes, definitely',
-        'You may rely on it',
-        'shut up',
-        'Some questions are best left unanswered...',
-        'no',
-        'Absolutely not',
+        "That is a resounding no",
+        "It is not looking likely",
+        "Too hard to tell",
+        "It is quite possible",
+        "Definitely",
+        "Ask papa Duis",
+        "As I see it, yes",
+        "Ask again later",
+        "Better not tell you now",
+        "Cannot predict now",
+        "Concentrate and ask again",
+        "Don’t count on it",
+        "It is certain",
+        "It is decidedly so",
+        "Most likely",
+        "My reply is no",
+        "My sources say no",
+        "Outlook not so good",
+        "Reply hazy try again",
+        "Signs point to yes",
+        "Very doubtful",
+        "Without a doubt",
+        "Yes",
+        "Yes, definitely",
+        "You may rely on it",
+        "shut up",
+        "Some questions are best left unanswered...",
+        "no",
+        "Absolutely not",
+        "h",
     ]
     return choice(possible_responses) + ", " + author.mention
 
@@ -47,39 +93,43 @@ def Teams() -> str:
             "A team: doesn't practice but somehow is good"
             "\nB team: everyone hates how their teamates play but don't talk it out to resolve issues"
             "\nC team: who?"
-            "\nD team: best team"
+            "\nD team: H Team, Best Team™"
             "\nE team: surprisingly solid"
             "\nF team: how many fkn teams do we have"
             "\nGG team: originally g team")
 
 
 def NormQ() -> List[str or Embed]:
-    messages: List[str or Embed] = []
     playerList = Queue.getQueueList()
     queueSize = Queue.getQueueLength()
-
-    messages.append("Duis says I am not supposed to queue, but I don't listen to players worse than me...")
-    messages.append("!q")
+    blueTeam, orangeTeam = Queue.getTeamList()
+    blueCap, orangeCap = Queue.getCaptains()
+    embed = None
 
     if (Queue.queueAlreadyPopped() or queueSize == 6):
-        messages.append(ErrorEmbed(
+        embed = ErrorEmbed(
             title="Current Lobby Not Set",
             desc="Whoa there Norm! You can't queue until the current queue has finished popping."
-        ))
+        )
+
     elif (len(playerList) == 0):
-        messages.append(QueueUpdateEmbed(
+        embed = QueueUpdateEmbed(
             title="Norm has Started the Queue!",
             desc="<@629502587963572225> wants to queue!\n\nQueued for 0 minutes.\n\nType **!q** to join",
-        ))
+        )
+
     else:
-        messages.append(QueueUpdateEmbed(
+        embed = QueueUpdateEmbed(
             title="Norm Added to Queue",
             desc="<@629502587963572225> has been added to the queue for 0 minutes.\n\n"
-            "Queue size: " + str(queueSize + 1) + "/6\n\n"
-            "Current queue:\nNorm" + (" " if len(playerList) == 0 else ", ") + playerList
-        ))
+            "**Queue size: " + str(queueSize + 1) + "/6**\n\n"
+            "**Current Queue:**\nNorm (0 mins)\n" + playerList
+        )
+        return embed
 
-    return messages
+    edited_embed = CaptainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
+
+    return edited_embed
 
 
 def Duis() -> str:
@@ -98,10 +148,40 @@ def Zappa() -> str:
             " <:zapp:632813709579911179>")
 
 
+def Furry() -> str:
+    return("“Earned” both of his CRL titles but doesn't play like it."
+           " Earns SSL in Rumble only.")
+
+
+def Don() -> str:
+    return("Daffy and Giddy's teammate.")
+
+
+def Daffy() -> str:
+    return("Daffy “Daffy” Duck is a collegiate Rocket League player who currently plays for UNCC, an Electrical Sports"
+           " (E-Sports) team based in Charlotte, North Carolina, USA. He's currently also working as an actor in the"
+           " popular Warner Bros.© series “Looney Tunes”. He enjoys long walks on the beach and watching sunsets."
+           " Ladies, hit him up")
+
+
+def Giddy() -> str:
+    return("Most Saves CRL")
+
+
+def NoDought() -> str:
+    return("Who?")
+
+
+def Coolio() -> str:
+    return("The “Whiff” of WallStreet."
+           " “Plays Rocket League like the ball is supposed to be on the hood of his car...” - Don.\n"
+           " Ultimately came to college to play Rocket League.")
+
+
 def Pika() -> str:
     global pikaO
     pikaO += 1
-    return '<:pika:538182616965447706>' * pikaO
+    return "<:pika:538182616965447706>" * pikaO
 
 
 def Turhols() -> str:
@@ -115,7 +195,7 @@ def Smh() -> str:
 
 
 def Twan() -> str:
-    return ("<:twantheswan:540327706076905472> twantheswan is probably the greatest Rocket League (tm) player to have"
+    return ("<:twantheswan:540327706076905472> twantheswan is probably the greatest Rocket League © player to have"
             " ever walked the face of this planet. When he tries, no one ever beats him. If you beat him in a game, he"
             " was letting you win just to make you feel better. ur fkn trash at rl unless u r twantheswan. sub to him"
             " on twitch <:twantheswan:540327706076905472>")
@@ -123,3 +203,15 @@ def Twan() -> str:
 
 def Sad() -> str:
     return "This is so sad :frowning: in the chat pls"
+
+
+def Fuck() -> str:
+    return "u"
+
+
+def Oops() -> str:
+    return "I didn't think the queue would pop..."
+
+
+def H() -> str:
+    return "h"

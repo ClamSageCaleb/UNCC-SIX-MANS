@@ -6,7 +6,7 @@ from math import ceil
 import random
 from tinydb import where
 from tinydb.table import Document
-from typing import Tuple, List
+from typing import Tuple, List, Union
 
 
 '''
@@ -26,8 +26,15 @@ def getQueueLength() -> int:
     return currQueue.count(where(BallChaserKey.ID).exists())
 
 
-def isPlayerInQueue(player: Member) -> bool:
-    return currQueue.contains(where(BallChaserKey.ID) == player.id)
+def isPlayerInQueue(player: Union[Member, str]) -> bool:
+    if (isinstance(player, Member)):
+        return currQueue.contains(where(BallChaserKey.ID) == player.id)
+    elif (isinstance(player, str)):
+        return currQueue.contains(where(BallChaserKey.ID) == currQueue.get(doc_id=int(player))["id"])
+
+
+def getPlayerFromQueue(player: str) -> Union[BallChaser, None]:
+    return currQueue.get(doc_id=int(player))
 
 
 def clearQueue() -> None:
@@ -76,8 +83,11 @@ def addToQueue(player: Member, mins_to_queue_for: int = 60) -> None:
     currQueue.insert(Document(new_player.toJSON(), doc_id=new_player.id))
 
 
-def removeFromQueue(player: Member) -> None:
-    currQueue.remove(doc_ids=[player.id])
+def removeFromQueue(player: Union[Member, BallChaser, str]) -> None:
+    if (isinstance(player, Member) or isinstance(player, BallChaser)):
+        currQueue.remove(doc_ids=[player.id])
+    elif (isinstance(player, str)):
+        currQueue.remove(doc_ids=[int(player)])
 
 
 def resetPlayerQueueTime(player: Member, mins_to_queue_for: int = 60) -> None:
@@ -85,8 +95,28 @@ def resetPlayerQueueTime(player: Member, mins_to_queue_for: int = 60) -> None:
     addToQueue(player, mins_to_queue_for)
 
 
-def getQueueList(mentionPlayers: bool = False, includeTimes: bool = True, separator: str = "\n") -> str:
+def getCaptains() -> Union[Tuple[BallChaser, BallChaser], Tuple[None, None]]:
+    if (queueAlreadyPopped()):
+        orangeCap = BallChaser.fromDocument(
+            currQueue.get((where(BallChaserKey.TEAM) == Team.ORANGE) & (where(BallChaserKey.IS_CAP) == True))
+        )
+        blueCap = BallChaser.fromDocument(
+            currQueue.get((where(BallChaserKey.TEAM) == Team.BLUE) & (where(BallChaserKey.IS_CAP) == True))
+        )
+        return blueCap, orangeCap
+    else:
+        return None, None
+
+
+def getQueueList(mentionPlayers: bool = False, includeTimes: bool = True, separator: str = "\n", includeLetters=False) -> str:  # noqa
     playerList = []
+    letters = [
+        "1️⃣",
+        "2️⃣",
+        "3️⃣",
+        "4️⃣",
+    ]
+    i = 0
 
     for player in currQueue.search(where(BallChaserKey.TEAM) == None):
         player = BallChaser.fromDocument(player)
@@ -97,9 +127,19 @@ def getQueueList(mentionPlayers: bool = False, includeTimes: bool = True, separa
             if (includeTimes):
                 minutes_diff = getQueueTimeRemaining(player)
                 player_name += " (" + str(minutes_diff) + " mins)"
+            if (includeLetters):
+                player_name = letters[i] + " " + player_name
             playerList.append(player_name)
+        i += 1
 
     return separator.join(playerList)
+
+
+def getAvailablePicks() -> List[BallChaser]:
+    availablePicks = []
+    for player in currQueue.search(where(BallChaserKey.TEAM) == None):
+        availablePicks.append(BallChaser.fromDocument(player))
+    return availablePicks
 
 
 def randomPop() -> Tuple[List[BallChaser], List[BallChaser]]:
@@ -119,7 +159,7 @@ def randomPop() -> Tuple[List[BallChaser], List[BallChaser]]:
     return blueTeam, orangeTeam
 
 
-def captainsPop() -> Tuple[List[BallChaser], List[BallChaser]]:
+def captainsPop() -> Tuple[BallChaser, BallChaser]:
     if (not queueAlreadyPopped()):
         orangeCapDoc = random.sample(currQueue.all(), 1)[0]
         orangeCap = BallChaser.fromDocument(orangeCapDoc)
@@ -140,34 +180,15 @@ def captainsPop() -> Tuple[List[BallChaser], List[BallChaser]]:
 
 
 # Returns a string if there is an error. Otherwise returns an empty string
-def pick(player_picked: Member, player_picked_2: Member = None) -> str:
-    playerPickedDoc = currQueue.get(doc_id=player_picked.id)
-    secondPlayerPickedDoc = None
+def pick(player_picked: BallChaser) -> str:
 
-    if (player_picked_2 is not None):
-        secondPlayerPickedDoc = currQueue.get(doc_id=player_picked_2.id)
-
-    if (playerPickedDoc is not None):
-        if (playerPickedDoc[BallChaserKey.TEAM] is not None):
-            return "<@{0}> has already been picked. Pick someone else 4head.".format(playerPickedDoc[BallChaserKey.ID])
-        if (secondPlayerPickedDoc is not None and secondPlayerPickedDoc[BallChaserKey.TEAM] is not None):
-            return ("<@{0}> has already been picked."
-                    " Pick someone else 4head. Pick reset.".format(secondPlayerPickedDoc[BallChaserKey.ID]))
-        if (player_picked_2):
-            currQueue.update({BallChaserKey.TEAM: Team.ORANGE}, doc_ids=[playerPickedDoc.doc_id])
-        else:
-            currQueue.update({BallChaserKey.TEAM: Team.BLUE}, doc_ids=[playerPickedDoc.doc_id])
-    else:
-        return "Player not in queue, dummy. Try again."
-
-    if (player_picked_2 is not None):
-        if (secondPlayerPickedDoc is not None):
-            currQueue.update({BallChaserKey.TEAM: Team.ORANGE}, doc_ids=[secondPlayerPickedDoc.doc_id])
-
-            currQueue.update({BallChaserKey.TEAM: Team.BLUE}, where(BallChaserKey.TEAM) == None)
-        else:
-            return "{0} is not in the queue. Try again.".format(player_picked_2.name)
-
+    blueTeam, orangeTeam = getTeamList()
+    if (len(blueTeam) == 1):
+        currQueue.update({BallChaserKey.TEAM: Team.BLUE}, doc_ids=[player_picked.id])
+    elif (len(blueTeam) == 2):
+        currQueue.update({BallChaserKey.TEAM: Team.ORANGE}, doc_ids=[player_picked.id])
+    if (len(orangeTeam) == 2):
+        currQueue.update({BallChaserKey.TEAM: Team.BLUE}, where(BallChaserKey.TEAM) == None)
     return ""
 
 
