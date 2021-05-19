@@ -396,7 +396,7 @@ async def update(ctx):
         title="Checking For Updates",
         desc="Please hang tight."
     ))
-    await ctx.send(embed=Admin.update())
+    await ctx.send(embed=Admin.update(ctx.message.author.roles))
 
 
 """
