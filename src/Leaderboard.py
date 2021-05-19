@@ -84,9 +84,9 @@ def reportMatch(player: Member, whoWon: Team) -> bool:
         id=foundPlayer[MatchKey.ID],
         team=foundPlayer[MatchKey.TEAM]
     )
-    msg = reportConfirm(player, match, whoWon)
-    if (not msg):
-        return msg
+    report_confirm_success = reportConfirm(player, match, whoWon)
+    if (not report_confirm_success):
+        return report_confirm_success
 
     for key in match:
         if (key != MatchKey.REPORTED_WINNER):
