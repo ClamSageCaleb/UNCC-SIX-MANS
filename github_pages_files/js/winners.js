@@ -1,7 +1,7 @@
 $(() => loadWinners())
 
-const dataBaseUrl = "https://uncc-six-mans.s3.amazonaws.com/winners";
-const winnerFiles = ["summer2020.json", "fall2020.json"];
+const dataBaseUrl = "https://uncc-six-mans.s3.amazonaws.com/winners"
+const winnerFiles = ["summer2020.json", "fall2020.json", "spring2021.json"]
 
 const loadWinners = async () => {
   for (const file of winnerFiles) {
@@ -19,14 +19,14 @@ const loadWinners = async () => {
 function populateWinners(winnerDetails, rank, tableId) {
   $(`#winners-table-${tableId} > tbody`).append(
     `<tr>
-      <td headers="rank">${rank}</td>
-      <td headers="name">${winnerDetails["Name"]}</td>
-      <td headers="wins">${winnerDetails["Wins"]}</td>
-      <td headers="losses">${winnerDetails["Losses"]}</td>
-      <td headers="matches-played">${winnerDetails["Wins"] + winnerDetails["Losses"]}</td>
-      <td headers="win-perc">${Math.round(
-        (winnerDetails["Wins"] / (winnerDetails["Wins"] + winnerDetails["Losses"])) * 100
-      )}%</td>
+      <td headers="${tableId}-rank">${rank}</td>
+      <td headers="${tableId}-name">${winnerDetails["Name"]}</td>
+      <td headers="${tableId}-wins">${winnerDetails["Wins"]}</td>
+      <td headers="${tableId}-losses">${winnerDetails["Losses"]}</td>
+      <td headers="${tableId}-matches-played">${winnerDetails["Wins"] + winnerDetails["Losses"]}</td>
+      <td headers="${tableId}-win-perc">${Math.round(
+      (winnerDetails["Wins"] / (winnerDetails["Wins"] + winnerDetails["Losses"])) * 100
+    )}%</td>
     </tr>`
   )
 }
