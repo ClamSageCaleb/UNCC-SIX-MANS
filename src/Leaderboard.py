@@ -1,6 +1,6 @@
 import AWSHelper as AWS
 from DataFiles import leaderboard, activeMatches
-from Types import BallChaser, Team, MatchKey, LbKey
+from Types import BallChaser, BallChaserKey, Team, MatchKey, LbKey
 from discord import Member
 from json import dumps
 from tinydb import where
@@ -186,6 +186,10 @@ def showLeaderboard(player: str = None, limit: int = None) -> str or List[str]:
 
         # return list of messages or just the one string if msgs only has one message
         return msgs if len(msgs) > 1 else msgs[0]
+
+
+def countLeaderboard() -> int:
+    return leaderboard.count(where(BallChaserKey.ID).exists())
 
 
 def resetFromRemote(remoteData: dict) -> None:

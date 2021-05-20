@@ -43,20 +43,22 @@ def clearQueue() -> None:
 
 def validateOrangePick(player: Member) -> bool:
     player = currQueue.get(doc_id=player.id)
-    return (
-        currQueue.count(where(BallChaserKey.TEAM) == Team.BLUE) == 2 and
-        player[BallChaserKey.IS_CAP] and
-        player[BallChaserKey.TEAM] == Team.ORANGE
-    )
+    if (player is not None):
+        return (
+            currQueue.count(where(BallChaserKey.TEAM) == Team.BLUE) == 2 and
+            player[BallChaserKey.IS_CAP] and
+            player[BallChaserKey.TEAM] == Team.ORANGE
+        )
 
 
 def validateBluePick(player: Member) -> bool:
     player = currQueue.get(doc_id=player.id)
-    return (
-        currQueue.count(where(BallChaserKey.TEAM) == Team.BLUE) == 1 and
-        player[BallChaserKey.IS_CAP] and
-        player[BallChaserKey.TEAM] == Team.BLUE
-    )
+    if (player is not None):
+        return (
+            currQueue.count(where(BallChaserKey.TEAM) == Team.BLUE) == 1 and
+            player[BallChaserKey.IS_CAP] and
+            player[BallChaserKey.TEAM] == Team.BLUE
+        )
 
 
 def getTeamList() -> Tuple[List[BallChaser], List[BallChaser]]:
