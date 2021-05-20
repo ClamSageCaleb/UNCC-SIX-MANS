@@ -188,6 +188,11 @@ def showLeaderboard(player: str = None, limit: int = None) -> str or List[str]:
         return msgs if len(msgs) > 1 else msgs[0]
 
 
+def checkLeaderboard() -> bool:
+    if (len(leaderboard) < 6):
+        return True
+
+
 def resetFromRemote(remoteData: dict) -> None:
     leaderboard.truncate()
     for p in remoteData:

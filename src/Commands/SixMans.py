@@ -396,11 +396,19 @@ def leaderboard(author: Member, mentions: str, lbChannelId: int, *arg) -> Embed:
         edited_embed = CaptainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
         return edited_embed
 
-    elif (len(arg) == 0 and playerMentioned == False):
+    elif (len(arg) == 0 and playerMentioned == False and not Leaderboard.checkLeaderboard()):
         viewFullLb = "\nTo see the full leaderboard, visit <#{0}>.".format(lbChannelId) if (lbChannelId != -1) else ""
         embed = InfoEmbed(
             title="UNCC 6 Mans | Top 5",
             desc=Leaderboard.showLeaderboard(limit=5) + viewFullLb
+        )
+        edited_embed = CaptainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
+        return edited_embed
+
+    elif (len(arg) == 0 and playerMentioned == False and Leaderboard.checkLeaderboard()):
+        embed = ErrorEmbed(
+            title="No Leaderboard!",
+            desc="There are currently no leaderboard statistics!"
         )
         edited_embed = CaptainsRandomHelpEmbed(embed, blueTeam, orangeTeam, blueCap, orangeCap)
         return edited_embed
