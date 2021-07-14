@@ -164,11 +164,14 @@ def randomPop() -> Tuple[List[BallChaser], List[BallChaser]]:
 
 def captainsPop() -> Tuple[BallChaser, BallChaser]:
     if (not queueAlreadyPopped()):
-        orangeCapDoc = random.sample(currQueue.all(), 1)[0]
+
+        # check if this actually works or if there is a better way in TinyDb
+        top3 = random.sample(currQueue.search(max(BallChaserKey.MMR)), 3)
+        orangeCapDoc = random.sample(top3, 1)[0]
         orangeCap = BallChaser.fromDocument(orangeCapDoc)
         currQueue.update({BallChaserKey.IS_CAP: True, BallChaserKey.TEAM: Team.ORANGE}, doc_ids=[orangeCapDoc.doc_id])
 
-        blueCapDoc = random.choice(currQueue.search(where(BallChaserKey.IS_CAP) == False))
+        blueCapDoc = random.choice(top3(where(BallChaserKey.IS_CAP) == False))
         blueCap = BallChaser.fromDocument(blueCapDoc)
         currQueue.update({BallChaserKey.IS_CAP: True, BallChaserKey.TEAM: Team.BLUE}, doc_ids=[blueCapDoc.doc_id])
     else:
