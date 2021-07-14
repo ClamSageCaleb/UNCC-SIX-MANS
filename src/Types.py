@@ -40,15 +40,15 @@ class BallChaser:
     def __init__(
         self,
         name: str,
-        mmr: int,
         id: int,
+        mmr: int,
         isCap: bool = False,
         team: Team = None,
         queueTime: datetime = datetime.now()
     ):
         self.name = name
-        self.mmr = mmr
         self.id = id
+        self.mmr = mmr
         self.mention = "<@{0}>".format(self.id)
         self.isCap = isCap
         self.team = team

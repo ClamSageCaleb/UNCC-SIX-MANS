@@ -97,15 +97,18 @@ def reportMatch(player: Member, whoWon: Team) -> bool:
             ):
                 win = 1
                 loss = 0
+                mmr = 10
             else:
                 win = 0
                 loss = 1
+                mmr = -10
 
             player = leaderboard.get(doc_id=teamMember[MatchKey.ID])
             if (not player):
                 leaderboard.insert(Document({
                     LbKey.ID: teamMember[MatchKey.ID],
                     LbKey.NAME: teamMember[MatchKey.NAME],
+                    LbKey.MMR: mmr,
                     LbKey.WINS: win,
                     LbKey.LOSSES: loss,
                     LbKey.MATCHES: 1,
@@ -114,6 +117,7 @@ def reportMatch(player: Member, whoWon: Team) -> bool:
             else:
                 updated_player = {
                     LbKey.NAME: teamMember[MatchKey.NAME],
+                    LbKey.MMR: player[LbKey.MMR] + mmr,
                     LbKey.WINS: player[LbKey.WINS] + win,
                     LbKey.LOSSES: player[LbKey.LOSSES] + loss,
                     LbKey.MATCHES: player[LbKey.MATCHES] + 1,
@@ -127,7 +131,7 @@ def reportMatch(player: Member, whoWon: Team) -> bool:
                 leaderboard.update(updated_player, doc_ids=[player.doc_id])
 
     activeMatches.remove(doc_ids=[match.doc_id])
-    sorted_lb = sorted(leaderboard.all(), key=lambda x: (x[LbKey.WINS], x[LbKey.WIN_PERC]), reverse=True)
+    sorted_lb = sorted(leaderboard.all(), key=lambda x: (x[LbKey.MMR], x[LbKey.WINS], x[LbKey.WIN_PERC]), reverse=True)
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         executor.submit(AWS.writeRemoteLeaderboard, dumps(sorted_lb))
@@ -149,7 +153,7 @@ def makePretty(player_index: int, player: BallChaser) -> str:
 def showLeaderboard(player: str = None, limit: int = None) -> str or List[str]:
     global sorted_lb
     if (not sorted_lb):
-        sorted_lb = sorted(leaderboard.all(), key=lambda x: (x[LbKey.WINS], x[LbKey.WIN_PERC]), reverse=True)
+        sorted_lb = sorted(leaderboard.all(), key=lambda x: (x[LbKey.MMR], x[LbKey.WINS], x[LbKey.WIN_PERC]), reverse=True) # noqa
 
     if (player):
         player_data = leaderboard.get(doc_id=int(player))

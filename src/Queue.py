@@ -80,6 +80,7 @@ def addToQueue(player: Member, mins_to_queue_for: int = 60) -> None:
     new_player = BallChaser(
         str(player),
         player.id,
+        100,
         queueTime=(datetime.now() + timedelta(minutes=mins_to_queue_for))
     )
     currQueue.insert(Document(new_player.toJSON(), doc_id=new_player.id))
