@@ -10,6 +10,7 @@ class Team():
 class MatchKey():
     ID = "id"
     NAME = "name"
+    MMR = "mmr"
     TEAM = "team"
     REPORTED_WINNER = "reportedWinner"
     REPORTER = "reporter"
@@ -19,6 +20,7 @@ class MatchKey():
 class LbKey():
     ID = "id"
     NAME = "Name"
+    MMR = "MMR"
     WINS = "Wins"
     LOSSES = "Losses"
     MATCHES = "Matches Played"
@@ -28,6 +30,7 @@ class LbKey():
 class BallChaserKey():
     ID = "id"
     NAME = "name"
+    MMR = "mmr"
     IS_CAP = "isCap"
     TEAM = "team"
     QUEUE_TIME = "queueTime"
@@ -37,12 +40,14 @@ class BallChaser:
     def __init__(
         self,
         name: str,
+        mmr: int,
         id: int,
         isCap: bool = False,
         team: Team = None,
         queueTime: datetime = datetime.now()
     ):
         self.name = name
+        self.mmr = mmr
         self.id = id
         self.mention = "<@{0}>".format(self.id)
         self.isCap = isCap
@@ -54,6 +59,7 @@ class BallChaser:
         return cls(
             id=document["id"],
             name=document["name"],
+            mmr=document["mmr"],
             isCap=document["isCap"],
             team=document["team"],
             queueTime=datetime.strptime(document["queueTime"], "%Y-%m-%dT%H:%M:%S.%f")
@@ -63,6 +69,7 @@ class BallChaser:
         return {
             BallChaserKey.ID: self.id,
             BallChaserKey.NAME: self.name,
+            BallChaserKey.MMR: self.mmr,
             BallChaserKey.IS_CAP: self.isCap,
             BallChaserKey.TEAM: self.team,
             BallChaserKey.QUEUE_TIME: self.queueTime.isoformat(),
