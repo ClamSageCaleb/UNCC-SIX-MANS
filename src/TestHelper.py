@@ -12,31 +12,37 @@ def fillQueue():
         BallChaser(
             name="Tux#9267",
             id=346838372649795595,
+            mmr=100,
             queueTime=(datetime.now() + timedelta(minutes=60))
         ),
         BallChaser(
             name="Don#1424",
             id=528369347807412227,
+            mmr=100,
             queueTime=(datetime.now() + timedelta(minutes=60))
         ),
         BallChaser(
             name="h.#0001",
             id=163667436229361664,
+            mmr=100,
             queueTime=(datetime.now() + timedelta(minutes=60))
         ),
         BallChaser(
             name="DaffyJr#6070",
             id=209084277223194624,
+            mmr=100,
             queueTime=(datetime.now() + timedelta(minutes=60))
         ),
         BallChaser(
             name="cash#1547",
             id=347083937216200704,
+            mmr=100,
             queueTime=(datetime.now() + timedelta(minutes=60))
         ),
         BallChaser(
             name="AlphaGiddy#1377",
             id=385935752413970432,
+            mmr=100,
             queueTime=(datetime.now() + timedelta(minutes=60))
         ),
     ]
