@@ -10,8 +10,8 @@ class Team():
 class MatchKey():
     ID = "id"
     NAME = "name"
-    MMR = "mmr"
     TEAM = "team"
+    MMR = "mmr"
     REPORTED_WINNER = "reportedWinner"
     REPORTER = "reporter"
     WINNING_TEAM = "winningTeam"
@@ -77,6 +77,7 @@ class BallChaser:
             # this short version is used only for active match objects
             MatchKey.ID: self.id,
             MatchKey.NAME: self.name,
+            MatchKey.MMR: self.mmr,
             MatchKey.TEAM: self.team
         }
 

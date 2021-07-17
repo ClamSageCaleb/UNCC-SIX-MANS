@@ -7,6 +7,7 @@ import random
 from tinydb import where
 from tinydb.table import Document
 from typing import Tuple, List, Union
+import Leaderboard
 
 
 '''
@@ -35,6 +36,11 @@ def isPlayerInQueue(player: Union[Member, str]) -> bool:
 
 def getPlayerFromQueue(player: str) -> Union[BallChaser, None]:
     return currQueue.get(doc_id=int(player))
+
+
+# def getPlayerMMR(player: Member) -> int:
+#     member = currQueue.get(doc_id=player.id)
+#     return member.get(BallChaserKey.MMR)
 
 
 def clearQueue() -> None:
@@ -78,11 +84,12 @@ def getQueueTimeRemaining(player: BallChaser) -> int:
 
 def addToQueue(player: Member, mins_to_queue_for: int = 60) -> None:
     new_player = BallChaser(
-        str(player),
-        player.id,
-        100,
+        id=player.id,
+        name=str(player),
+        mmr=Leaderboard.getPlayerMMR(player),
         queueTime=(datetime.now() + timedelta(minutes=mins_to_queue_for))
     )
+    print(Leaderboard.getPlayerMMR(player))
     currQueue.insert(Document(new_player.toJSON(), doc_id=new_player.id))
 
 

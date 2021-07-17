@@ -7,6 +7,7 @@ from tinydb import where
 from tinydb.table import Document
 from typing import List
 import concurrent.futures
+import Points
 
 
 sorted_lb = None
@@ -46,6 +47,18 @@ def getActiveMatch(player: Member) -> Document or None:
 def getBallChaser(player: int) -> BallChaser:
     member = leaderboard.get(doc_id=int(player))
     return member
+
+
+def getPlayerMMR(player: Member) -> int:
+    '''
+        Returns the MMR of the player if they exist, otherwise returns 100
+    '''
+    member = leaderboard.get(doc_id=player.id)
+
+    if (member):
+        return member[LbKey.MMR]
+    else:
+        return 100
 
 
 def reportConfirm(player: BallChaser, match: Document, whoWon: Team) -> bool:
@@ -88,6 +101,9 @@ def reportMatch(player: Member, whoWon: Team) -> bool:
     if (not report_confirm_success):
         return report_confirm_success
 
+    # report confirmed
+    matchMMR = Points.calculateMMR(match)
+
     for key in match:
         if (key != MatchKey.REPORTED_WINNER):
             teamMember = match[key]
@@ -97,18 +113,18 @@ def reportMatch(player: Member, whoWon: Team) -> bool:
             ):
                 win = 1
                 loss = 0
-                mmr = 10
+                mmr = matchMMR
             else:
                 win = 0
                 loss = 1
-                mmr = -10
+                mmr = -matchMMR
 
             player = leaderboard.get(doc_id=teamMember[MatchKey.ID])
             if (not player):
                 leaderboard.insert(Document({
                     LbKey.ID: teamMember[MatchKey.ID],
                     LbKey.NAME: teamMember[MatchKey.NAME],
-                    LbKey.MMR: mmr,
+                    LbKey.MMR: 100 + mmr,
                     LbKey.WINS: win,
                     LbKey.LOSSES: loss,
                     LbKey.MATCHES: 1,
