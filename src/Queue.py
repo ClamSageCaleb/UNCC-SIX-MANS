@@ -38,11 +38,6 @@ def getPlayerFromQueue(player: str) -> Union[BallChaser, None]:
     return currQueue.get(doc_id=int(player))
 
 
-# def getPlayerMMR(player: Member) -> int:
-#     member = currQueue.get(doc_id=player.id)
-#     return member.get(BallChaserKey.MMR)
-
-
 def clearQueue() -> None:
     currQueue.truncate()
 
