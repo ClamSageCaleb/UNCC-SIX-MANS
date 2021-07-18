@@ -27,7 +27,7 @@ def calculateMMR(match) -> int:
     probability = 1 / power
 
     # 1 - our probability to start with a number greater than 1
-    # 15 * our new number to enhance the amount of MMR
+    # 20 * our new number to enhance the amount of MMR
     mmr = 20(1 - probability)
 
     mmr = min(15, mmr)
