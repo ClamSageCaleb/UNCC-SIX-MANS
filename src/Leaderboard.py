@@ -95,6 +95,7 @@ def reportMatch(player: Member, whoWon: Team) -> bool:
     player = BallChaser(
         name=foundPlayer[MatchKey.NAME],
         id=foundPlayer[MatchKey.ID],
+        mmr=foundPlayer[MatchKey.MMR],
         team=foundPlayer[MatchKey.TEAM]
     )
     report_confirm_success = reportConfirm(player, match, whoWon)
