@@ -134,7 +134,7 @@ def reportMatch(player: Member, whoWon: Team) -> bool:
             else:
                 updated_player = {
                     LbKey.NAME: teamMember[MatchKey.NAME],
-                    LbKey.MMR: player[LbKey.MMR] + mmr,
+                    LbKey.MMR: max(player[LbKey.MMR] + mmr, 0),
                     LbKey.WINS: player[LbKey.WINS] + win,
                     LbKey.LOSSES: player[LbKey.LOSSES] + loss,
                     LbKey.MATCHES: player[LbKey.MATCHES] + 1,
