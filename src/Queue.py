@@ -84,7 +84,6 @@ def addToQueue(player: Member, mins_to_queue_for: int = 60) -> None:
         mmr=Leaderboard.getPlayerMMR(player),
         queueTime=(datetime.now() + timedelta(minutes=mins_to_queue_for))
     )
-    print(Leaderboard.getPlayerMMR(player))
     currQueue.insert(Document(new_player.toJSON(), doc_id=new_player.id))
 
 
@@ -133,7 +132,7 @@ def getQueueList(mentionPlayers: bool = False, includeTimes: bool = True, separa
                 minutes_diff = getQueueTimeRemaining(player)
                 player_name += " (" + str(minutes_diff) + " mins)"
             if (includeLetters):
-                player_name = letters[i] + " " + player_name
+                player_name = letters[i] + " (" + str(Leaderboard.getPlayerMMR(player)) + ") " + player_name
             playerList.append(player_name)
         i += 1
 

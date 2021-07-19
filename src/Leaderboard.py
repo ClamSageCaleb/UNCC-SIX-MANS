@@ -5,7 +5,7 @@ from discord import Member
 from json import dumps
 from tinydb import where
 from tinydb.table import Document
-from typing import List
+from typing import List, Union
 import concurrent.futures
 import Points
 
@@ -49,7 +49,7 @@ def getBallChaser(player: int) -> BallChaser:
     return member
 
 
-def getPlayerMMR(player: Member) -> int:
+def getPlayerMMR(player: Union[Member, BallChaser]) -> int:
     '''
         Returns the MMR of the player if they exist, otherwise returns 100
     '''
