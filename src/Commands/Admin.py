@@ -172,14 +172,7 @@ async def forceReport(mentions: str, roles: List[Role], lbChannel: Channel, *arg
             if (player_id.isdigit()):
                 msg = reportMatch(player_id, arg[1], True)
 
-                if (":x:" in msg):
-                    return ErrorEmbed(
-                        title="Match Not Found",
-                        desc=msg[4:]
-                    )
-
-                if (":white_check_mark:" in msg):
-
+                if (msg):
                     try:
                         # if match was reported successfully, update leaderboard channel
                         await updateLeaderboardChannel(lbChannel)

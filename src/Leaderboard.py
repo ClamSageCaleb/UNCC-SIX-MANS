@@ -74,7 +74,7 @@ def reportConfirm(player: BallChaser, match: Document, whoWon: Team) -> bool:
     return True
 
 
-def reportMatch(player: Union[Member, str], whoWon: Team, adminOverride=False) -> str:
+def reportMatch(player: Union[Member, str], whoWon: Team, adminOverride: bool = False) -> bool:
     global sorted_lb
     match = getActiveMatch(player)
 
@@ -92,8 +92,6 @@ def reportMatch(player: Union[Member, str], whoWon: Team, adminOverride=False) -
         team=foundPlayer[MatchKey.TEAM]
     )
     report_confirm_success = reportConfirm(player, match, whoWon)
-    if (not report_confirm_success):
-        return report_confirm_success
 
     if (report_confirm_success or adminOverride == True):
         for key in match:
@@ -133,6 +131,9 @@ def reportMatch(player: Union[Member, str], whoWon: Team, adminOverride=False) -
                     updated_player[LbKey.WIN_PERC] = float("{:.2f}".format(total_wins / total_matches))
 
                     leaderboard.update(updated_player, doc_ids=[player.doc_id])
+
+    elif (not report_confirm_success):
+        return report_confirm_success
 
     activeMatches.remove(doc_ids=[match.doc_id])
     sorted_lb = sorted(leaderboard.all(), key=lambda x: (x[LbKey.WINS], x[LbKey.WIN_PERC]), reverse=True)
