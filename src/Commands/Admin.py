@@ -2,9 +2,12 @@ from CheckForUpdates import updateBot
 from EmbedHelper import AdminEmbed, ErrorEmbed, QueueUpdateEmbed, CaptainsRandomHelpEmbed
 from Leaderboard import brokenQueue as lbBrokenQueue
 from typing import List
+from Types import Team
 from bot import __version__
-from discord import Role, Embed, Member
+from discord import Role, Embed, Member, channel as Channel
 import Queue
+from Commands.Utils import updateLeaderboardChannel
+from Leaderboard import reportMatch
 
 
 def update(roles: List[Role]) -> Embed:
@@ -149,6 +152,49 @@ def brokenQueue(player: Member, roles: List[Role]) -> Embed:
         title="Could Not Remove Queue",
         desc=msg
     )
+
+
+async def forceReport(mentions: List[Member], roles: List[Role], lbChannel: Channel, *arg) -> Embed:
+    if (Queue.isBotAdmin(roles)):
+        if (len(mentions) == 1):
+            if (len(arg) == 2 and (str(arg[1]).lower() == Team.BLUE or str(arg[1]).lower() == Team.ORANGE)):
+
+                player = mentions[0]
+                msg = reportMatch(player, arg[1], True)
+
+                if (":x:" in msg):
+                    return ErrorEmbed(
+                        title="Match Not Found",
+                        desc=msg[4:]
+                    )
+
+                if (":white_check_mark:" in msg):
+
+                    try:
+                        # if match was reported successfully, update leaderboard channel
+                        await updateLeaderboardChannel(lbChannel)
+                    except Exception as e:
+                        print("! Norm does not have access to update the leaderboard.", e)
+
+                return AdminEmbed(
+                    title="Match Force Reported Successfully",
+                    desc="You may now re-queue."
+                )
+            else:
+                return ErrorEmbed(
+                    title="You Must Report A Valid Team",
+                    desc="You did not supply a valid team to report."
+                )
+        else:
+            return ErrorEmbed(
+                title="Could Not Report The Match",
+                desc="You must mention one player who is in the match you want to report."
+            )
+    else:
+        return ErrorEmbed(
+            title="Permission Denied",
+            desc="You do not have the strength to force report matches. Ask an admin if you need to force report a match." # noqa
+        )
 
 
 # Disabling command as it does not work with the new executable.
