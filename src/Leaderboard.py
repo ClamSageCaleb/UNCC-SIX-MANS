@@ -5,7 +5,7 @@ from discord import Member
 from json import dumps
 from tinydb import where
 from tinydb.table import Document
-from typing import List
+from typing import List, Union
 import concurrent.futures
 
 
@@ -39,8 +39,11 @@ def brokenQueue(player: Member) -> str:
     return ":white_check_mark: Previous queue removed."
 
 
-def getActiveMatch(player: Member) -> Document or None:
-    return activeMatches.get(where(str(player.id)).exists())
+def getActiveMatch(player: Union[Member, str]) -> Document or None:
+    if (isinstance(player, Member)):
+        return activeMatches.get(where(str(player.id)).exists())
+    elif (isinstance(player, str)):
+        return activeMatches.get(where(player).exists())
 
 
 def getBallChaser(player: int) -> BallChaser:
@@ -71,14 +74,18 @@ def reportConfirm(player: BallChaser, match: Document, whoWon: Team) -> bool:
     return True
 
 
-def reportMatch(player: Member, whoWon: Team) -> bool:
+def reportMatch(player: Union[Member, str], whoWon: Team, adminOverride=False) -> str:
     global sorted_lb
     match = getActiveMatch(player)
 
     if (not match):
         return False
 
-    foundPlayer = match[str(player.id)]
+    if (isinstance(player, Member)):
+        foundPlayer = match[str(player.id)]
+    elif (isinstance(player, str)):
+        foundPlayer = match[player]
+
     player = BallChaser(
         name=foundPlayer[MatchKey.NAME],
         id=foundPlayer[MatchKey.ID],
@@ -88,43 +95,44 @@ def reportMatch(player: Member, whoWon: Team) -> bool:
     if (not report_confirm_success):
         return report_confirm_success
 
-    for key in match:
-        if (key != MatchKey.REPORTED_WINNER):
-            teamMember = match[key]
-            if (
-                (whoWon == Team.BLUE and teamMember["team"] == Team.BLUE) or
-                (whoWon == Team.ORANGE and teamMember["team"] == Team.ORANGE)
-            ):
-                win = 1
-                loss = 0
-            else:
-                win = 0
-                loss = 1
+    if (report_confirm_success or adminOverride == True):
+        for key in match:
+            if (key != MatchKey.REPORTED_WINNER):
+                teamMember = match[key]
+                if (
+                    (whoWon == Team.BLUE and teamMember["team"] == Team.BLUE) or
+                    (whoWon == Team.ORANGE and teamMember["team"] == Team.ORANGE)
+                ):
+                    win = 1
+                    loss = 0
+                else:
+                    win = 0
+                    loss = 1
 
-            player = leaderboard.get(doc_id=teamMember[MatchKey.ID])
-            if (not player):
-                leaderboard.insert(Document({
-                    LbKey.ID: teamMember[MatchKey.ID],
-                    LbKey.NAME: teamMember[MatchKey.NAME],
-                    LbKey.WINS: win,
-                    LbKey.LOSSES: loss,
-                    LbKey.MATCHES: 1,
-                    LbKey.WIN_PERC: float(win),
-                }, doc_id=teamMember[MatchKey.ID]))
-            else:
-                updated_player = {
-                    LbKey.NAME: teamMember[MatchKey.NAME],
-                    LbKey.WINS: player[LbKey.WINS] + win,
-                    LbKey.LOSSES: player[LbKey.LOSSES] + loss,
-                    LbKey.MATCHES: player[LbKey.MATCHES] + 1,
-                    LbKey.WIN_PERC: player[LbKey.WIN_PERC],
-                }
+                player = leaderboard.get(doc_id=teamMember[MatchKey.ID])
+                if (not player):
+                    leaderboard.insert(Document({
+                        LbKey.ID: teamMember[MatchKey.ID],
+                        LbKey.NAME: teamMember[MatchKey.NAME],
+                        LbKey.WINS: win,
+                        LbKey.LOSSES: loss,
+                        LbKey.MATCHES: 1,
+                        LbKey.WIN_PERC: float(win),
+                    }, doc_id=teamMember[MatchKey.ID]))
+                else:
+                    updated_player = {
+                        LbKey.NAME: teamMember[MatchKey.NAME],
+                        LbKey.WINS: player[LbKey.WINS] + win,
+                        LbKey.LOSSES: player[LbKey.LOSSES] + loss,
+                        LbKey.MATCHES: player[LbKey.MATCHES] + 1,
+                        LbKey.WIN_PERC: player[LbKey.WIN_PERC],
+                    }
 
-                total_wins = int(updated_player[LbKey.WINS])
-                total_matches = int(updated_player[LbKey.MATCHES])
-                updated_player[LbKey.WIN_PERC] = float("{:.2f}".format(total_wins / total_matches))
+                    total_wins = int(updated_player[LbKey.WINS])
+                    total_matches = int(updated_player[LbKey.MATCHES])
+                    updated_player[LbKey.WIN_PERC] = float("{:.2f}".format(total_wins / total_matches))
 
-                leaderboard.update(updated_player, doc_ids=[player.doc_id])
+                    leaderboard.update(updated_player, doc_ids=[player.doc_id])
 
     activeMatches.remove(doc_ids=[match.doc_id])
     sorted_lb = sorted(leaderboard.all(), key=lambda x: (x[LbKey.WINS], x[LbKey.WIN_PERC]), reverse=True)

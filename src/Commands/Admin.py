@@ -154,13 +154,23 @@ def brokenQueue(player: Member, roles: List[Role]) -> Embed:
     )
 
 
-async def forceReport(mentions: List[Member], roles: List[Role], lbChannel: Channel, *arg) -> Embed:
+async def forceReport(mentions: str, roles: List[Role], lbChannel: Channel, *arg) -> Embed:
     if (Queue.isBotAdmin(roles)):
-        if (len(mentions) == 1):
-            if (len(arg) == 2 and (str(arg[1]).lower() == Team.BLUE or str(arg[1]).lower() == Team.ORANGE)):
 
-                player = mentions[0]
-                msg = reportMatch(player, arg[1], True)
+        if (len(arg) > 0 and "<@!" in arg[0]):
+            split = mentions.split("<@!")
+            if (len(arg) == 2 and str(arg[1]).lower() == Team.BLUE):
+                player_id = split[1][:-6]
+            elif(len(arg) == 2 and str(arg[1]).lower() == Team.ORANGE):
+                player_id = split[1][:-8]
+            else:
+                return ErrorEmbed(
+                    title="You Must Report A Valid Team",
+                    desc="You did not supply a valid team to report."
+                )
+
+            if (player_id.isdigit()):
+                msg = reportMatch(player_id, arg[1], True)
 
                 if (":x:" in msg):
                     return ErrorEmbed(
@@ -182,12 +192,12 @@ async def forceReport(mentions: List[Member], roles: List[Role], lbChannel: Chan
                 )
             else:
                 return ErrorEmbed(
-                    title="You Must Report A Valid Team",
-                    desc="You did not supply a valid team to report."
+                    title="Did Not Mention a Player",
+                    desc="You must mention one player who is in the match you want to report."
                 )
         else:
-            return ErrorEmbed(
-                title="Could Not Report The Match",
+            ErrorEmbed(
+                title="Did Not Mention a Player",
                 desc="You must mention one player who is in the match you want to report."
             )
     else:
