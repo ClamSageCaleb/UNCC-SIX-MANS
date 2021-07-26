@@ -159,9 +159,9 @@ async def forceReport(mentions: str, roles: List[Role], lbChannel: Channel, *arg
 
         if (len(arg) > 0 and "<@!" in arg[0]):
             split = mentions.split("<@!")
-            if (len(arg) == 2 and str(arg[1]).lower() == Team.BLUE):
+            if (str(arg[1]).lower() == Team.BLUE):
                 player_id = split[1][:-6]
-            elif(len(arg) == 2 and str(arg[1]).lower() == Team.ORANGE):
+            elif(str(arg[1]).lower() == Team.ORANGE):
                 player_id = split[1][:-8]
             else:
                 return ErrorEmbed(
@@ -179,10 +179,10 @@ async def forceReport(mentions: str, roles: List[Role], lbChannel: Channel, *arg
                     except Exception as e:
                         print("! Norm does not have access to update the leaderboard.", e)
 
-                return AdminEmbed(
-                    title="Match Force Reported Successfully",
-                    desc="You may now re-queue."
-                )
+                    return AdminEmbed(
+                        title="Match Force Reported Successfully",
+                        desc="You may now re-queue."
+                    )
             else:
                 return ErrorEmbed(
                     title="Did Not Mention a Player",
