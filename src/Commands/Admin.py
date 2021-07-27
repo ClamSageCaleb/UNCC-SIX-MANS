@@ -157,7 +157,7 @@ def brokenQueue(player: Member, roles: List[Role]) -> Embed:
 async def forceReport(mentions: str, roles: List[Role], lbChannel: Channel, *arg) -> Embed:
     if (Queue.isBotAdmin(roles)):
 
-        if (len(arg) > 0 and "<@!" in arg[0]):
+        if (len(arg) == 2 and "<@!" in arg[0]):
             split = mentions.split("<@!")
             if (str(arg[1]).lower() == Team.BLUE):
                 player_id = split[1][:-6]
