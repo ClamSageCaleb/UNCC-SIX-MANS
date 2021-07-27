@@ -79,6 +79,9 @@ valid_commands = [
     "rank",
     "rankings",
     "stonks",
+    "forceReport",
+    "fr",
+    "force"
 ]
 
 
@@ -354,6 +357,11 @@ async def showLeaderboard(ctx, *arg):
 @client.command(name="brokenq", aliases=["requeue", "re-q"], pass_context=True)
 async def removeLastPoppedQueue(ctx):
     await sendMessage(ctx, Admin.brokenQueue(ctx.message.author, ctx.message.author.roles), "queue")
+
+
+@client.command(name="forceReport", aliases=["fr", "force"], pass_context=True)
+async def forceReport(ctx, *arg):
+    await ctx.send(embed=await Admin.forceReport(ctx.message.content, ctx.message.author.roles, LB_CHANNEL, *arg))
 
 
 @client.command(name="clear", aliases=["clr", "reset"], pass_context=True)
