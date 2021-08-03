@@ -1,5 +1,5 @@
 import AWSHelper as AWS
-from DataFiles import leaderboard, activeMatches
+from DataFiles import leaderboard, activeMatches, getMMRMultiplier
 from Types import BallChaser, BallChaserKey, Team, MatchKey, LbKey
 from discord import Member
 from json import dumps
@@ -109,6 +109,7 @@ def reportMatch(player: Union[Member, str], whoWon: Team, adminOverride: bool = 
 
     # report confirmed
     matchMMR = Points.calculateMMR(match)
+    mmr_multiplier = getMMRMultiplier()
 
     if (report_confirm_success or adminOverride == True):
         for key in match:
@@ -120,7 +121,7 @@ def reportMatch(player: Union[Member, str], whoWon: Team, adminOverride: bool = 
                 ):
                     win = 1
                     loss = 0
-                    mmr = matchMMR
+                    mmr = matchMMR * mmr_multiplier
                 else:
                     win = 0
                     loss = 1

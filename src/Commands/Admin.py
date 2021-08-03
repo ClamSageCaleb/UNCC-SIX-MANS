@@ -2,6 +2,7 @@ from CheckForUpdates import updateBot
 from EmbedHelper import AdminEmbed, ErrorEmbed, QueueUpdateEmbed, CaptainsRandomHelpEmbed
 from Leaderboard import brokenQueue as lbBrokenQueue
 from typing import List
+from Points import mmrMultiplier
 from Types import Team
 from bot import __version__
 from discord import Role, Embed, Member, channel as Channel
@@ -197,6 +198,29 @@ async def forceReport(mentions: str, roles: List[Role], lbChannel: Channel, *arg
         return ErrorEmbed(
             title="Permission Denied",
             desc="You do not have the strength to force report matches. Ask an admin if you need to force report a match." # noqa
+        )
+
+
+def multiplier(roles: List[Role], *arg) -> Embed:
+    if (Queue.isBotAdmin(roles)):
+        value: str = arg[0]
+        if (value.isdigit()):
+            num = int(arg[0])
+            if (num > 0):
+                multiplier = mmrMultiplier(num)
+                return AdminEmbed(
+                    title="MMR Multiplied",
+                    desc="The MMR gain has been multiplied by a factor of " + str(multiplier)
+                )
+        else:
+            return ErrorEmbed(
+                title="Not a Valid Number",
+                desc="You must enter a positve whole number"
+            )
+    else:
+        return ErrorEmbed(
+            title="Permission Denied",
+            desc="You do not have the strength to multiply MMR."
         )
 
 
