@@ -63,3 +63,13 @@ def getMMRMultiplier() -> int:
         multiplier = json.load(config)["mmr_multiplier"]
 
     return multiplier
+
+
+def updateMMRMultiplier(newMultiplier: int) -> int:
+    with open(configPath, "r") as configFile:
+        config = json.load(configFile)
+        config["mmr_multiplier"] = newMultiplier
+    with open(configPath, "w") as configFile:
+        json.dump(config, configFile, indent=2)
+
+    return newMultiplier
