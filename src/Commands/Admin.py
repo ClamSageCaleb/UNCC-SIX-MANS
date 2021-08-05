@@ -2,13 +2,13 @@ from CheckForUpdates import updateBot
 from EmbedHelper import AdminEmbed, ErrorEmbed, QueueUpdateEmbed, CaptainsRandomHelpEmbed
 from Leaderboard import brokenQueue as lbBrokenQueue
 from typing import List
-from Points import mmrMultiplier
 from Types import Team
 from bot import __version__
 from discord import Role, Embed, Member, channel as Channel
 import Queue
 from Commands.Utils import updateLeaderboardChannel
 from Leaderboard import reportMatch
+from DataFiles import updateMMRMultiplier
 
 
 def update(roles: List[Role]) -> Embed:
@@ -203,19 +203,25 @@ async def forceReport(mentions: str, roles: List[Role], lbChannel: Channel, *arg
 
 def multiplier(roles: List[Role], *arg) -> Embed:
     if (Queue.isBotAdmin(roles)):
-        value: str = arg[0]
-        if (value.isdigit()):
-            num = int(arg[0])
-            if (num > 0):
-                multiplier = mmrMultiplier(num)
-                return AdminEmbed(
-                    title="MMR Multiplied",
-                    desc="The MMR gain has been multiplied by a factor of " + str(multiplier)
-                )
-        else:
+        try:
+            value = float(arg[0])
+        except ValueError:
+            updateMMRMultiplier(1.0)
             return ErrorEmbed(
                 title="Not a Valid Number",
-                desc="You must enter a positve whole number"
+                desc="You must enter a positve number."
+            )
+        if (value > 0):
+            multiplier = updateMMRMultiplier(value)
+            return AdminEmbed(
+                title="MMR Multiplied",
+                desc="The MMR gain has been multiplied by a factor of " + str(multiplier)
+            )
+        else:
+            updateMMRMultiplier(1.0)
+            return ErrorEmbed(
+                title="MMR Multiplier Defaulted",
+                desc="The MMR multiplier has been defaulted to 1."
             )
     else:
         return ErrorEmbed(

@@ -58,14 +58,14 @@ def getChannelIds() -> dict:
         }
 
 
-def getMMRMultiplier() -> int:
+def getMMRMultiplier() -> float:
     with open(configPath, "r") as config:
         multiplier = json.load(config)["mmr_multiplier"]
 
     return multiplier
 
 
-def updateMMRMultiplier(newMultiplier: int) -> int:
+def updateMMRMultiplier(newMultiplier: float) -> float:
     with open(configPath, "r") as configFile:
         config = json.load(configFile)
         config["mmr_multiplier"] = newMultiplier

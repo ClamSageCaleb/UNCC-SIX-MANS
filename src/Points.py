@@ -1,16 +1,5 @@
 from tinydb.table import Document
 from Types import Team, MatchKey
-from DataFiles import getMMRMultiplier, updateMMRMultiplier
-
-
-def mmrMultiplier(multiplier: int) -> int:
-    if (multiplier > 0):
-        updateMMRMultiplier(multiplier)
-        return multiplier
-
-    else:
-        curr_multiplier = getMMRMultiplier()
-        return curr_multiplier
 
 
 def calculateMMR(match: Document) -> int:
