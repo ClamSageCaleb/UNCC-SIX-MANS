@@ -163,18 +163,11 @@ def randomPop() -> Tuple[List[BallChaser], List[BallChaser]]:
     return blueTeam, orangeTeam
 
 
-def getTop2() -> List[Document]:
-    top2 = []
-    sorted_MMRList = sorted(currQueue.all(), key=lambda x: (x[BallChaserKey.MMR]), reverse=True)
-    top2.extend([sorted_MMRList[0], sorted_MMRList[1]])
-
-    return top2
-
-
 def captainsPop() -> Tuple[BallChaser, BallChaser]:
     if (not queueAlreadyPopped()):
 
-        top2 = getTop2()
+        sorted_MMRList = sorted(currQueue.all(), key=lambda x: (x[BallChaserKey.MMR]), reverse=True)
+        top2 = sorted_MMRList[0:2]
         random.shuffle(top2)
 
         orangeCapDoc = top2[0]
