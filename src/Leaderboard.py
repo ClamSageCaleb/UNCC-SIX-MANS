@@ -7,6 +7,7 @@ from tinydb import where
 from tinydb.table import Document
 from typing import List, Union
 import concurrent.futures
+import Points
 
 
 sorted_lb = None
@@ -51,6 +52,18 @@ def getBallChaser(player: int) -> BallChaser:
     return member
 
 
+def getPlayerMMR(player: Union[Member, BallChaser]) -> int:
+    '''
+        Returns the MMR of the player if they exist, otherwise returns 100
+    '''
+    member = leaderboard.get(doc_id=player.id)
+
+    if (member):
+        return member[LbKey.MMR]
+    else:
+        return 100
+
+
 def reportConfirm(player: BallChaser, match: Document, whoWon: Team) -> bool:
     # If first responder or a winning team disagreement, we update the report
     if (
@@ -89,9 +102,13 @@ def reportMatch(player: Union[Member, str], whoWon: Team, adminOverride: bool = 
     player = BallChaser(
         name=foundPlayer[MatchKey.NAME],
         id=foundPlayer[MatchKey.ID],
+        mmr=foundPlayer[MatchKey.MMR],
         team=foundPlayer[MatchKey.TEAM]
     )
     report_confirm_success = reportConfirm(player, match, whoWon)
+
+    # report confirmed
+    matchMMR = Points.calculateMMR(match)
 
     if (report_confirm_success or adminOverride == True):
         for key in match:
@@ -103,15 +120,18 @@ def reportMatch(player: Union[Member, str], whoWon: Team, adminOverride: bool = 
                 ):
                     win = 1
                     loss = 0
+                    mmr = matchMMR
                 else:
                     win = 0
                     loss = 1
+                    mmr = -matchMMR
 
                 player = leaderboard.get(doc_id=teamMember[MatchKey.ID])
                 if (not player):
                     leaderboard.insert(Document({
                         LbKey.ID: teamMember[MatchKey.ID],
                         LbKey.NAME: teamMember[MatchKey.NAME],
+                        LbKey.MMR: 100 + mmr,
                         LbKey.WINS: win,
                         LbKey.LOSSES: loss,
                         LbKey.MATCHES: 1,
@@ -120,6 +140,7 @@ def reportMatch(player: Union[Member, str], whoWon: Team, adminOverride: bool = 
                 else:
                     updated_player = {
                         LbKey.NAME: teamMember[MatchKey.NAME],
+                        LbKey.MMR: max(player[LbKey.MMR] + mmr, 0),
                         LbKey.WINS: player[LbKey.WINS] + win,
                         LbKey.LOSSES: player[LbKey.LOSSES] + loss,
                         LbKey.MATCHES: player[LbKey.MATCHES] + 1,
@@ -136,7 +157,7 @@ def reportMatch(player: Union[Member, str], whoWon: Team, adminOverride: bool = 
         return report_confirm_success
 
     activeMatches.remove(doc_ids=[match.doc_id])
-    sorted_lb = sorted(leaderboard.all(), key=lambda x: (x[LbKey.WINS], x[LbKey.WIN_PERC]), reverse=True)
+    sorted_lb = sorted(leaderboard.all(), key=lambda x: (x[LbKey.MMR], x[LbKey.WINS], x[LbKey.WIN_PERC]), reverse=True)
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         executor.submit(AWS.writeRemoteLeaderboard, dumps(sorted_lb))
@@ -158,7 +179,7 @@ def makePretty(player_index: int, player: BallChaser) -> str:
 def showLeaderboard(player: str = None, limit: int = None) -> str or List[str]:
     global sorted_lb
     if (not sorted_lb):
-        sorted_lb = sorted(leaderboard.all(), key=lambda x: (x[LbKey.WINS], x[LbKey.WIN_PERC]), reverse=True)
+        sorted_lb = sorted(leaderboard.all(), key=lambda x: (x[LbKey.MMR], x[LbKey.WINS], x[LbKey.WIN_PERC]), reverse=True) # noqa
 
     if (player):
         player_data = leaderboard.get(doc_id=int(player))

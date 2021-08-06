@@ -7,6 +7,7 @@ import random
 from tinydb import where
 from tinydb.table import Document
 from typing import Tuple, List, Union
+import Leaderboard
 
 
 '''
@@ -78,8 +79,9 @@ def getQueueTimeRemaining(player: BallChaser) -> int:
 
 def addToQueue(player: Member, mins_to_queue_for: int = 60) -> None:
     new_player = BallChaser(
-        str(player),
-        player.id,
+        id=player.id,
+        name=str(player),
+        mmr=Leaderboard.getPlayerMMR(player),
         queueTime=(datetime.now() + timedelta(minutes=mins_to_queue_for))
     )
     currQueue.insert(Document(new_player.toJSON(), doc_id=new_player.id))
@@ -130,7 +132,7 @@ def getQueueList(mentionPlayers: bool = False, includeTimes: bool = True, separa
                 minutes_diff = getQueueTimeRemaining(player)
                 player_name += " (" + str(minutes_diff) + " mins)"
             if (includeLetters):
-                player_name = letters[i] + " " + player_name
+                player_name = letters[i] + " (" + str(Leaderboard.getPlayerMMR(player)) + ") " + player_name
             playerList.append(player_name)
         i += 1
 
@@ -163,11 +165,15 @@ def randomPop() -> Tuple[List[BallChaser], List[BallChaser]]:
 
 def captainsPop() -> Tuple[BallChaser, BallChaser]:
     if (not queueAlreadyPopped()):
-        orangeCapDoc = random.sample(currQueue.all(), 1)[0]
+
+        sorted_MMRList = sorted(currQueue.all(), key=lambda x: (x[BallChaserKey.MMR]), reverse=True)
+        top2 = sorted_MMRList[0:2]
+        random.shuffle(top2)
+
+        orangeCapDoc = top2[0]
         orangeCap = BallChaser.fromDocument(orangeCapDoc)
         currQueue.update({BallChaserKey.IS_CAP: True, BallChaserKey.TEAM: Team.ORANGE}, doc_ids=[orangeCapDoc.doc_id])
-
-        blueCapDoc = random.choice(currQueue.search(where(BallChaserKey.IS_CAP) == False))
+        blueCapDoc = top2[1]
         blueCap = BallChaser.fromDocument(blueCapDoc)
         currQueue.update({BallChaserKey.IS_CAP: True, BallChaserKey.TEAM: Team.BLUE}, doc_ids=[blueCapDoc.doc_id])
     else:
@@ -177,7 +183,6 @@ def captainsPop() -> Tuple[BallChaser, BallChaser]:
         blueCap = BallChaser.fromDocument(
             currQueue.get((where(BallChaserKey.TEAM) == Team.BLUE) & (where(BallChaserKey.IS_CAP) == True))
         )
-
     return blueCap, orangeCap
 
 
