@@ -8,7 +8,7 @@ from discord import Role, Embed, Member, channel as Channel
 import Queue
 from Commands.Utils import updateLeaderboardChannel
 from Leaderboard import reportMatch
-from DataFiles import updateMMRMultiplier
+from DataFiles import getMMRMultiplier, updateMMRMultiplier
 
 
 def update(roles: List[Role]) -> Embed:
@@ -206,7 +206,6 @@ def multiplier(roles: List[Role], *arg) -> Embed:
         try:
             value = float(arg[0])
         except ValueError:
-            updateMMRMultiplier(1.0)
             return ErrorEmbed(
                 title="Not a Valid Number",
                 desc="You must enter a positve number."
@@ -215,13 +214,13 @@ def multiplier(roles: List[Role], *arg) -> Embed:
             multiplier = updateMMRMultiplier(value)
             return AdminEmbed(
                 title="MMR Multiplied",
-                desc="The MMR gain has been multiplied by a factor of " + str(multiplier)
+                desc="The MMR gain has been multiplied by a factor of **" + str(multiplier) + "**."
             )
         else:
-            updateMMRMultiplier(1.0)
+            multiplier = getMMRMultiplier()
             return ErrorEmbed(
-                title="MMR Multiplier Defaulted",
-                desc="The MMR multiplier has been defaulted to 1."
+                title="MMR Multiplier is Negative",
+                desc="You entered a negative number. The multiplier remains as **" + str(multiplier) + "**."
             )
     else:
         return ErrorEmbed(

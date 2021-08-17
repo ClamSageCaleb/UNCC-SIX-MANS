@@ -154,7 +154,12 @@ def Furry() -> str:
 
 
 def Don() -> str:
-    return("Daffy and Giddy's teammate.")
+    return("Looks like Freddie Benson.\n"
+           "Can be identified by these phrases:\n"
+           "“Actually get dusted.”\n"
+           "“We're not here to take part, we're here to take over.”\n"
+           "- Any mention of Connolly's on Fifth\n"
+           "- Ending a sentence with the word “boy” in an Irish accent.")
 
 
 def Daffy() -> str:
