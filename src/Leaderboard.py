@@ -1,5 +1,5 @@
 import AWSHelper as AWS
-from DataFiles import leaderboard, activeMatches
+from DataFiles import leaderboard, activeMatches, getMMRMultiplier
 from Types import BallChaser, BallChaserKey, Team, MatchKey, LbKey
 from discord import Member
 from json import dumps
@@ -109,6 +109,7 @@ def reportMatch(player: Union[Member, str], whoWon: Team, adminOverride: bool = 
 
     # report confirmed
     matchMMR = Points.calculateMMR(match)
+    mmr_multiplier = getMMRMultiplier()
 
     if (report_confirm_success or adminOverride == True):
         for key in match:
@@ -120,7 +121,7 @@ def reportMatch(player: Union[Member, str], whoWon: Team, adminOverride: bool = 
                 ):
                     win = 1
                     loss = 0
-                    mmr = matchMMR
+                    mmr = matchMMR * mmr_multiplier
                 else:
                     win = 0
                     loss = 1
@@ -131,7 +132,7 @@ def reportMatch(player: Union[Member, str], whoWon: Team, adminOverride: bool = 
                     leaderboard.insert(Document({
                         LbKey.ID: teamMember[MatchKey.ID],
                         LbKey.NAME: teamMember[MatchKey.NAME],
-                        LbKey.MMR: 100 + mmr,
+                        LbKey.MMR: 100 + int(mmr),
                         LbKey.WINS: win,
                         LbKey.LOSSES: loss,
                         LbKey.MATCHES: 1,
@@ -140,7 +141,7 @@ def reportMatch(player: Union[Member, str], whoWon: Team, adminOverride: bool = 
                 else:
                     updated_player = {
                         LbKey.NAME: teamMember[MatchKey.NAME],
-                        LbKey.MMR: max(player[LbKey.MMR] + mmr, 0),
+                        LbKey.MMR: max(player[LbKey.MMR] + int(mmr), 0),
                         LbKey.WINS: player[LbKey.WINS] + win,
                         LbKey.LOSSES: player[LbKey.LOSSES] + loss,
                         LbKey.MATCHES: player[LbKey.MATCHES] + 1,

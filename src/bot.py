@@ -81,7 +81,11 @@ valid_commands = [
     "stonks",
     "forceReport",
     "fr",
-    "force"
+    "force",
+    "mmrMultiplier",
+    "mmr",
+    "multiplier",
+    "multiply"
 ]
 
 
@@ -362,6 +366,11 @@ async def removeLastPoppedQueue(ctx):
 @client.command(name="forceReport", aliases=["fr", "force"], pass_context=True)
 async def forceReport(ctx, *arg):
     await ctx.send(embed=await Admin.forceReport(ctx.message.content, ctx.message.author.roles, LB_CHANNEL, *arg))
+
+
+@client.command(name="mmrMultiplier", aliases=["mmr", "multiplier", "multiply"], pass_context=True)
+async def mmrMultiplier(ctx, *arg):
+    await ctx.send(embed=Admin.multiplier(ctx.message.author.roles, *arg))
 
 
 @client.command(name="clear", aliases=["clr", "reset"], pass_context=True)

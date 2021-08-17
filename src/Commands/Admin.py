@@ -8,6 +8,7 @@ from discord import Role, Embed, Member, channel as Channel
 import Queue
 from Commands.Utils import updateLeaderboardChannel
 from Leaderboard import reportMatch
+from DataFiles import getMMRMultiplier, updateMMRMultiplier
 
 
 def update(roles: List[Role]) -> Embed:
@@ -197,6 +198,34 @@ async def forceReport(mentions: str, roles: List[Role], lbChannel: Channel, *arg
         return ErrorEmbed(
             title="Permission Denied",
             desc="You do not have the strength to force report matches. Ask an admin if you need to force report a match." # noqa
+        )
+
+
+def multiplier(roles: List[Role], *arg) -> Embed:
+    if (Queue.isBotAdmin(roles)):
+        try:
+            value = float(arg[0])
+        except ValueError:
+            return ErrorEmbed(
+                title="Not a Valid Number",
+                desc="You must enter a positve number."
+            )
+        if (value > 0):
+            multiplier = updateMMRMultiplier(value)
+            return AdminEmbed(
+                title="MMR Multiplied",
+                desc="The MMR gain has been multiplied by a factor of **" + str(multiplier) + "**."
+            )
+        else:
+            multiplier = getMMRMultiplier()
+            return ErrorEmbed(
+                title="MMR Multiplier is Negative",
+                desc="You entered a negative number. The multiplier remains as **" + str(multiplier) + "**."
+            )
+    else:
+        return ErrorEmbed(
+            title="Permission Denied",
+            desc="You do not have the strength to multiply MMR."
         )
 
 

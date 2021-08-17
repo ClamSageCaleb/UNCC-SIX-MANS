@@ -20,7 +20,8 @@ if (not path.exists(configPath)):
             "token": "",
             "queue_channels": [],
             "report_channels": [],
-            "leaderboard_channel": -1
+            "leaderboard_channel": -1,
+            "mmr_multiplier": 1
         }
         json.dump(blankConfigFile, config)
 
@@ -55,3 +56,20 @@ def getChannelIds() -> dict:
             "report_channels": config["report_channels"],  # list of int
             "leaderboard_channel": config["leaderboard_channel"],  # int
         }
+
+
+def getMMRMultiplier() -> float:
+    with open(configPath, "r") as config:
+        multiplier = json.load(config)["mmr_multiplier"]
+
+    return multiplier
+
+
+def updateMMRMultiplier(newMultiplier: float) -> float:
+    with open(configPath, "r") as configFile:
+        config = json.load(configFile)
+        config["mmr_multiplier"] = newMultiplier
+    with open(configPath, "w") as configFile:
+        json.dump(config, configFile, indent=2)
+
+    return newMultiplier
