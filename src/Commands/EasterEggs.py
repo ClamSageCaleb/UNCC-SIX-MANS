@@ -154,10 +154,10 @@ def Furry() -> str:
 
 
 def Don() -> str:
-    return("Looks like Freddie Benson.\n"
-           "Can be identified by these phrases:\n"
+    return("Can be identified by these phrases:\n"
            "“Actually get dusted.”\n"
            "“We're not here to take part, we're here to take over.”\n"
+           "“Dusted Cooter.”\n"
            "- Any mention of Connolly's on Fifth\n"
            "- Ending a sentence with the word “boy” in an Irish accent.")
 
