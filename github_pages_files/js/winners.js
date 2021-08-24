@@ -1,7 +1,7 @@
 $(() => loadWinners())
 
 const dataBaseUrl = "https://uncc-six-mans.s3.amazonaws.com/winners"
-const winnerFiles = ["summer2020.json", "fall2020.json", "spring2021.json"]
+const winnerFiles = ["summer2020.json", "fall2020.json", "spring2021.json", "summer2021.json"]
 
 const loadWinners = async () => {
   for (const file of winnerFiles) {
