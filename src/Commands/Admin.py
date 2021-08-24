@@ -122,12 +122,12 @@ def kick(mentions: str, roles: List[Role], *arg) -> Embed:
     return edited_embed
 
 
-def brokenQueue(player: Member, roles: List[Role]) -> Embed:
+def brokenQueue(mentions: List[Member], roles: List[Role]) -> Embed:
     """
         Removes the active match that the author is in.
 
         Parameters:
-            player: dicord.Member - The author of the message.
+            mentions: List[dicord.Member] - The mentions in the message.
             roles: List[discord.Role] - The roles of the author of the message.
 
         Returns:
@@ -139,7 +139,16 @@ def brokenQueue(player: Member, roles: List[Role]) -> Embed:
             desc="You do not have permission to break the queue without a majority."
         )
 
+    if (len(mentions) != 1):
+        print(mentions)
+        return ErrorEmbed(
+            title="Mention 1 Player",
+            desc="You must mention one player in the active match to remove that match."
+        )
+
+    player = mentions[0]
     msg = lbBrokenQueue(player)
+
     if (":white_check_mark:" in msg):
         return QueueUpdateEmbed(
             title="Popped Queue Removed",
@@ -197,7 +206,7 @@ async def forceReport(mentions: str, roles: List[Role], lbChannel: Channel, *arg
     else:
         return ErrorEmbed(
             title="Permission Denied",
-            desc="You do not have the strength to force report matches. Ask an admin if you need to force report a match." # noqa
+            desc="You do not have the strength to force report matches. Ask an admin if you need to force report a match."  # noqa
         )
 
 

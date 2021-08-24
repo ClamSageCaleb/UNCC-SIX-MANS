@@ -59,10 +59,15 @@ def getChannelIds() -> dict:
 
 
 def getMMRMultiplier() -> float:
+    config_dict = {}
     with open(configPath, "r") as config:
-        multiplier = json.load(config)["mmr_multiplier"]
+        config_dict = json.load(config)
 
-    return multiplier
+    if ("mmr_multiplier" in config_dict):
+        return config_dict["mmr_multiplier"]
+    else:
+        updateMMRMultiplier(1.0)
+        return 1.0
 
 
 def updateMMRMultiplier(newMultiplier: float) -> float:

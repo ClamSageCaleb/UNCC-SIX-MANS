@@ -126,6 +126,7 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
     if (not user.bot):
         channel = client.get_channel(QUEUE_CH_IDS[0])
 
+        # TODO: Does not work unless the admin is part of the match. Use !brokenq @playerInQueue instead
         # regional indicator b
         if (reaction.emoji == "\U0001F1E7" and Queue.isBotAdmin(user.roles)):
             await reaction.message.delete()
@@ -360,7 +361,12 @@ async def showLeaderboard(ctx, *arg):
 
 @client.command(name="brokenq", aliases=["requeue", "re-q"], pass_context=True)
 async def removeLastPoppedQueue(ctx):
-    await sendMessage(ctx, Admin.brokenQueue(ctx.message.author, ctx.message.author.roles), "queue")
+    # you have to reply to Norm for the command to go through which adds the bot to the list of mentions
+    # these two lines filter out any bots in the list of mentions to make sure we only have mentioned players
+    filtered_mentions_filter = filter(lambda m: not m.bot, ctx.message.mentions)
+    filtered_mentions = list(filtered_mentions_filter)
+
+    await sendMessage(ctx, Admin.brokenQueue(filtered_mentions, ctx.message.author.roles), "queue")
 
 
 @client.command(name="forceReport", aliases=["fr", "force"], pass_context=True)
