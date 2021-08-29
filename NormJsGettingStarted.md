@@ -16,7 +16,9 @@ Once Node and NPM are installed, open a terminal and navigate to the root of thi
 
 ## Running the Code
 
-Now that our dependencies are installed we can run the code. Type `npm start` to start the bot. To stop the bot hit `CTRL + C` in the running terminal.
+Discord bots require a token to authenticate with the Discord API. The token should **never** be put into source control. Create a file named `.env` in the root of the project. In this new file add `token=[Discord token]` where `[Discord token]` is the token for your bot.
+
+Now that our dependencies are installed and our token is set we can run the code. Type `npm start` to start the bot. To stop the bot hit `CTRL + C` in the running terminal.
 
 This project uses ESLint to enforce code standards and consistency. To check to see if there are any issues run the command `npm run lint`. If the report concludes without any errors or warnings then there are no issues. Otherwise, it will include the error and file name to check.
 
