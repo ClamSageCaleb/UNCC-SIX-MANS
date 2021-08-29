@@ -1,4 +1,4 @@
-name: Lint, Test, and Build NormJs
+name: Run tests
 
 on:
   pull_request:
