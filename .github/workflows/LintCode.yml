@@ -5,9 +5,12 @@ name: Lint Project Files
 
 on:
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
-jobs:  
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
   build:
     name: Verify Python files pass linting
     runs-on: ubuntu-latest
@@ -30,3 +33,26 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+  lint-normjs:
+    name: Lint NormJS
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.6.0
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Eslint
+        uses: wearerequired/lint-action@v1
+        with:
+          eslint: true
+          eslint_extensions: ts
+          continue_on_error: false
+          check_name: "${linter} ${dir}"
