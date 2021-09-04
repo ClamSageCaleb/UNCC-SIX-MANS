@@ -5,3 +5,4 @@ release/
 .vscode/settings.json
 node_modules
 build
+coverage
