@@ -3,7 +3,7 @@ import { BallChaserPageProperties, UpdateBallChaserOptions } from "./types";
 import { DateTime } from "luxon";
 import NotionClient from "../helpers/NotionClient";
 
-class QueueRepository {
+export class QueueRepository {
   #Client: NotionClient;
 
   constructor() {

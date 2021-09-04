@@ -7,13 +7,9 @@ import { DateTime } from "luxon";
 import { PropertyValueMap } from "@notionhq/client/build/src/api-endpoints";
 import BallChaser from "../../types/BallChaser";
 import { Page } from "@notionhq/client/build/src/api-types";
+import { QueueRepository as QueueRepositoryClass } from "./QueueRepository";
 
 jest.mock("../helpers/NotionClient");
-
-beforeEach(() => {
-  jest.clearAllMocks();
-  process.env.notion_queue_id = faker.datatype.uuid();
-});
 
 interface MockBallChaserResponse {
   mockBallChaser: BallChaser;
@@ -81,12 +77,21 @@ function verifyBallChasersAreEqual(expectedBallChaser: BallChaser, actualBallCha
   expect(actualBallChaser!.isCap).toBe(expectedBallChaser.isCap);
 }
 
+let QueueRepository: QueueRepositoryClass;
+
+beforeEach(async () => {
+  jest.clearAllMocks();
+  process.env.notion_queue_id = faker.datatype.uuid();
+
+  // have to wait to import the repo until after the test environment variable is set
+  const ImportedRepo = await import("./QueueRepository");
+  QueueRepository = ImportedRepo.default; // <- get the default export from the imported file
+});
+
 describe("Queue Repository tests", () => {
   it("gets BallChaser using ID when BallChaser exists", async () => {
     const { mockBallChaser: expectedBallChaser, mockPage } = getMockBallChaser();
     mocked(NotionClient.prototype.getById).mockResolvedValue(mockPage);
-
-    const { default: QueueRepository } = await import("./QueueRepository");
 
     const actualBallChaser = await QueueRepository.getBallChaserInQueue(expectedBallChaser.id);
 
@@ -95,7 +100,6 @@ describe("Queue Repository tests", () => {
 
   it("returns null when BallChaser does not exist with ID", async () => {
     mocked(NotionClient.prototype.getById).mockResolvedValue(null);
-    const { default: QueueRepository } = await import("./QueueRepository");
 
     const actualBallChaser = await QueueRepository.getBallChaserInQueue(faker.datatype.uuid());
     expect(actualBallChaser).toBeNull();
@@ -106,7 +110,6 @@ describe("Queue Repository tests", () => {
     const { mockBallChaser: expectedBallChaser2, mockPage: mockPage2 } = getMockBallChaser();
 
     mocked(NotionClient.prototype.getAll).mockResolvedValue([mockPage1, mockPage2]);
-    const { default: QueueRepository } = await import("./QueueRepository");
 
     const actualBallChasers = await QueueRepository.getAllBallChasersInQueue();
 
@@ -120,7 +123,6 @@ describe("Queue Repository tests", () => {
     mocked(NotionClient.prototype.getById).mockResolvedValue(mockPage);
     const mockRemove = mocked(NotionClient.prototype.remove);
 
-    const { default: QueueRepository } = await import("./QueueRepository");
     await expect(QueueRepository.removeBallChaserFromQueue(mockBallChaser.id)).resolves.not.toThrowError();
     expect(mockRemove).toHaveBeenCalledTimes(1);
   });
@@ -128,17 +130,15 @@ describe("Queue Repository tests", () => {
   it("throws error when trying to remove BallChaser when not found in queue", async () => {
     mocked(NotionClient.prototype.getById).mockResolvedValue(null);
 
-    const { default: QueueRepository } = await import("./QueueRepository");
     await expect(QueueRepository.removeBallChaserFromQueue(faker.datatype.uuid())).rejects.toThrowError();
   });
 
   it("removes all BallChasers in queue", async () => {
     const { mockBallChaser: expectedBallChaser1, mockPage: mockPage1 } = getMockBallChaser();
     const { mockBallChaser: expectedBallChaser2, mockPage: mockPage2 } = getMockBallChaser();
-    const mockRemove = mocked(NotionClient.prototype.remove);
 
+    const mockRemove = mocked(NotionClient.prototype.remove);
     mocked(NotionClient.prototype.getAll).mockResolvedValue([mockPage1, mockPage2]);
-    const { default: QueueRepository } = await import("./QueueRepository");
 
     await expect(QueueRepository.removeAllBallChasersFromQueue()).resolves.not.toThrowError();
     expect(mockRemove).toHaveBeenCalledTimes(1);
@@ -152,8 +152,6 @@ describe("Queue Repository tests", () => {
     const { mockBallChaser: updatedBallChaser, mockBallChaserPageProperties: updateProperties } = getMockBallChaser();
     mocked(NotionClient.prototype.getById).mockResolvedValue(mockPage);
     const mockUpdate = mocked(NotionClient.prototype.update);
-
-    const { default: QueueRepository } = await import("./QueueRepository");
 
     const updateOptions: UpdateBallChaserOptions = {
       id: mockBallChaser.id,
@@ -177,8 +175,6 @@ describe("Queue Repository tests", () => {
     mocked(NotionClient.prototype.getById).mockResolvedValue(null);
     const mockUpdate = mocked(NotionClient.prototype.update);
 
-    const { default: QueueRepository } = await import("./QueueRepository");
-
     await expect(QueueRepository.updateBallChaserInQueue(mockBallChaser)).rejects.toThrowError();
     expect(mockUpdate).not.toHaveBeenCalled();
   });
@@ -187,8 +183,6 @@ describe("Queue Repository tests", () => {
     mocked(NotionClient.prototype.getById).mockResolvedValue(null);
     const { mockBallChaser, mockBallChaserPageProperties } = getMockBallChaser();
     const mockInsert = mocked(NotionClient.prototype.insert);
-
-    const { default: QueueRepository } = await import("./QueueRepository");
 
     await QueueRepository.addBallChaserToQueue(mockBallChaser);
     expect(mockInsert).toHaveBeenCalledTimes(1);
@@ -199,8 +193,6 @@ describe("Queue Repository tests", () => {
     const { mockBallChaser, mockPage } = getMockBallChaser();
     mocked(NotionClient.prototype.getById).mockResolvedValue(mockPage);
     const mockInsert = mocked(NotionClient.prototype.insert);
-
-    const { default: QueueRepository } = await import("./QueueRepository");
 
     await expect(QueueRepository.addBallChaserToQueue(mockBallChaser)).rejects.toThrowError();
     expect(mockInsert).not.toHaveBeenCalled();
