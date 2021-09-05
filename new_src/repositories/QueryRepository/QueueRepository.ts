@@ -55,7 +55,7 @@ export class QueueRepository {
         isCap: properties.isCap.checkbox,
         mmr: properties.MMR.number,
         name: properties.Name.rich_text[0].text.content,
-        queueTime: DateTime.fromISO(properties.QueueTime.date.start),
+        queueTime: DateTime.fromISO(properties.QueueTime.date.start, { locale: "America/New York" }),
         team: properties.Team.select ? properties.Team.select.name : undefined,
       });
     });
@@ -79,10 +79,10 @@ export class QueueRepository {
    * Removes all BallChasers currently in the queue.
    */
   async removeAllBallChasersFromQueue(): Promise<void> {
-    const allBallChasers = await this.getAllBallChasersInQueue();
-    const allBallChaserIds = allBallChasers.map((ballChaser) => ballChaser.id);
+    const allBallChaserPages = await this.#Client.getAll();
+    const allBallChaserPageIds = allBallChaserPages.map((allBallChaserPage) => allBallChaserPage.id);
 
-    await this.#Client.remove(allBallChaserIds);
+    await this.#Client.remove(allBallChaserPageIds);
   }
 
   /**
@@ -103,7 +103,9 @@ export class QueueRepository {
       Name: options.name
         ? { rich_text: [{ text: { content: options.name }, type: "text" }] }
         : existingBallChaserProps.Name,
-      QueueTime: options.queueTime ? { date: { start: options.queueTime.toISO() } } : existingBallChaserProps.QueueTime,
+      QueueTime: options.queueTime
+        ? { date: { start: options.queueTime.toUTC().toISO() } }
+        : existingBallChaserProps.QueueTime,
       Team: options.team ? { select: { name: options.team } } : existingBallChaserProps.Team,
       isCap: options.isCap ? { checkbox: options.isCap } : existingBallChaserProps.isCap,
     };
@@ -126,7 +128,13 @@ export class QueueRepository {
       ID: { rich_text: [{ text: { content: ballChaserToAdd.id }, type: "text" }] },
       MMR: { number: ballChaserToAdd.mmr },
       Name: { rich_text: [{ text: { content: ballChaserToAdd.name }, type: "text" }] },
-      QueueTime: { date: { start: ballChaserToAdd.queueTime ? ballChaserToAdd.queueTime.toISO() : "" } },
+      QueueTime: {
+        date: {
+          start: ballChaserToAdd.queueTime
+            ? ballChaserToAdd.queueTime.set({ millisecond: 0, second: 0 }).toUTC().toISO()
+            : "",
+        },
+      },
       Team: { select: ballChaserToAdd.team ? { name: ballChaserToAdd.team } : null },
       isCap: { checkbox: ballChaserToAdd.isCap },
     };

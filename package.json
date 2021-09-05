@@ -6,7 +6,8 @@
     "lint": "eslint \"new_src/**/*.ts\"",
     "build": "tsc",
     "start": "ts-node-dev -r dotenv/config new_src/index.ts",
-    "test": "jest"
+    "test": "jest --testPathIgnorePatterns='__tests__'",
+    "integration": "jest --testPathPattern='__tests__' --setupFiles dotenv/config"
   },
   "repository": {
     "type": "git",

@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 
-interface NewBallChaserFields {
+export interface NewBallChaserFields {
   id: string;
   mmr: number;
   name: string;

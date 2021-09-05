@@ -23,7 +23,7 @@ function getMockBallChaser(): MockBallChaserResponse {
     isCap: false,
     mmr: faker.datatype.number(),
     name: faker.random.word(),
-    queueTime: DateTime.fromJSDate(faker.date.future()),
+    queueTime: DateTime.fromJSDate(faker.date.future()).set({ millisecond: 0, second: 0 }),
     team: undefined,
   });
 
@@ -38,7 +38,7 @@ function getMockBallChaser(): MockBallChaserResponse {
       rich_text: [{ text: { content: mockBallChaser.name }, type: "text" }],
     },
     QueueTime: {
-      date: { start: mockBallChaser.queueTime!.toISO() },
+      date: { start: mockBallChaser.queueTime!.toUTC().toISO() },
     },
     Team: { select: null },
     isCap: { checkbox: mockBallChaser.isCap },
@@ -134,17 +134,15 @@ describe("Queue Repository tests", () => {
   });
 
   it("removes all BallChasers in queue", async () => {
-    const { mockBallChaser: expectedBallChaser1, mockPage: mockPage1 } = getMockBallChaser();
-    const { mockBallChaser: expectedBallChaser2, mockPage: mockPage2 } = getMockBallChaser();
+    const { mockPage: mockPage1 } = getMockBallChaser();
+    const { mockPage: mockPage2 } = getMockBallChaser();
 
     const mockRemove = mocked(NotionClient.prototype.remove);
     mocked(NotionClient.prototype.getAll).mockResolvedValue([mockPage1, mockPage2]);
 
     await expect(QueueRepository.removeAllBallChasersFromQueue()).resolves.not.toThrowError();
     expect(mockRemove).toHaveBeenCalledTimes(1);
-    expect(mockRemove).toHaveBeenLastCalledWith(
-      expect.arrayContaining([expectedBallChaser1.id, expectedBallChaser2.id])
-    );
+    expect(mockRemove).toHaveBeenLastCalledWith(expect.arrayContaining([mockPage1.id, mockPage2.id]));
   });
 
   it("updates BallChaser when BallChaser is found", async () => {
