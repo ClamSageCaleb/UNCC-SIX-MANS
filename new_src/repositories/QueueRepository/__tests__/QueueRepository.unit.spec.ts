@@ -9,7 +9,7 @@ import BallChaser from "../../../types/BallChaser";
 import { Page } from "@notionhq/client/build/src/api-types";
 import { QueueRepository as QueueRepositoryClass } from "../QueueRepository";
 
-jest.mock("../helpers/NotionClient");
+jest.mock("../../helpers/NotionClient");
 
 interface MockBallChaserResponse {
   mockBallChaser: BallChaser;
