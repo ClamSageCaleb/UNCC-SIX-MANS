@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as faker from "faker";
 import { mocked } from "ts-jest/utils";
-import { BallChaserPageProperties, UpdateBallChaserOptions } from "./types";
-import NotionClient from "../helpers/NotionClient";
+import { BallChaserPageProperties, UpdateBallChaserOptions } from "../types";
+import NotionClient from "../../helpers/NotionClient";
 import { DateTime } from "luxon";
 import { PropertyValueMap } from "@notionhq/client/build/src/api-endpoints";
-import BallChaser from "../../types/BallChaser";
+import BallChaser from "../../../types/BallChaser";
 import { Page } from "@notionhq/client/build/src/api-types";
-import { QueueRepository as QueueRepositoryClass } from "./QueueRepository";
+import { QueueRepository as QueueRepositoryClass } from "../QueueRepository";
 
 jest.mock("../helpers/NotionClient");
 
@@ -84,7 +84,7 @@ beforeEach(async () => {
   process.env.notion_queue_id = faker.datatype.uuid();
 
   // have to wait to import the repo until after the test environment variable is set
-  const ImportedRepo = await import("./QueueRepository");
+  const ImportedRepo = await import("../QueueRepository");
   QueueRepository = ImportedRepo.default; // <- get the default export from the imported file
 });
 

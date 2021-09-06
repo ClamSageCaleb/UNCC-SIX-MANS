@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import BallChaser, { NewBallChaserFields } from "../../types/BallChaser";
+import BallChaser, { NewBallChaserFields } from "../../../types/BallChaser";
 import * as faker from "faker";
 import { DateTime } from "luxon";
-import QueueRepository from "../QueryRepository";
+import QueueRepository from "..";
 
 function verifyBallChasersAreEqual(expectedBallChaser: BallChaser, actualBallChaser: BallChaser): void {
   expect(actualBallChaser).not.toBeNull();
