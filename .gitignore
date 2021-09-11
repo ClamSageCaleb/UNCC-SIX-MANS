@@ -1,7 +1,8 @@
-.env
+.env*
 __pycache__/
 data/
 release/
 .vscode/settings.json
 node_modules
 build
+coverage
