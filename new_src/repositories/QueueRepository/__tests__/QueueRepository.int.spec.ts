@@ -1,28 +1,31 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import BallChaser, { NewBallChaserFields } from "../../../types/BallChaser";
+import BallChaser, { NewBallChaserFields, Team } from "../../../types/BallChaser";
 import * as faker from "faker";
 import { DateTime } from "luxon";
 import QueueRepository from "..";
 
 function verifyBallChasersAreEqual(expectedBallChaser: BallChaser, actualBallChaser: BallChaser): void {
   expect(actualBallChaser).not.toBeNull();
-  expect(actualBallChaser!.id).toBe(expectedBallChaser.id);
-  expect(actualBallChaser!.mmr).toBe(expectedBallChaser.mmr);
-  expect(actualBallChaser!.name).toBe(expectedBallChaser.name);
-  expect(actualBallChaser!.queueTime!.toISO()).toBe(expectedBallChaser.queueTime!.toISO());
-  expect(actualBallChaser!.team).toBe(expectedBallChaser.team);
-  expect(actualBallChaser!.isCap).toBe(expectedBallChaser.isCap);
+  expect(actualBallChaser?.id).toBe(expectedBallChaser.id);
+  expect(actualBallChaser?.mmr).toBe(expectedBallChaser.mmr);
+  expect(actualBallChaser?.name).toBe(expectedBallChaser.name);
+  expect(actualBallChaser?.queueTime?.toISO()).toBe(expectedBallChaser.queueTime?.toISO());
+  expect(actualBallChaser?.team).toBe(expectedBallChaser.team);
+  expect(actualBallChaser?.isCap).toBe(expectedBallChaser.isCap);
 }
+
+// set timeout to be longer (10 seconds) since async requests take extra time
+jest.setTimeout(10000);
 
 describe("Queue Repository Integration Tests", () => {
   it("add and remove BallChaser from queue", async () => {
     const ballChaserToAdd = new BallChaser({
       id: faker.random.word(),
-      isCap: false,
+      isCap: true,
       mmr: faker.datatype.number(),
       name: faker.random.word(),
       queueTime: DateTime.now().set({ millisecond: 0, second: 0 }),
-      team: undefined,
+      team: faker.random.arrayElement([Team.Blue, Team.Orange]),
     });
 
     await QueueRepository.addBallChaserToQueue(ballChaserToAdd);
@@ -90,6 +93,23 @@ describe("Queue Repository Integration Tests", () => {
 
     const updatedBallChaser = await QueueRepository.getBallChaserInQueue(ballChaserToAdd.id);
     verifyBallChasersAreEqual(expectedUpdatedBallChaser, updatedBallChaser!);
+
+    await QueueRepository.removeBallChaserFromQueue(ballChaserToAdd.id);
+    const retrievedBallChaserShouldBeNull = await QueueRepository.getBallChaserInQueue(ballChaserToAdd.id);
+    expect(retrievedBallChaserShouldBeNull).toBeNull();
+  });
+
+  it("can handle team and queueTime being null", async () => {
+    const ballChaserToAdd = new BallChaser({
+      id: faker.random.word(),
+      mmr: faker.datatype.number(),
+      name: faker.random.word(),
+    });
+
+    await QueueRepository.addBallChaserToQueue(ballChaserToAdd);
+    const retrievedBallChaser = await QueueRepository.getBallChaserInQueue(ballChaserToAdd.id);
+
+    verifyBallChasersAreEqual(ballChaserToAdd, retrievedBallChaser!);
 
     await QueueRepository.removeBallChaserFromQueue(ballChaserToAdd.id);
     const retrievedBallChaserShouldBeNull = await QueueRepository.getBallChaserInQueue(ballChaserToAdd.id);

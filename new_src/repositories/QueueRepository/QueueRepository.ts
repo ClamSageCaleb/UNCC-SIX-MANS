@@ -32,7 +32,7 @@ export class QueueRepository {
         isCap: properties.isCap.checkbox,
         mmr: properties.MMR.number,
         name: properties.Name.rich_text[0].text.content,
-        queueTime: DateTime.fromISO(properties.QueueTime.date.start),
+        queueTime: properties.QueueTime.date ? DateTime.fromISO(properties.QueueTime.date.start) : undefined,
         team: properties.Team.select ? properties.Team.select.name : undefined,
       });
     } else {
@@ -55,7 +55,9 @@ export class QueueRepository {
         isCap: properties.isCap.checkbox,
         mmr: properties.MMR.number,
         name: properties.Name.rich_text[0].text.content,
-        queueTime: DateTime.fromISO(properties.QueueTime.date.start, { locale: "America/New York" }),
+        queueTime: properties.QueueTime.date
+          ? DateTime.fromISO(properties.QueueTime.date.start, { locale: "America/New York" })
+          : undefined,
         team: properties.Team.select ? properties.Team.select.name : undefined,
       });
     });
@@ -129,11 +131,9 @@ export class QueueRepository {
       MMR: { number: ballChaserToAdd.mmr },
       Name: { rich_text: [{ text: { content: ballChaserToAdd.name }, type: "text" }] },
       QueueTime: {
-        date: {
-          start: ballChaserToAdd.queueTime
-            ? ballChaserToAdd.queueTime.set({ millisecond: 0, second: 0 }).toUTC().toISO()
-            : "",
-        },
+        date: ballChaserToAdd.queueTime
+          ? { start: ballChaserToAdd.queueTime.set({ millisecond: 0, second: 0 }).toUTC().toISO() }
+          : null,
       },
       Team: { select: ballChaserToAdd.team ? { name: ballChaserToAdd.team } : null },
       isCap: { checkbox: ballChaserToAdd.isCap },

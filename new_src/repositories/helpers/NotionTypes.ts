@@ -15,5 +15,5 @@ export interface NotionSelectElement<T> {
 }
 
 export interface NotionDateElement {
-  date: { start: string };
+  date: { start: string } | null;
 }

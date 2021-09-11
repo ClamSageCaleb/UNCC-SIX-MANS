@@ -4,7 +4,7 @@ export interface NewBallChaserFields {
   id: string;
   mmr: number;
   name: string;
-  isCap: boolean;
+  isCap?: boolean;
   team?: Team;
   queueTime?: DateTime;
 }
@@ -26,7 +26,7 @@ class BallChaser {
     this.#id = ballChaserFields.id;
     this.#mmr = ballChaserFields.mmr;
     this.#name = ballChaserFields.name;
-    this.#isCap = ballChaserFields.isCap;
+    this.#isCap = ballChaserFields.isCap ?? false;
     this.#team = ballChaserFields.team ?? null;
     this.#queueTime = ballChaserFields.queueTime ?? null;
   }
