@@ -85,7 +85,9 @@ valid_commands = [
     "mmrMultiplier",
     "mmr",
     "multiplier",
-    "multiply"
+    "multiply",
+    "bq",
+    "mentionBrokenQueue"
 ]
 
 
@@ -361,6 +363,11 @@ async def showLeaderboard(ctx, *arg):
 @client.command(name="brokenq", aliases=["requeue", "re-q"], pass_context=True)
 async def removeLastPoppedQueue(ctx):
     await sendMessage(ctx, Admin.brokenQueue(ctx.message.author, ctx.message.author.roles), "queue")
+
+
+@client.command(name="bq", aliases=["mentionBrokenQueue"], pass_context=True)
+async def mentionBQ(ctx, *arg):
+    await ctx.send(embed=await Admin.mentionBrokenQueue(ctx.message.content, ctx.message.author.roles, *arg))
 
 
 @client.command(name="forceReport", aliases=["fr", "force"], pass_context=True)
