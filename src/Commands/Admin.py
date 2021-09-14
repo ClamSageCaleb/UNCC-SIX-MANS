@@ -177,6 +177,10 @@ async def mentionBrokenQueue(mentions: str, roles: List[Role], *arg) -> Embed:
                     title="Could Not Remove Queue",
                     desc=msg
                 )
+        return ErrorEmbed(
+            title="Did Not Mention a Player",
+            desc="Please mention a player in an active match to broken queue."
+        )
     return ErrorEmbed(
         title="Permission Denied",
         desc="You do not have the leg strength to kick other players."
