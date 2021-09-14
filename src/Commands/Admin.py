@@ -1,6 +1,6 @@
 from CheckForUpdates import updateBot
 from EmbedHelper import AdminEmbed, ErrorEmbed, QueueUpdateEmbed, CaptainsRandomHelpEmbed
-from Leaderboard import brokenQueue as lbBrokenQueue, getBallChaser
+from Leaderboard import brokenQueue as lbBrokenQueue
 from typing import List
 from Types import Team
 from bot import __version__
@@ -155,7 +155,7 @@ def brokenQueue(player: Member, roles: List[Role]) -> Embed:
     )
 
 
-def mentionBrokenQueue(mentions: str, roles: List[Role], *arg) -> Embed:
+async def mentionBrokenQueue(mentions: str, roles: List[Role], *arg) -> Embed:
     if (Queue.isBotAdmin(roles)):
 
         if (len(arg) > 0 and "<@!" in arg[0]):
@@ -163,8 +163,7 @@ def mentionBrokenQueue(mentions: str, roles: List[Role], *arg) -> Embed:
             player_id = split[1][:-1]
 
             if (player_id.isdigit()):
-                member = getBallChaser(player_id)
-                msg = lbBrokenQueue(member)
+                msg = lbBrokenQueue(player_id)
                 if (":white_check_mark:" in msg):
                     return QueueUpdateEmbed(
                         title="Popped Queue Removed",
@@ -178,6 +177,10 @@ def mentionBrokenQueue(mentions: str, roles: List[Role], *arg) -> Embed:
                     title="Could Not Remove Queue",
                     desc=msg
                 )
+    return ErrorEmbed(
+        title="Permission Denied",
+        desc="You do not have the leg strength to kick other players."
+    )
 
 
 async def forceReport(mentions: str, roles: List[Role], lbChannel: Channel, *arg) -> Embed:
