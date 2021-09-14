@@ -183,7 +183,7 @@ async def mentionBrokenQueue(mentions: str, roles: List[Role], *arg) -> Embed:
         )
     return ErrorEmbed(
         title="Permission Denied",
-        desc="You do not have the leg strength to kick other players."
+        desc="You do not have permission to break the queue without a majority."
     )
 
 

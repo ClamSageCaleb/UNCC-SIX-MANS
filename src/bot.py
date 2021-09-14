@@ -366,7 +366,7 @@ async def removeLastPoppedQueue(ctx):
 
 
 @client.command(name="bq", aliases=["mentionBrokenQueue"], pass_context=True)
-async def mentionBQ(ctx, *arg):
+async def mentionBq(ctx, *arg):
     await ctx.send(embed=await Admin.mentionBrokenQueue(ctx.message.content, ctx.message.author.roles, *arg))
 
 
