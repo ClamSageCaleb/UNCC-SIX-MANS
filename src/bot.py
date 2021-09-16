@@ -2,7 +2,7 @@ __author__ = "Caleb Smith / Twan / Matt Wells (Tux) / Austin Baker (h)"
 __copyright__ = "Copyright 2019, MIT License"
 __credits__ = "Caleb Smith / Twan / Matt Wells (Tux) / Austin Baker (h)"
 __license__ = "MIT"
-__version__ = "7.1.0"
+__version__ = "7.1.1"
 __maintainer__ = "Caleb Smith / Twan / Matt Wells (Tux) / Austin Baker (h)"
 __email__ = "caleb.benjamin9799@gmail.com / unavailable / mattwells878@gmail.com / noise.9no@gmail.com"
 
@@ -85,7 +85,9 @@ valid_commands = [
     "mmrMultiplier",
     "mmr",
     "multiplier",
-    "multiply"
+    "multiply",
+    "bq",
+    "mentionBrokenQueue"
 ]
 
 
@@ -361,6 +363,11 @@ async def showLeaderboard(ctx, *arg):
 @client.command(name="brokenq", aliases=["requeue", "re-q"], pass_context=True)
 async def removeLastPoppedQueue(ctx):
     await sendMessage(ctx, Admin.brokenQueue(ctx.message.author, ctx.message.author.roles), "queue")
+
+
+@client.command(name="bq", aliases=["mentionBrokenQueue"], pass_context=True)
+async def mentionBq(ctx, *arg):
+    await ctx.send(embed=await Admin.mentionBrokenQueue(ctx.message.content, ctx.message.author.roles, *arg))
 
 
 @client.command(name="forceReport", aliases=["fr", "force"], pass_context=True)

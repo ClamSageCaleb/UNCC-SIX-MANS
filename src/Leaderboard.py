@@ -24,7 +24,7 @@ def startMatch(blueTeam: List[BallChaser], orangeTeam: List[BallChaser]) -> None
     activeMatches.insert(newActiveMatch)
 
 
-def brokenQueue(player: Member) -> str:
+def brokenQueue(player: Union[Member, str]) -> str:
     if (activeMatches.count(where(MatchKey.REPORTED_WINNER).exists()) == 0):
         return "There are no currently active matches."
 
