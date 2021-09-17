@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as faker from "faker";
 import { mocked } from "ts-jest/utils";
 import { BallChaserPageProperties, UpdateBallChaserOptions } from "../types";
 import NotionClient from "../../helpers/NotionClient";
 import { DateTime } from "luxon";
 import { PropertyValueMap } from "@notionhq/client/build/src/api-endpoints";
-import BallChaser from "../../../types/BallChaser";
+import { BallChaser } from "../../../types/common";
 import { Page } from "@notionhq/client/build/src/api-types";
 import { QueueRepository as QueueRepositoryClass } from "../QueueRepository";
 
@@ -18,14 +17,14 @@ interface MockBallChaserResponse {
 }
 
 function getMockBallChaser(): MockBallChaserResponse {
-  const mockBallChaser = new BallChaser({
+  const mockBallChaser: BallChaser = {
     id: faker.random.word(),
     isCap: false,
     mmr: faker.datatype.number(),
     name: faker.random.word(),
     queueTime: DateTime.fromJSDate(faker.date.future()).set({ millisecond: 0, second: 0 }),
-    team: undefined,
-  });
+    team: null,
+  };
 
   const mockBallChaserPageProperties: BallChaserPageProperties = {
     ID: {
@@ -38,6 +37,7 @@ function getMockBallChaser(): MockBallChaserResponse {
       rich_text: [{ text: { content: mockBallChaser.name }, type: "text" }],
     },
     QueueTime: {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       date: { start: mockBallChaser.queueTime!.toUTC().toISO() },
     },
     Team: { select: null },
@@ -69,12 +69,12 @@ function getMockBallChaser(): MockBallChaserResponse {
 
 function verifyBallChasersAreEqual(expectedBallChaser: BallChaser, actualBallChaser: BallChaser): void {
   expect(actualBallChaser).not.toBeNull();
-  expect(actualBallChaser!.id).toBe(expectedBallChaser.id);
-  expect(actualBallChaser!.mmr).toBe(expectedBallChaser.mmr);
-  expect(actualBallChaser!.name).toBe(expectedBallChaser.name);
-  expect(actualBallChaser!.queueTime!.toISO()).toBe(expectedBallChaser.queueTime!.toISO());
-  expect(actualBallChaser!.team).toBe(expectedBallChaser.team);
-  expect(actualBallChaser!.isCap).toBe(expectedBallChaser.isCap);
+  expect(actualBallChaser?.id).toBe(expectedBallChaser.id);
+  expect(actualBallChaser?.mmr).toBe(expectedBallChaser.mmr);
+  expect(actualBallChaser?.name).toBe(expectedBallChaser.name);
+  expect(actualBallChaser?.queueTime?.toISO()).toBe(expectedBallChaser.queueTime?.toISO());
+  expect(actualBallChaser?.team).toBe(expectedBallChaser.team);
+  expect(actualBallChaser?.isCap).toBe(expectedBallChaser.isCap);
 }
 
 let QueueRepository: QueueRepositoryClass;
@@ -95,6 +95,7 @@ describe("Queue Repository tests", () => {
 
     const actualBallChaser = await QueueRepository.getBallChaserInQueue(expectedBallChaser.id);
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     verifyBallChasersAreEqual(expectedBallChaser, actualBallChaser!);
   });
 

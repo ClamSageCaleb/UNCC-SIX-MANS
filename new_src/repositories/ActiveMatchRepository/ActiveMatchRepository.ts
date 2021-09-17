@@ -1,4 +1,4 @@
-import BallChaser from "../../types/BallChaser";
+import { BallChaser, Team } from "../../types/common";
 import generateRandomId from "../../utils/randomId";
 import NotionClient from "../helpers/NotionClient";
 import { ActiveMatchPageProperties, PlayerInActiveMatch, UpdateActiveMatchOptions } from "./types";
@@ -26,10 +26,10 @@ export class ActiveMatchRepository {
       }
 
       const newActiveMatchPage: ActiveMatchPageProperties = {
-        ID: { rich_text: [{ text: { content: ballChaser.id }, type: "text" }] },
-        MatchID: { rich_text: [{ text: { content: matchId }, type: "text" }] },
-        Reported: { select: null },
-        Team: { select: { name: ballChaser.team } },
+        ID: NotionClient.notionTextElementFromText(ballChaser.id),
+        MatchID: NotionClient.notionTextElementFromText(matchId),
+        Reported: NotionClient.notionSelectElementFromValue<Team>(null),
+        Team: NotionClient.notionSelectElementFromValue<Team>(ballChaser.team),
       };
 
       insertPromises.push(this.#Client.insert(newActiveMatchPage));
@@ -51,7 +51,7 @@ export class ActiveMatchRepository {
       filter: {
         property: "MatchID",
         text: {
-          equals: existingPlayerActiveMatchProps.MatchID.rich_text[0].text.content,
+          equals: NotionClient.textFromNotionTextElement(existingPlayerActiveMatchProps.MatchID),
         },
       },
     });
@@ -61,12 +61,10 @@ export class ActiveMatchRepository {
       const activeMatchProps = activeMatchPage.properties as unknown as ActiveMatchPageProperties;
 
       const propertiesUpdate: ActiveMatchPageProperties = {
-        ID: updates.id ? { rich_text: [{ text: { content: updates.id }, type: "text" }] } : activeMatchProps.ID,
-        MatchID: updates.matchId
-          ? { rich_text: [{ text: { content: updates.matchId }, type: "text" }] }
-          : activeMatchProps.MatchID,
-        Reported: updates.reported ? { select: null } : activeMatchProps.Reported,
-        Team: updates.team ? { select: { name: updates.team } } : activeMatchProps.Team,
+        ID: updates.id ? NotionClient.notionTextElementFromText(updates.id) : activeMatchProps.ID,
+        MatchID: updates.matchId ? NotionClient.notionTextElementFromText(updates.matchId) : activeMatchProps.MatchID,
+        Reported: updates.reported ? NotionClient.notionSelectElementFromValue<Team>(null) : activeMatchProps.Reported,
+        Team: updates.team ? NotionClient.notionSelectElementFromValue<Team>(updates.team) : activeMatchProps.Team,
       };
 
       updatePromises.push(this.#Client.update(activeMatchPage.id, propertiesUpdate));
@@ -88,7 +86,7 @@ export class ActiveMatchRepository {
       filter: {
         property: "MatchID",
         text: {
-          equals: activeMatchProps.MatchID.rich_text[0].text.content,
+          equals: NotionClient.textFromNotionTextElement(activeMatchProps.MatchID),
         },
       },
     });
@@ -107,7 +105,7 @@ export class ActiveMatchRepository {
       filter: {
         property: "MatchID",
         text: {
-          equals: existingPlayerActiveMatchProps.MatchID.rich_text[0].text.content,
+          equals: NotionClient.textFromNotionTextElement(existingPlayerActiveMatchProps.MatchID),
         },
       },
     });
@@ -115,17 +113,18 @@ export class ActiveMatchRepository {
     return allActiveMatchPages.map((page) => {
       const pageProps = page.properties as unknown as ActiveMatchPageProperties;
 
-      if (!pageProps.Team.select) {
+      const playerTeam = NotionClient.valueFromNotionSelectElement<Team>(pageProps.Team);
+      if (!playerTeam) {
         throw new Error(
           `Player with ID: ${pageProps.ID.rich_text[0].text.content} is in an active match but not on a team`
         );
       }
 
       return {
-        id: pageProps.ID.rich_text[0].text.content,
-        matchId: pageProps.MatchID.rich_text[0].text.content,
-        reported: pageProps.Reported.select?.name ?? null,
-        team: pageProps.Team.select?.name,
+        id: NotionClient.textFromNotionTextElement(pageProps.ID),
+        matchId: NotionClient.textFromNotionTextElement(pageProps.MatchID),
+        reported: NotionClient.valueFromNotionSelectElement<Team>(pageProps.Reported),
+        team: playerTeam,
       };
     });
   }

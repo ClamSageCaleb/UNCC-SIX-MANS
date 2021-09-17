@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import { Team } from "../../types/BallChaser";
+import { Team } from "../../types/common";
 import {
   NotionBooleanElement,
   NotionNumberElement,

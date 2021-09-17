@@ -1,6 +1,5 @@
-import BallChaser from "../../types/BallChaser";
+import { BallChaser, Team } from "../../types/common";
 import { BallChaserPageProperties, UpdateBallChaserOptions } from "./types";
-import { DateTime } from "luxon";
 import NotionClient from "../helpers/NotionClient";
 
 export class QueueRepository {
@@ -27,14 +26,14 @@ export class QueueRepository {
     if (ballChaserPage) {
       const properties = ballChaserPage.properties as unknown as BallChaserPageProperties;
 
-      return new BallChaser({
-        id: properties.ID.rich_text[0].text.content,
-        isCap: properties.isCap.checkbox,
-        mmr: properties.MMR.number,
-        name: properties.Name.rich_text[0].text.content,
-        queueTime: properties.QueueTime.date ? DateTime.fromISO(properties.QueueTime.date.start) : undefined,
-        team: properties.Team.select ? properties.Team.select.name : undefined,
-      });
+      return {
+        id: NotionClient.textFromNotionTextElement(properties.ID),
+        isCap: NotionClient.boolFromNotionBooleanElement(properties.isCap),
+        mmr: NotionClient.numberFromNotionNumberElement(properties.MMR),
+        name: NotionClient.textFromNotionTextElement(properties.Name),
+        queueTime: NotionClient.dateTimeFromNotionDateElement(properties.QueueTime),
+        team: NotionClient.valueFromNotionSelectElement<Team>(properties.Team),
+      };
     } else {
       return null;
     }
@@ -49,17 +48,14 @@ export class QueueRepository {
 
     return ballChaserPages.map((page) => {
       const properties = page.properties as unknown as BallChaserPageProperties;
-
-      return new BallChaser({
-        id: properties.ID.rich_text[0].text.content,
-        isCap: properties.isCap.checkbox,
-        mmr: properties.MMR.number,
-        name: properties.Name.rich_text[0].text.content,
-        queueTime: properties.QueueTime.date
-          ? DateTime.fromISO(properties.QueueTime.date.start, { locale: "America/New York" })
-          : undefined,
-        team: properties.Team.select ? properties.Team.select.name : undefined,
-      });
+      return {
+        id: NotionClient.textFromNotionTextElement(properties.ID),
+        isCap: NotionClient.boolFromNotionBooleanElement(properties.isCap),
+        mmr: NotionClient.numberFromNotionNumberElement(properties.MMR),
+        name: NotionClient.textFromNotionTextElement(properties.Name),
+        queueTime: NotionClient.dateTimeFromNotionDateElement(properties.QueueTime),
+        team: NotionClient.valueFromNotionSelectElement<Team>(properties.Team),
+      };
     });
   }
 
@@ -100,16 +96,14 @@ export class QueueRepository {
 
     const existingBallChaserProps = ballChaserPage.properties as unknown as BallChaserPageProperties;
     const propertiesUpdate: BallChaserPageProperties = {
-      ID: { rich_text: [{ text: { content: id }, type: "text" }] },
-      MMR: options.mmr ? { number: options.mmr } : existingBallChaserProps.MMR,
-      Name: options.name
-        ? { rich_text: [{ text: { content: options.name }, type: "text" }] }
-        : existingBallChaserProps.Name,
+      ID: NotionClient.notionTextElementFromText(id),
+      MMR: options.mmr ? NotionClient.notionNumberElementFromNumber(options.mmr) : existingBallChaserProps.MMR,
+      Name: options.name ? NotionClient.notionTextElementFromText(options.name) : existingBallChaserProps.Name,
       QueueTime: options.queueTime
-        ? { date: { start: options.queueTime.toUTC().toISO() } }
+        ? NotionClient.notionDateElementFromDateTime(options.queueTime)
         : existingBallChaserProps.QueueTime,
-      Team: options.team ? { select: { name: options.team } } : existingBallChaserProps.Team,
-      isCap: options.isCap ? { checkbox: options.isCap } : existingBallChaserProps.isCap,
+      Team: options.team ? NotionClient.notionSelectElementFromValue<Team>(options.team) : existingBallChaserProps.Team,
+      isCap: options.isCap ? NotionClient.notionBooleanElementFromBool(options.isCap) : existingBallChaserProps.isCap,
     };
 
     await this.#Client.update(ballChaserPage.id, propertiesUpdate);
@@ -127,16 +121,12 @@ export class QueueRepository {
     }
 
     const newBallChaserProperties: BallChaserPageProperties = {
-      ID: { rich_text: [{ text: { content: ballChaserToAdd.id }, type: "text" }] },
-      MMR: { number: ballChaserToAdd.mmr },
-      Name: { rich_text: [{ text: { content: ballChaserToAdd.name }, type: "text" }] },
-      QueueTime: {
-        date: ballChaserToAdd.queueTime
-          ? { start: ballChaserToAdd.queueTime.set({ millisecond: 0, second: 0 }).toUTC().toISO() }
-          : null,
-      },
-      Team: { select: ballChaserToAdd.team ? { name: ballChaserToAdd.team } : null },
-      isCap: { checkbox: ballChaserToAdd.isCap },
+      ID: NotionClient.notionTextElementFromText(ballChaserToAdd.id),
+      MMR: NotionClient.notionNumberElementFromNumber(ballChaserToAdd.mmr),
+      Name: NotionClient.notionTextElementFromText(ballChaserToAdd.name),
+      QueueTime: NotionClient.notionDateElementFromDateTime(ballChaserToAdd.queueTime),
+      Team: NotionClient.notionSelectElementFromValue<Team>(ballChaserToAdd.team),
+      isCap: NotionClient.notionBooleanElementFromBool(ballChaserToAdd.isCap),
     };
 
     await this.#Client.insert(newBallChaserProperties);

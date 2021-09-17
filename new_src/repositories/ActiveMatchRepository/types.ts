@@ -1,4 +1,4 @@
-import { Team } from "../../types/BallChaser";
+import { Team } from "../../types/common";
 import { NotionSelectElement, NotionTextElement } from "../helpers/NotionTypes";
 
 export interface ActiveMatchPageProperties {
