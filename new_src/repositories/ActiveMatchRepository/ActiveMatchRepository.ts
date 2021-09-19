@@ -1,6 +1,7 @@
 import { BallChaser, Team } from "../../types/common";
 import generateRandomId from "../../utils/randomId";
 import NotionClient from "../helpers/NotionClient";
+import NotionElementHelper from "../helpers/NotionElementHelper";
 import { ActiveMatchPageProperties, PlayerInActiveMatch, UpdateActiveMatchOptions } from "./types";
 
 export class ActiveMatchRepository {
@@ -26,10 +27,10 @@ export class ActiveMatchRepository {
       }
 
       const newActiveMatchPage: ActiveMatchPageProperties = {
-        ID: NotionClient.notionTextElementFromText(ballChaser.id),
-        MatchID: NotionClient.notionTextElementFromText(matchId),
-        Reported: NotionClient.notionSelectElementFromValue<Team>(null),
-        Team: NotionClient.notionSelectElementFromValue<Team>(ballChaser.team),
+        ID: NotionElementHelper.notionTextElementFromText(ballChaser.id),
+        MatchID: NotionElementHelper.notionTextElementFromText(matchId),
+        Reported: NotionElementHelper.notionSelectElementFromValue<Team>(null),
+        Team: NotionElementHelper.notionSelectElementFromValue<Team>(ballChaser.team),
       };
 
       insertPromises.push(this.#Client.insert(newActiveMatchPage));
@@ -51,7 +52,7 @@ export class ActiveMatchRepository {
       filter: {
         property: "MatchID",
         text: {
-          equals: NotionClient.textFromNotionTextElement(existingPlayerActiveMatchProps.MatchID),
+          equals: NotionElementHelper.textFromNotionTextElement(existingPlayerActiveMatchProps.MatchID),
         },
       },
     });
@@ -61,10 +62,16 @@ export class ActiveMatchRepository {
       const activeMatchProps = activeMatchPage.properties as unknown as ActiveMatchPageProperties;
 
       const propertiesUpdate: ActiveMatchPageProperties = {
-        ID: updates.id ? NotionClient.notionTextElementFromText(updates.id) : activeMatchProps.ID,
-        MatchID: updates.matchId ? NotionClient.notionTextElementFromText(updates.matchId) : activeMatchProps.MatchID,
-        Reported: updates.reported ? NotionClient.notionSelectElementFromValue<Team>(null) : activeMatchProps.Reported,
-        Team: updates.team ? NotionClient.notionSelectElementFromValue<Team>(updates.team) : activeMatchProps.Team,
+        ID: updates.id ? NotionElementHelper.notionTextElementFromText(updates.id) : activeMatchProps.ID,
+        MatchID: updates.matchId
+          ? NotionElementHelper.notionTextElementFromText(updates.matchId)
+          : activeMatchProps.MatchID,
+        Reported: updates.reported
+          ? NotionElementHelper.notionSelectElementFromValue<Team>(null)
+          : activeMatchProps.Reported,
+        Team: updates.team
+          ? NotionElementHelper.notionSelectElementFromValue<Team>(updates.team)
+          : activeMatchProps.Team,
       };
 
       updatePromises.push(this.#Client.update(activeMatchPage.id, propertiesUpdate));
@@ -86,7 +93,7 @@ export class ActiveMatchRepository {
       filter: {
         property: "MatchID",
         text: {
-          equals: NotionClient.textFromNotionTextElement(activeMatchProps.MatchID),
+          equals: NotionElementHelper.textFromNotionTextElement(activeMatchProps.MatchID),
         },
       },
     });
@@ -105,7 +112,7 @@ export class ActiveMatchRepository {
       filter: {
         property: "MatchID",
         text: {
-          equals: NotionClient.textFromNotionTextElement(existingPlayerActiveMatchProps.MatchID),
+          equals: NotionElementHelper.textFromNotionTextElement(existingPlayerActiveMatchProps.MatchID),
         },
       },
     });
@@ -113,17 +120,17 @@ export class ActiveMatchRepository {
     return allActiveMatchPages.map((page) => {
       const pageProps = page.properties as unknown as ActiveMatchPageProperties;
 
-      const playerTeam = NotionClient.valueFromNotionSelectElement<Team>(pageProps.Team);
+      const playerTeam = NotionElementHelper.valueFromNotionSelectElement<Team>(pageProps.Team);
+      const playerId = NotionElementHelper.textFromNotionTextElement(pageProps.ID);
+
       if (!playerTeam) {
-        throw new Error(
-          `Player with ID: ${pageProps.ID.rich_text[0].text.content} is in an active match but not on a team`
-        );
+        throw new Error(`Player with ID: ${playerId} is in an active match but not on a team`);
       }
 
       return {
-        id: NotionClient.textFromNotionTextElement(pageProps.ID),
-        matchId: NotionClient.textFromNotionTextElement(pageProps.MatchID),
-        reported: NotionClient.valueFromNotionSelectElement<Team>(pageProps.Reported),
+        id: NotionElementHelper.textFromNotionTextElement(pageProps.ID),
+        matchId: NotionElementHelper.textFromNotionTextElement(pageProps.MatchID),
+        reported: NotionElementHelper.valueFromNotionSelectElement<Team>(pageProps.Reported),
         team: playerTeam,
       };
     });
