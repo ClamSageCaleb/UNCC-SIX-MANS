@@ -1,9 +1,6 @@
 import { BallChaser, Team } from "../new_src/types/common";
 import * as faker from "faker";
 import { DateTime } from "luxon";
-import { Page } from "@notionhq/client/build/src/api-types";
-import { ActiveMatchPageProperties } from "../new_src/repositories/ActiveMatchRepository/types";
-import NotionElementHelper from "../new_src/repositories/helpers/NotionElementHelper";
 
 abstract class Builder<T> {
   abstract isEqual(a: T, b: T): boolean;
@@ -55,50 +52,3 @@ class BallChaserBuilderClass extends Builder<BallChaser> {
   }
 }
 export const BallChaserBuilder = new BallChaserBuilderClass();
-
-class ActiveMatchPagePropsBuilderClass extends Builder<ActiveMatchPageProperties> {
-  isEqual(a: ActiveMatchPageProperties, b: ActiveMatchPageProperties) {
-    return a.MatchID === b.MatchID && a.ID === b.ID;
-  }
-
-  single(overrides?: Partial<ActiveMatchPageProperties>) {
-    const mockBallChaser = BallChaserBuilder.single();
-
-    return {
-      ID: NotionElementHelper.notionTextElementFromText(mockBallChaser.id),
-      MatchID: NotionElementHelper.notionTextElementFromText(faker.datatype.uuid()),
-      Reported: NotionElementHelper.notionSelectElementFromValue<Team>(
-        faker.random.arrayElement([Team.Blue, Team.Orange])
-      ),
-      Team: NotionElementHelper.notionSelectElementFromValue<Team>(mockBallChaser.team),
-      ...overrides,
-    };
-  }
-}
-export const ActiveMatchPagePropsBuilder = new ActiveMatchPagePropsBuilderClass();
-
-class PageBuilderClass extends Builder<Page> {
-  isEqual(a: Page, b: Page) {
-    return a.id === b.id;
-  }
-
-  single(overrides?: Partial<Page>) {
-    return {
-      archived: false,
-      cover: null,
-      created_time: "",
-      icon: null,
-      id: faker.datatype.uuid(),
-      last_edited_time: "",
-      object: "page",
-      parent: {
-        database_id: "",
-        type: "database_id",
-      },
-      properties: {},
-      url: "",
-      ...overrides,
-    } as Page;
-  }
-}
-export const PageBuilder = new PageBuilderClass();
