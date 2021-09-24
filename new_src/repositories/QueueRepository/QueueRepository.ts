@@ -106,9 +106,10 @@ export class QueueRepository {
       Team: options.team
         ? NotionElementHelper.notionSelectElementFromValue<Team>(options.team)
         : existingBallChaserProps.Team,
-      isCap: options.isCap
-        ? NotionElementHelper.notionBooleanElementFromBool(options.isCap)
-        : existingBallChaserProps.isCap,
+      isCap:
+        options.isCap !== undefined
+          ? NotionElementHelper.notionBooleanElementFromBool(options.isCap)
+          : existingBallChaserProps.isCap,
     };
 
     await this.#Client.update(ballChaserPage.id, propertiesUpdate);

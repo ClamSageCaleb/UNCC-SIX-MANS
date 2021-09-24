@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { BallChaser, Team } from "../../../types/common";
+import { BallChaser } from "../../../types/common";
 import * as faker from "faker";
-import { DateTime } from "luxon";
 import QueueRepository from "..";
+import { BallChaserBuilder } from "../../../../.jest/Builder";
 
 function verifyBallChasersAreEqual(expectedBallChaser: BallChaser, actualBallChaser: BallChaser): void {
   expect(actualBallChaser).not.toBeNull();
@@ -19,14 +18,7 @@ jest.setTimeout(10000);
 
 describe("Queue Repository Integration Tests", () => {
   it("add and remove BallChaser from queue", async () => {
-    const ballChaserToAdd = {
-      id: faker.random.word(),
-      isCap: true,
-      mmr: faker.datatype.number(),
-      name: faker.random.word(),
-      queueTime: DateTime.now().set({ millisecond: 0, second: 0 }),
-      team: faker.random.arrayElement([Team.Blue, Team.Orange]),
-    };
+    const ballChaserToAdd = BallChaserBuilder.single();
 
     await QueueRepository.addBallChaserToQueue(ballChaserToAdd);
     const retrievedBallChaser = await QueueRepository.getBallChaserInQueue(ballChaserToAdd.id);
@@ -39,22 +31,7 @@ describe("Queue Repository Integration Tests", () => {
   });
 
   it("gets and removes everyone from the queue", async () => {
-    const ballChaserToAdd1: BallChaser = {
-      id: faker.random.word(),
-      isCap: false,
-      mmr: faker.datatype.number(),
-      name: faker.random.word(),
-      queueTime: DateTime.now().set({ millisecond: 0, second: 0 }),
-      team: null,
-    };
-    const ballChaserToAdd2: BallChaser = {
-      id: faker.random.word(),
-      isCap: false,
-      mmr: faker.datatype.number(),
-      name: faker.random.word(),
-      queueTime: DateTime.now().set({ millisecond: 0, second: 0 }),
-      team: null,
-    };
+    const [ballChaserToAdd1, ballChaserToAdd2] = BallChaserBuilder.many(2);
 
     const addOne = QueueRepository.addBallChaserToQueue(ballChaserToAdd1);
     const addTwo = QueueRepository.addBallChaserToQueue(ballChaserToAdd2);
@@ -69,14 +46,7 @@ describe("Queue Repository Integration Tests", () => {
   });
 
   it("can update a BallChaser", async () => {
-    const ballChaserToAdd: BallChaser = {
-      id: faker.random.word(),
-      isCap: false,
-      mmr: faker.datatype.number(),
-      name: faker.random.word(),
-      queueTime: DateTime.now().set({ millisecond: 0, second: 0 }),
-      team: null,
-    };
+    const ballChaserToAdd = BallChaserBuilder.single();
 
     await QueueRepository.addBallChaserToQueue(ballChaserToAdd);
 
@@ -99,14 +69,7 @@ describe("Queue Repository Integration Tests", () => {
   });
 
   it("can handle team and queueTime being null", async () => {
-    const ballChaserToAdd: BallChaser = {
-      id: faker.random.word(),
-      isCap: false,
-      mmr: faker.datatype.number(),
-      name: faker.random.word(),
-      queueTime: null,
-      team: null,
-    };
+    const ballChaserToAdd = BallChaserBuilder.single({ queueTime: null });
 
     await QueueRepository.addBallChaserToQueue(ballChaserToAdd);
     const retrievedBallChaser = await QueueRepository.getBallChaserInQueue(ballChaserToAdd.id);

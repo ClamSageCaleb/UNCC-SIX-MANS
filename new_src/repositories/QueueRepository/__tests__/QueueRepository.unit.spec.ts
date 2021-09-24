@@ -2,49 +2,28 @@ import * as faker from "faker";
 import { mocked } from "ts-jest/utils";
 import { BallChaserPageProperties, UpdateBallChaserOptions } from "../types";
 import NotionClient from "../../helpers/NotionClient";
-import { DateTime } from "luxon";
 import { PropertyValueMap } from "@notionhq/client/build/src/api-endpoints";
-import { BallChaser } from "../../../types/common";
+import { BallChaser, Team } from "../../../types/common";
 import { Page } from "@notionhq/client/build/src/api-types";
 import { QueueRepository as QueueRepositoryClass } from "../QueueRepository";
+import NotionElementHelper from "../../helpers/NotionElementHelper";
+import { BallChaserBuilder } from "../../../../.jest/Builder";
 
 jest.mock("../../helpers/NotionClient");
 
-interface MockBallChaserResponse {
-  mockBallChaser: BallChaser;
-  mockBallChaserPageProperties: BallChaserPageProperties;
-  mockPage: Page;
+function makeProps(ballChaser: BallChaser = BallChaserBuilder.single()): BallChaserPageProperties {
+  return {
+    ID: NotionElementHelper.notionTextElementFromText(ballChaser.id),
+    MMR: NotionElementHelper.notionNumberElementFromNumber(ballChaser.mmr),
+    Name: NotionElementHelper.notionTextElementFromText(ballChaser.name),
+    QueueTime: NotionElementHelper.notionDateElementFromDateTime(ballChaser.queueTime),
+    Team: NotionElementHelper.notionSelectElementFromValue<Team>(ballChaser.team),
+    isCap: NotionElementHelper.notionBooleanElementFromBool(ballChaser.isCap),
+  };
 }
 
-function getMockBallChaser(): MockBallChaserResponse {
-  const mockBallChaser: BallChaser = {
-    id: faker.random.word(),
-    isCap: false,
-    mmr: faker.datatype.number(),
-    name: faker.random.word(),
-    queueTime: DateTime.fromJSDate(faker.date.future()).set({ millisecond: 0, second: 0 }),
-    team: null,
-  };
-
-  const mockBallChaserPageProperties: BallChaserPageProperties = {
-    ID: {
-      rich_text: [{ text: { content: mockBallChaser.id }, type: "text" }],
-    },
-    MMR: {
-      number: mockBallChaser.mmr,
-    },
-    Name: {
-      rich_text: [{ text: { content: mockBallChaser.name }, type: "text" }],
-    },
-    QueueTime: {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      date: { start: mockBallChaser.queueTime!.toUTC().toISO() },
-    },
-    Team: { select: null },
-    isCap: { checkbox: mockBallChaser.isCap },
-  };
-
-  const mockPage: Page = {
+function makePage(mockBallChaserPageProperties: BallChaserPageProperties = makeProps()): Page {
+  return {
     archived: false,
     cover: null,
     created_time: "",
@@ -58,12 +37,6 @@ function getMockBallChaser(): MockBallChaserResponse {
     },
     properties: mockBallChaserPageProperties as unknown as PropertyValueMap,
     url: "",
-  };
-
-  return {
-    mockBallChaser,
-    mockBallChaserPageProperties,
-    mockPage,
   };
 }
 
@@ -90,12 +63,12 @@ beforeEach(async () => {
 
 describe("Queue Repository tests", () => {
   it("gets BallChaser using ID when BallChaser exists", async () => {
-    const { mockBallChaser: expectedBallChaser, mockPage } = getMockBallChaser();
+    const expectedBallChaser = BallChaserBuilder.single();
+    const mockPage = makePage(makeProps(expectedBallChaser));
     mocked(NotionClient.prototype.getById).mockResolvedValue(mockPage);
 
     const actualBallChaser = await QueueRepository.getBallChaserInQueue(expectedBallChaser.id);
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     verifyBallChasersAreEqual(expectedBallChaser, actualBallChaser!);
   });
 
@@ -107,8 +80,10 @@ describe("Queue Repository tests", () => {
   });
 
   it("retrieves all BallChasers in queue", async () => {
-    const { mockBallChaser: expectedBallChaser1, mockPage: mockPage1 } = getMockBallChaser();
-    const { mockBallChaser: expectedBallChaser2, mockPage: mockPage2 } = getMockBallChaser();
+    const expectedBallChaser1 = BallChaserBuilder.single();
+    const mockPage1 = makePage(makeProps(expectedBallChaser1));
+    const expectedBallChaser2 = BallChaserBuilder.single();
+    const mockPage2 = makePage(makeProps(expectedBallChaser2));
 
     mocked(NotionClient.prototype.getAll).mockResolvedValue([mockPage1, mockPage2]);
 
@@ -120,7 +95,9 @@ describe("Queue Repository tests", () => {
   });
 
   it("removes BallChaser when found in queue", async () => {
-    const { mockBallChaser, mockPage } = getMockBallChaser();
+    const mockBallChaser = BallChaserBuilder.single();
+    const mockPage = makePage(makeProps(mockBallChaser));
+
     mocked(NotionClient.prototype.getById).mockResolvedValue(mockPage);
     const mockRemove = mocked(NotionClient.prototype.remove);
 
@@ -135,8 +112,8 @@ describe("Queue Repository tests", () => {
   });
 
   it("removes all BallChasers in queue", async () => {
-    const { mockPage: mockPage1 } = getMockBallChaser();
-    const { mockPage: mockPage2 } = getMockBallChaser();
+    const mockPage1 = makePage();
+    const mockPage2 = makePage();
 
     const mockRemove = mocked(NotionClient.prototype.remove);
     mocked(NotionClient.prototype.getAll).mockResolvedValue([mockPage1, mockPage2]);
@@ -147,8 +124,12 @@ describe("Queue Repository tests", () => {
   });
 
   it("updates BallChaser when BallChaser is found", async () => {
-    const { mockBallChaser, mockPage } = getMockBallChaser();
-    const { mockBallChaser: updatedBallChaser, mockBallChaserPageProperties: updateProperties } = getMockBallChaser();
+    const mockBallChaser = BallChaserBuilder.single();
+    const mockPage = makePage(makeProps(mockBallChaser));
+
+    const updatedBallChaser = BallChaserBuilder.single({ id: mockBallChaser.id });
+    const updateProperties = makeProps(updatedBallChaser);
+
     mocked(NotionClient.prototype.getById).mockResolvedValue(mockPage);
     const mockUpdate = mocked(NotionClient.prototype.update);
 
@@ -161,16 +142,13 @@ describe("Queue Repository tests", () => {
       team: updatedBallChaser.team,
     };
 
-    // overwrite random id with the one we need for matching
-    updateProperties.ID.rich_text[0].text.content = mockBallChaser.id;
-
     await QueueRepository.updateBallChaserInQueue(updateOptions);
     expect(mockUpdate).toHaveBeenCalledTimes(1);
     expect(mockUpdate).toHaveBeenLastCalledWith(mockPage.id, updateProperties);
   });
 
   it("throws when player to update is not found", async () => {
-    const { mockBallChaser } = getMockBallChaser();
+    const mockBallChaser = BallChaserBuilder.single();
     mocked(NotionClient.prototype.getById).mockResolvedValue(null);
     const mockUpdate = mocked(NotionClient.prototype.update);
 
@@ -180,8 +158,10 @@ describe("Queue Repository tests", () => {
 
   it("adds BallChaser to queue", async () => {
     mocked(NotionClient.prototype.getById).mockResolvedValue(null);
-    const { mockBallChaser, mockBallChaserPageProperties } = getMockBallChaser();
     const mockInsert = mocked(NotionClient.prototype.insert);
+
+    const mockBallChaser = BallChaserBuilder.single();
+    const mockBallChaserPageProperties = makeProps(mockBallChaser);
 
     await QueueRepository.addBallChaserToQueue(mockBallChaser);
     expect(mockInsert).toHaveBeenCalledTimes(1);
@@ -189,7 +169,9 @@ describe("Queue Repository tests", () => {
   });
 
   it("throws when BallChaser already exists", async () => {
-    const { mockBallChaser, mockPage } = getMockBallChaser();
+    const mockBallChaser = BallChaserBuilder.single();
+    const mockPage = makePage(makeProps(mockBallChaser));
+
     mocked(NotionClient.prototype.getById).mockResolvedValue(mockPage);
     const mockInsert = mocked(NotionClient.prototype.insert);
 
