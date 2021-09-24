@@ -39,52 +39,76 @@ export class ActiveMatchRepository {
     await Promise.all(insertPromises);
   }
 
-  async updateAllPlayersInActiveMatch(playerInMatchId: string, updates: UpdateActiveMatchOptions): Promise<void> {
-    const playerInActiveMatchPage = await this.#Client.getById(playerInMatchId);
+  async updatePlayerInActiveMatch(playerInMatchId: string, updates: UpdateActiveMatchOptions): Promise<void> {
+    const activeMatchPage = await this.#Client.getById(playerInMatchId);
 
-    if (!playerInActiveMatchPage) {
+    if (!activeMatchPage) {
       throw new Error(`Player with ID: ${playerInMatchId} is not in an active match.`);
     }
 
-    const existingPlayerActiveMatchProps = playerInActiveMatchPage.properties as unknown as ActiveMatchPageProperties;
+    const activeMatchProps = activeMatchPage.properties as unknown as ActiveMatchPageProperties;
 
-    const allActiveMatchPages = await this.#Client.getAll({
-      filter: {
-        property: "MatchID",
-        text: {
-          equals: NotionElementHelper.textFromNotionTextElement(existingPlayerActiveMatchProps.MatchID),
-        },
-      },
-    });
+    const propertiesUpdate: ActiveMatchPageProperties = {
+      ID: updates.id ? NotionElementHelper.notionTextElementFromText(updates.id) : activeMatchProps.ID,
+      MatchID: updates.matchId
+        ? NotionElementHelper.notionTextElementFromText(updates.matchId)
+        : activeMatchProps.MatchID,
+      Reported: updates.reported
+        ? NotionElementHelper.notionSelectElementFromValue<Team>(updates.reported)
+        : activeMatchProps.Reported,
+      Team: updates.team ? NotionElementHelper.notionSelectElementFromValue<Team>(updates.team) : activeMatchProps.Team,
+    };
 
-    const updatePromises: Array<Promise<void>> = [];
-    for (const activeMatchPage of allActiveMatchPages) {
-      const activeMatchProps = activeMatchPage.properties as unknown as ActiveMatchPageProperties;
-
-      const propertiesUpdate: ActiveMatchPageProperties = {
-        ID: updates.id ? NotionElementHelper.notionTextElementFromText(updates.id) : activeMatchProps.ID,
-        MatchID: updates.matchId
-          ? NotionElementHelper.notionTextElementFromText(updates.matchId)
-          : activeMatchProps.MatchID,
-        Reported: updates.reported
-          ? NotionElementHelper.notionSelectElementFromValue<Team>(null)
-          : activeMatchProps.Reported,
-        Team: updates.team
-          ? NotionElementHelper.notionSelectElementFromValue<Team>(updates.team)
-          : activeMatchProps.Team,
-      };
-
-      updatePromises.push(this.#Client.update(activeMatchPage.id, propertiesUpdate));
-    }
-
-    await Promise.all(updatePromises);
+    await this.#Client.update(activeMatchPage.id, propertiesUpdate);
   }
+
+  // not sure we actually need this, but leaving it here in case we do
+  // async updateAllPlayersInActiveMatch(playerInMatchId: string, updates: UpdateActiveMatchOptions): Promise<void> {
+  //   const playerInActiveMatchPage = await this.#Client.getById(playerInMatchId);
+
+  //   if (!playerInActiveMatchPage) {
+  //     throw new Error(`Player with ID: ${playerInMatchId} is not in an active match.`);
+  //   }
+
+  //  const existingPlayerActiveMatchProps = playerInActiveMatchPage.properties as unknown as ActiveMatchPageProperties;
+
+  //   const allActiveMatchPages = await this.#Client.getAll({
+  //     filter: {
+  //       property: "MatchID",
+  //       text: {
+  //         equals: NotionElementHelper.textFromNotionTextElement(existingPlayerActiveMatchProps.MatchID),
+  //       },
+  //     },
+  //   });
+
+  //   const updatePromises: Array<Promise<void>> = [];
+  //   for (const activeMatchPage of allActiveMatchPages) {
+  //     const activeMatchProps = activeMatchPage.properties as unknown as ActiveMatchPageProperties;
+
+  //     const propertiesUpdate: ActiveMatchPageProperties = {
+  //       ID: updates.id ? NotionElementHelper.notionTextElementFromText(updates.id) : activeMatchProps.ID,
+  //       MatchID: updates.matchId
+  //         ? NotionElementHelper.notionTextElementFromText(updates.matchId)
+  //         : activeMatchProps.MatchID,
+  //       Reported: updates.reported
+  //         ? NotionElementHelper.notionSelectElementFromValue<Team>(updates.reported)
+  //         : activeMatchProps.Reported,
+  //       Team: updates.team
+  //         ? NotionElementHelper.notionSelectElementFromValue<Team>(updates.team)
+  //         : activeMatchProps.Team,
+  //     };
+
+  //     updatePromises.push(this.#Client.update(activeMatchPage.id, propertiesUpdate));
+  //   }
+
+  //   await Promise.all(updatePromises);
+  // }
 
   async removeAllPlayersInActiveMatch(playerInMatchId: string): Promise<void> {
     const playerInActiveMatchPage = await this.#Client.getById(playerInMatchId);
 
     if (!playerInActiveMatchPage) {
-      throw new Error(`Player with ID: ${playerInMatchId} is not in an active match.`);
+      return Promise.resolve();
     }
 
     const activeMatchProps = playerInActiveMatchPage.properties as unknown as ActiveMatchPageProperties;
@@ -103,7 +127,7 @@ export class ActiveMatchRepository {
     const playerInActiveMatchPage = await this.#Client.getById(playerInMatchId);
 
     if (!playerInActiveMatchPage) {
-      throw new Error(`Player with ID: ${playerInMatchId} is not in an active match.`);
+      return Promise.resolve([]);
     }
 
     const existingPlayerActiveMatchProps = playerInActiveMatchPage.properties as unknown as ActiveMatchPageProperties;
@@ -124,7 +148,9 @@ export class ActiveMatchRepository {
       const playerId = NotionElementHelper.textFromNotionTextElement(pageProps.ID);
 
       if (!playerTeam) {
-        throw new Error(`Player with ID: ${playerId} is in an active match but not on a team`);
+        throw new Error(
+          `Player with ID: ${playerId} is in an active match but not on a team - THIS SHOULD BE IMPOSSIBLE`
+        );
       }
 
       return {
