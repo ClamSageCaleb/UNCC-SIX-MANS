@@ -60,6 +60,12 @@ class NotionClient {
     await Promise.all(removePromises);
   }
 
+  async findAllAndRemove(args?: Omit<DatabasesQueryParameters, "database_id" | "archived">): Promise<void> {
+    const allPagesToRemove = await this.getAll(args);
+    const allPageIds = allPagesToRemove.map((page) => page.id);
+    await this.remove(allPageIds);
+  }
+
   async insert(newItemProps: unknown): Promise<void> {
     await this.#notionClient.pages.create({
       parent: { database_id: this.#databaseId },
