@@ -21,7 +21,7 @@ export class QueueRepository {
    * @param id Discord ID of the BallChaser to retrieve
    * @returns A BallChaser object if the player is found, otherwise null
    */
-  async getBallChaserInQueue(id: string): Promise<BallChaser | null> {
+  async getBallChaserInQueue(id: string): Promise<Readonly<BallChaser> | null> {
     const ballChaserPage = await this.#Client.getById(id);
 
     if (ballChaserPage) {
@@ -44,7 +44,7 @@ export class QueueRepository {
    * Retrieves all BallChasers in the queue
    * @returns A list of all BallChasers currently in the queue
    */
-  async getAllBallChasersInQueue(): Promise<Array<BallChaser>> {
+  async getAllBallChasersInQueue(): Promise<ReadonlyArray<Readonly<BallChaser>>> {
     const ballChaserPages = await this.#Client.getAll();
 
     return ballChaserPages.map(({ properties }) => {

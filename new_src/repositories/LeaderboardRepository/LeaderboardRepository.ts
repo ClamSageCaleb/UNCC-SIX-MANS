@@ -25,7 +25,7 @@ export class LeaderboardRepository {
    * @param id ID of the player to get stats for
    * @returns returns the player's stats if they exist, otherwise null
    */
-  async getPlayerStats(id: string): Promise<PlayerStats | null> {
+  async getPlayerStats(id: string): Promise<Readonly<PlayerStats> | null> {
     const page = await this.#Client.getById(id);
 
     if (!page) {
@@ -49,7 +49,7 @@ export class LeaderboardRepository {
    * @param n Number of players to retrieve from the top of the leaderboard table
    * @returns An array of the top 'n' players in the leaderboard
    */
-  async getTopNPlayersStats(n: number): Promise<Array<PlayerStats>> {
+  async getTopNPlayersStats(n: number): Promise<ReadonlyArray<Readonly<PlayerStats>>> {
     const pages = await this.#Client.getAll({
       page_size: n,
       sorts: [
@@ -73,7 +73,7 @@ export class LeaderboardRepository {
    * Retreives all entries in the leaderboard
    * @returns An array of stats for every player in the leaderboard
    */
-  async getAllPlayersStats(): Promise<Array<PlayerStats>> {
+  async getAllPlayersStats(): Promise<ReadonlyArray<Readonly<PlayerStats>>> {
     const pages = await this.#Client.getAll({
       sorts: [
         { direction: "descending", property: "MMR" },

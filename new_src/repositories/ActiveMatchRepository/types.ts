@@ -8,13 +8,6 @@ export interface ActiveMatchPageProperties {
   Reported: NotionSelectElement<Team>;
 }
 
-export interface UpdateActiveMatchOptions {
-  id?: string;
-  matchId?: string;
-  team?: Team;
-  reported?: Team | null;
-}
-
 export interface PlayerInActiveMatch {
   id: string;
   team: Team;
