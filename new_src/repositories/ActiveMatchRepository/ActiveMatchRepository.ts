@@ -5,7 +5,7 @@ import NotionElementHelper from "../helpers/NotionElementHelper";
 import { ActiveMatchPageProperties, PlayerInActiveMatch, UpdateActiveMatchOptions } from "./types";
 
 export class ActiveMatchRepository {
-  #Client: NotionClient;
+  #Client: NotionClient<ActiveMatchPageProperties>;
 
   constructor() {
     const databaseId = process.env.notion_active_match_id;
@@ -46,8 +46,7 @@ export class ActiveMatchRepository {
       throw new Error(`Player with ID: ${playerInMatchId} is not in an active match.`);
     }
 
-    const activeMatchProps = activeMatchPage.properties as unknown as ActiveMatchPageProperties;
-
+    const activeMatchProps = activeMatchPage.properties;
     const propertiesUpdate: ActiveMatchPageProperties = {
       ID: updates.id ? NotionElementHelper.notionTextElementFromText(updates.id) : activeMatchProps.ID,
       MatchID: updates.matchId
@@ -111,7 +110,7 @@ export class ActiveMatchRepository {
       return Promise.resolve();
     }
 
-    const activeMatchProps = playerInActiveMatchPage.properties as unknown as ActiveMatchPageProperties;
+    const activeMatchProps = playerInActiveMatchPage.properties;
 
     await this.#Client.findAllAndRemove({
       filter: {
@@ -130,7 +129,7 @@ export class ActiveMatchRepository {
       return Promise.resolve([]);
     }
 
-    const existingPlayerActiveMatchProps = playerInActiveMatchPage.properties as unknown as ActiveMatchPageProperties;
+    const existingPlayerActiveMatchProps = playerInActiveMatchPage.properties;
 
     const allActiveMatchPages = await this.#Client.getAll({
       filter: {
@@ -141,9 +140,7 @@ export class ActiveMatchRepository {
       },
     });
 
-    return allActiveMatchPages.map((page) => {
-      const pageProps = page.properties as unknown as ActiveMatchPageProperties;
-
+    return allActiveMatchPages.map(({ properties: pageProps }) => {
       const playerTeam = NotionElementHelper.valueFromNotionSelectElement<Team>(pageProps.Team);
       const playerId = NotionElementHelper.textFromNotionTextElement(pageProps.ID);
 
