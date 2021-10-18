@@ -95,6 +95,12 @@ describe("LeaderboardRepository tests", () => {
     validatePlayerStats(mockPlayerStats, result);
   });
 
+  it("returns null when looking for player that does not exist", async () => {
+    mocked(NotionClient.prototype.getById).mockResolvedValue(null);
+    const result = await LeaderboardRepository.getPlayerStats(faker.datatype.uuid());
+    expect(result).toBeNull();
+  });
+
   it("updates player stats when the player exists", async () => {
     const mockPlayerStats = makePlayerStats();
     const mockProps = makeProps(mockPlayerStats);
