@@ -4,7 +4,7 @@ import NotionClient from "../helpers/NotionClient";
 import NotionElementHelper from "../helpers/NotionElementHelper";
 
 export class QueueRepository {
-  #Client: NotionClient;
+  #Client: NotionClient<BallChaserPageProperties>;
 
   constructor() {
     const databaseId = process.env.notion_queue_id;
@@ -21,11 +21,11 @@ export class QueueRepository {
    * @param id Discord ID of the BallChaser to retrieve
    * @returns A BallChaser object if the player is found, otherwise null
    */
-  async getBallChaserInQueue(id: string): Promise<BallChaser | null> {
+  async getBallChaserInQueue(id: string): Promise<Readonly<BallChaser> | null> {
     const ballChaserPage = await this.#Client.getById(id);
 
     if (ballChaserPage) {
-      const properties = ballChaserPage.properties as unknown as BallChaserPageProperties;
+      const { properties } = ballChaserPage;
 
       return {
         id: NotionElementHelper.textFromNotionTextElement(properties.ID),
@@ -44,11 +44,10 @@ export class QueueRepository {
    * Retrieves all BallChasers in the queue
    * @returns A list of all BallChasers currently in the queue
    */
-  async getAllBallChasersInQueue(): Promise<Array<BallChaser>> {
+  async getAllBallChasersInQueue(): Promise<ReadonlyArray<Readonly<BallChaser>>> {
     const ballChaserPages = await this.#Client.getAll();
 
-    return ballChaserPages.map((page) => {
-      const properties = page.properties as unknown as BallChaserPageProperties;
+    return ballChaserPages.map(({ properties }) => {
       return {
         id: NotionElementHelper.textFromNotionTextElement(properties.ID),
         isCap: NotionElementHelper.boolFromNotionBooleanElement(properties.isCap),
@@ -95,7 +94,7 @@ export class QueueRepository {
       throw new Error(`Cannot update BallChaser. No BallChaser with the ID ${id} was found.`);
     }
 
-    const existingBallChaserProps = ballChaserPage.properties as unknown as BallChaserPageProperties;
+    const existingBallChaserProps = ballChaserPage.properties;
     const propertiesUpdate: BallChaserPageProperties = {
       ID: NotionElementHelper.notionTextElementFromText(id),
       MMR: options.mmr ? NotionElementHelper.notionNumberElementFromNumber(options.mmr) : existingBallChaserProps.MMR,

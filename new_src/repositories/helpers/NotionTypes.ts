@@ -17,3 +17,7 @@ export interface NotionSelectElement<T> {
 export interface NotionDateElement {
   date: { start: string } | null;
 }
+
+export interface NotionFormulaElement {
+  formula: NotionNumberElement;
+}

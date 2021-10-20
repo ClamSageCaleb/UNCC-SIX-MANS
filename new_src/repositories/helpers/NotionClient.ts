@@ -2,7 +2,11 @@ import { Client } from "@notionhq/client";
 import { DatabasesQueryParameters, InputPropertyValueMap } from "@notionhq/client/build/src/api-endpoints";
 import { Page } from "@notionhq/client/build/src/api-types";
 
-class NotionClient {
+interface NotionPage<NotionPageProperties> extends Omit<Page, "properties"> {
+  properties: NotionPageProperties;
+}
+
+class NotionClient<NotionResponsePageProperties, NotionModifyPageProperties = NotionResponsePageProperties> {
   #notionClient: Client;
   #databaseId: string;
 
@@ -11,7 +15,7 @@ class NotionClient {
     this.#databaseId = databaseId;
   }
 
-  async getById(id: string): Promise<Page | null> {
+  async getById(id: string): Promise<NotionPage<NotionResponsePageProperties> | null> {
     const pages = await this.#notionClient.databases.query({
       database_id: this.#databaseId,
       filter: {
@@ -27,20 +31,23 @@ class NotionClient {
     } else if (pages.results.length > 1) {
       throw new Error(`More than one entry with the ID: ${id}.`);
     } else {
-      return pages.results[0];
+      const page = pages.results[0];
+      return page as unknown as NotionPage<NotionResponsePageProperties>;
     }
   }
 
-  async getAll(args?: Omit<DatabasesQueryParameters, "database_id">): Promise<Array<Page>> {
+  async getAll(
+    args?: Omit<DatabasesQueryParameters, "database_id">
+  ): Promise<Array<NotionPage<NotionResponsePageProperties>>> {
     const response = await this.#notionClient.databases.query({ database_id: this.#databaseId, ...args });
-    return response.results;
+    return response.results as unknown as Array<NotionPage<NotionResponsePageProperties>>;
   }
 
-  async update(pageId: string, updates: unknown): Promise<void> {
+  async update(pageId: string, updates: NotionModifyPageProperties): Promise<void> {
     await this.#notionClient.pages.update({
       archived: false,
       page_id: pageId,
-      properties: updates as InputPropertyValueMap,
+      properties: updates as unknown as InputPropertyValueMap,
     });
   }
 
@@ -66,10 +73,10 @@ class NotionClient {
     await this.remove(allPageIds);
   }
 
-  async insert(newItemProps: unknown): Promise<void> {
+  async insert(newItemProps: NotionModifyPageProperties): Promise<void> {
     await this.#notionClient.pages.create({
       parent: { database_id: this.#databaseId },
-      properties: newItemProps as InputPropertyValueMap,
+      properties: newItemProps as unknown as InputPropertyValueMap,
     });
   }
 }

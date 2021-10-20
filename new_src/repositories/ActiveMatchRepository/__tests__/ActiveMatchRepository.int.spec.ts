@@ -43,7 +43,7 @@ describe("Active Match Repository Integration Tests", () => {
 
     const playerThatWasUpdated = playersInActiveMatch.find((p) => p.id === oneOfThePlayers.id);
     expect(playerThatWasUpdated).not.toBeNull();
-    expect(playerThatWasUpdated?.team).toBe(reportedTeam);
+    expect(playerThatWasUpdated!.reported).toBe(reportedTeam);
 
     await ActiveMatchRepository.removeAllPlayersInActiveMatch(oneOfThePlayers.id);
 

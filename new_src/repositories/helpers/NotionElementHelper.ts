@@ -5,6 +5,7 @@ import {
   NotionBooleanElement,
   NotionSelectElement,
   NotionDateElement,
+  NotionFormulaElement,
 } from "./NotionTypes";
 
 export default class NotionElementHelper {
@@ -28,6 +29,10 @@ export default class NotionElementHelper {
     return { date: value ? { start: value.toUTC().toISO() } : null };
   }
 
+  static notionFormulaElementFromNumber(value: number): NotionFormulaElement {
+    return { formula: { number: value } };
+  }
+
   static textFromNotionTextElement(textElement: NotionTextElement): string {
     return textElement.rich_text[0].text.content;
   }
@@ -46,5 +51,10 @@ export default class NotionElementHelper {
 
   static dateTimeFromNotionDateElement(dateElement: NotionDateElement): DateTime | null {
     return dateElement.date ? DateTime.fromISO(dateElement.date.start, { locale: "America/New York" }) : null;
+  }
+
+  static numberFromNotionFormulaElement(formulaElement: NotionFormulaElement): number {
+    // round to one decimal place for calculated values
+    return +formulaElement.formula.number.toFixed(1);
   }
 }
