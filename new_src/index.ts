@@ -1,5 +1,7 @@
 import { Client, Interaction, Message, MessageActionRow, MessageButton, MessageEmbed, User } from "discord.js";
+import { DateTime } from "luxon";
 import QueueRepository from "./repositories/QueueRepository";
+import { BallChaser } from './types/common';
 
 const NormClient = new Client({ intents: "GUILDS" });
 
@@ -42,13 +44,27 @@ NormClient.on("ready", async () => {
 
 
 NormClient.on('interactionCreate', async (buttonInteraction: Interaction) => {
-  
+
   if (!buttonInteraction.isButton()) return;
 
   switch (buttonInteraction.customId) {
     case 'joinQueue': {
 
-      //await QueueRepository.addBallChaserToQueue()
+      if (QueueRepository.getBallChaserInQueue(buttonInteraction.user.toString()) == null){
+    const player: BallChaser = {
+      id: buttonInteraction.user.toString(),
+      mmr: 100,
+      name: buttonInteraction.user.username,
+      isCap: false,
+      team: null,
+      queueTime: new DateTime,
+    }
+    await QueueRepository.addBallChaserToQueue(player)
+
+  } else {
+    //const player = QueueRepository.getBallChaserInQueue(buttonInteraction.user.toString())
+    //await QueueRepository.addBallChaserToQueue(QueueRepository.getBallChaserInQueue(buttonInteraction.user.toString()))
+  }
 
       const row = new MessageActionRow()
         .addComponents(
@@ -83,7 +99,8 @@ NormClient.on('interactionCreate', async (buttonInteraction: Interaction) => {
     // Error [INTERACTION_ALREADY_REPLIED]: The reply to this interaction has already been sent or deferred.
     case 'leaveQueue': {
 
-      //await QueueRepository.removeBallChaserFromQueue(buttonInteraction.user)
+      //const player: BallChaser = QueueRepository.getBallChaserInQueue(buttonInteraction.user.toString())
+      //await QueueRepository.removeBallChaserFromQueue(player)
 
       const row = new MessageActionRow()
         .addComponents(
