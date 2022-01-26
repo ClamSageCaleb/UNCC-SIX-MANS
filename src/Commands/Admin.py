@@ -164,6 +164,38 @@ def brokenQueue(mentions: List[Member], roles: List[Role]) -> Embed:
     )
 
 
+async def mentionBrokenQueue(mentions: str, roles: List[Role], *arg) -> Embed:
+    if (Queue.isBotAdmin(roles)):
+
+        if (len(arg) > 0 and "<@!" in arg[0]):
+            split = mentions.split("<@!")
+            player_id = split[1][:-1]
+
+            if (player_id.isdigit()):
+                msg = lbBrokenQueue(player_id)
+                if (":white_check_mark:" in msg):
+                    return QueueUpdateEmbed(
+                        title="Popped Queue Removed",
+                        desc="The popped queue has been removed from active matches. You may now re-queue."
+                    ).add_field(
+                        name="Current Queue 0/6",
+                        value="Queue is empty."
+                    )
+
+                return ErrorEmbed(
+                    title="Could Not Remove Queue",
+                    desc=msg
+                )
+        return ErrorEmbed(
+            title="Did Not Mention a Player",
+            desc="Please mention a player in an active match to broken queue."
+        )
+    return ErrorEmbed(
+        title="Permission Denied",
+        desc="You do not have permission to break the queue without a majority."
+    )
+
+
 async def forceReport(mentions: str, roles: List[Role], lbChannel: Channel, *arg) -> Embed:
     if (Queue.isBotAdmin(roles)):
 
